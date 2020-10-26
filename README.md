@@ -10,13 +10,13 @@ can be tested by using the dapicli tool and pasting the following code ('alice' 
 ```js
 await open('alice')
 c.add(0, 'message_alice', './contracts/message_contract.json')
-await d.get('message_alice.note', {})
+await d.get('message_alice.note', {}) // should return []
 let messenger = m.get()
 let si = await messenger.createSessionIdentity()
 let client = messenger._client
 let st = await client.platform.documents.create('message_alice.note', si._identity, {message:"SessionIdentity Hello"})
 let stateTransition = await messenger.broadcastDocumentBatch(client.platform, {create: [st]}, si)
-await d.get('message_alice.note', {})
+await d.get('message_alice.note', {}) // there's a document there with ownerId of si._identity
 stateTransition = await messenger.broadcastDocumentBatch(client.platform, {'delete': [st]}, si)
-await d.get('message_alice.note', {})
+await d.get('message_alice.note', {}) // empty again
 ```
