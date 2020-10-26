@@ -1,0 +1,12 @@
+{
+  "name": "whatsdapp",
+  "version": "0.1.0",
+  "description": "",
+  "main": "lib/whatsdapp.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {},
+  "dependencies": {}
+}
