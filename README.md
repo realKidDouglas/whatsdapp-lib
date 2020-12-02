@@ -2,10 +2,16 @@
 
 ## Overview
 
-[Abstract](#abstract)
-[Goals](#goals)
-[Usage](#usage)
-[License](#license)
+- [Abstract](#abstract)
+- [Goals](#goals)
+- [Usage](#usage)
+    - [Install](#install)
+    - [Quick start](#quick start)
+    - [Used packages](#used packages)
+- [Pitfall](#pitfall)
+- [License](#license)
+
+
 
 ## Abstract
 This is a library to apply signal-protocol to Dash-Drive.
@@ -36,21 +42,21 @@ Gesamtziel: secure and safty messaging without dependency of any company
 ## Usage
 
 
-### install 
+### Install 
 
 -
 -
 -
 
 
-### quick start
+### Quick start
 
 -
 -
 -
 -
 
-### used packages
+### Used packages
 
 - https://github.com/ForstaLabs/libsignal-node
     - diese Package wird verwendet, weil das offizielle nicht ohne Browser funktioniert (fehler hinzufügen?)
