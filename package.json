@@ -2,11 +2,16 @@
   "name": "whatsdapp",
   "version": "0.1.0",
   "description": "",
-  "main": "lib/whatsdapp.js",
+  "main": "lib/index.js",
   "scripts": {},
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {},
-  "dependencies": {}
+  "dependencies": {
+    "arraybuffer-to-string": "^1.0.2",
+    "string-to-arraybuffer": "^1.0.2",
+    "libsignal": "^2.0.1",
+    "dash": "^3.16.3"
+  }
 }
