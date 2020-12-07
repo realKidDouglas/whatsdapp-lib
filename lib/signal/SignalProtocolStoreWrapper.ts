@@ -1,5 +1,5 @@
 import {arrayBufferToString} from "./utils";
-import libsignal, {ProtocolStore, SignalKeyPair, SignalSignedPreKey} from 'libsignal';
+import libsignal, {ProtocolStore, SignalKeyPair, SessionRecord, SignalSignedPreKey} from 'libsignal';
 
 export class SignalProtocolStore implements ProtocolStore {
 
@@ -111,43 +111,38 @@ export class SignalProtocolStore implements ProtocolStore {
   }
 
   /** TODO: find out what's actually returned here */
-  async loadSession(identifier: string): Promise<any> {
+  async loadSession(identifier: string): Promise<SessionRecord | null> {
     let identityId;
     let deviceString;
     try {
       const address = libsignal.ProtocolAddress.from(identifier);
       identityId = address.id;
       deviceString = "device" + address.deviceId;
-    } catch {
-      identityId = identifier;
-      deviceString = "sessioncipher";
+    } catch (e){
+      console.log('unreachable');
+      throw e;
     }
-    const result = await this.store.getSessionKeys(identityId, deviceString);
-    if (deviceString == "sessioncipher") {
-      result.storage = this;
-    }
-    return result;
+    const data = await this.store.getSessionKeys(identityId, deviceString);
+    if(data == null) return null;
+    return SessionRecord.deserialize(data);
   }
 
   /** TODO: find out types of record */
-  async storeSession(identifier: string, record: any): Promise<void> {
+  async storeSession(identifier: string, record: SessionRecord): Promise<void> {
     let identityId;
     let deviceString;
     try {
       const address = libsignal.ProtocolAddress.from(identifier);
       identityId = address.id;
       deviceString = "device" + address.deviceId;
-    } catch {
-      identityId = identifier;
-      deviceString = "sessioncipher";
-      // SessionCiphers contain the storage, which contains the SessionCipher...
-      // To solve this, we remove it before saving
-      record.storage = undefined;
+    } catch (e){
+      console.log('unreachable');
+      throw e;
     }
     if (await this.store.hasSession(identityId)) {
-      await this.store.updateSessionKeys(identityId, deviceString, record);
+      await this.store.updateSessionKeys(identityId, deviceString, record.serialize());
     } else {
-      await this.store.addSession(identityId, deviceString, record);
+      await this.store.addSession(identityId, deviceString, record.serialize());
     }
   }
 

@@ -1,11 +1,13 @@
 import * as dapi from './dapi/dapi';
 import {EventEmitter} from 'events';
-import {rawMessageToMessage} from './dapi/conversion';
 import DashSDK from "dash";
 import {DashClient, DashIdentity} from "./types/DashTypes";
+import {WhatsDappMessage} from "./dapi/WhatsDappMessage";
+import {WhatsDappProfile} from "./dapi/WhatsDappProfile";
 
 type TimerHandle = ReturnType<typeof setTimeout>;
 
+/*
 export type WhatsDappMessage = {
   // TODO: get senderHandle from (some) public profile!
   senderHandle: string,
@@ -14,7 +16,7 @@ export type WhatsDappMessage = {
   id: string,
   ownerId: string
 }
-
+*/
 
 type WhatsDappSession = {
   //signal: any,
@@ -23,20 +25,54 @@ type WhatsDappSession = {
 }
 
 // TODO: get type from contract
-export type RawMessage = any
-export type RawProfile = any;
+export type RawProfile = {
+  createdAt: Date,
+  updatedAt: Date
+  data: {
+    identityKey: Array<string>,
+    registrationId: number,
+    signedPreKey: SignedPreKey,
+    preKey: PreKey,
+    prekeys: Array<string>,
+    displayname: string,
+  },
+}
 
+export type SignedPreKey = {
+  keyId: number,
+  publicKey: Array<string>
+}
+
+export type PreKey = {
+  keyId: number,
+  publicKey: Array<string>,
+  signature: Array<string>
+}
+
+export type RawMessage = {
+  ownerId: Array<string>,
+  createdAt: Date,
+  data: {
+    receiverId: string,
+    content: string
+  },
+  id: Array<string>
+};
+/*
 type WhatsDappKeyBundle = {
   prekeys: Array<string>,
   identity_public_key: string,
   signed_identity_public_key: string;
 }
 
+
 type WhatsDappProfile = {
   identity: string,
   whatsDappName: string,
   keybundle: WhatsDappKeyBundle
 }
+
+ */
 
 export type WhatsDappProfileContent = {
   identityKey: string // content.identityKey,
@@ -57,7 +93,7 @@ type ConnectOptions = {
 }
 
 type ConnectResult = {
-  handle: string,
+  profile_name: string,
   identity: DashIdentity
 }
 
@@ -80,7 +116,7 @@ export class WhatsDapp extends EventEmitter {
 
   /**
    * @param opts {}
-   * @returns {Promise<{handle:string, identity}>}
+   * @returns {Promise<{profile_name:string, identity}>}
    */
   async connect(opts: ConnectOptions): Promise<ConnectResult> {
     let {identity} = opts;
@@ -109,13 +145,13 @@ export class WhatsDapp extends EventEmitter {
       profile = await dapi.getProfile(this._connection, identity);
     }
 
-    this._profile = profile;
+    this._profile = new WhatsDappProfile(profile);
 
     // deferred initialization
     this.initialized = Promise.resolve()
       .then(() => this._pollTimeout = setTimeout(() => this._poll(), 0)) // first poll is immediate
       .catch(e => console.log("error", e))
-      .then(() => ({handle: displayname, identity: identity}));
+      .then(() => ({profile_name: displayname, identity: identity}));
 
     return this.initialized;
   }
@@ -128,15 +164,15 @@ export class WhatsDapp extends EventEmitter {
     this._pollTimeout = null;
     const pollTime = this._lastPollTime;
 
-
     // TODO: it should be possible to do this per session / chat partner.
-    const messages = await dapi.getMessagesByTime(this._connection, pollTime);
+    const messages: Array<RawMessage> = await dapi.getMessagesByTime(this._connection, pollTime);
 
-    console.log();
     const messagePromises = messages.map((m: RawMessage) => this._broadcastNewMessage(m).catch(e => console.log('broadcast failed!', e)));
     console.log('got', messagePromises.length, 'new messages.');
-    if (messages.length > 0) {
-      this._lastPollTime = messages[messages.length - 1].createdAt.getTime();
+    if ( messages.length > 0)  {
+      const polledMessage = messages[messages.length - 1];
+      if(polledMessage !== undefined)
+        this._lastPollTime = polledMessage.createdAt.getTime();
     }
 
     await Promise.all(messagePromises);
@@ -146,7 +182,7 @@ export class WhatsDapp extends EventEmitter {
   }
 
   async _broadcastNewMessage(rawMessage: RawMessage): Promise<void> {
-    const message: WhatsDappMessage = rawMessageToMessage(rawMessage);
+    const message: WhatsDappMessage = new WhatsDappMessage(rawMessage);
     const session = await this._getOrCreateSession(rawMessage.ownerId, message.senderHandle);
     const sentByUs = (message.ownerId === this._connection.ownerId);
     await new Promise(r => setTimeout(r, 2000)); // TODO: Solve race condition
@@ -160,6 +196,7 @@ export class WhatsDapp extends EventEmitter {
     if (session == null) {
       session = {profile_name: senderHandle, identity_receiver: ownerId};
       const preKeyBundle = (await dapi.getProfile(this._connection, ownerId)).data;
+
       this._sessions[ownerId] = session;
       this.emit('new-session', session, preKeyBundle);
     }
@@ -180,15 +217,19 @@ export class WhatsDapp extends EventEmitter {
     // TODO: keybundle soll der messenger sich selbst beschaffen,
     // TODO: muss nicht als arg kommen.
 
+    console.log("start init sending");
     await this.initialized;
+    console.log("end init sending");
 
     /*const batch = */
     await dapi.createMessage(this._connection, receiver, content);
+    //await dapi.createMessage(this._connection, receiver, content);
     //const message = transitionToMessage(batch.transitions[0], this._connection.identity)
 
     // GUI listens to this, can then remove send-progressbar or w/e
     // storage also listens and will save the message.
     //this.emit('new-message', message, {handle: receiver})
+    console.log("sent");
   }
 
   getSessions() {
@@ -200,36 +241,29 @@ export class WhatsDapp extends EventEmitter {
     this._pollTimeout = null;
   }
 
+
   async getProfileByName(name: string): Promise<WhatsDappProfile | null> {
-    const dpnsName = name + ".dash";
-
-
-    const dpnsContract = await dapi.findIdentityByName(this._connection, dpnsName);
-    if (dpnsContract == null) {
+    // Resolve DPNS-Name to Identity
+    const dpnsName: string = name + ".dash";
+    const identity: DashIdentity | null = await dapi.findIdentityByName(this._connection, dpnsName);
+    if (identity == null) {
       console.log("no identity found for " + name);
       return null;
     }
-
-    const profileContract = await dapi.getProfile(this._connection, dpnsContract.ownerId);
-    if (profileContract == null) {
+    //Resolve Identity to WhatsDappProfile
+    const rawProfile : RawProfile = await dapi.getProfile(this._connection, identity.id.toString());
+    if (rawProfile == null) {
       console.log("no WhatsDapp profile found for " + name);
       return null;
     }
+    const profile : WhatsDappProfile = new WhatsDappProfile(rawProfile);
 
-    const profile = {
-      identity: dpnsContract.ownerId.toString(),
-      whatsDappName: profileContract.data.displayname,
-      keybundle: {
-        prekeys: profileContract.data.prekeys,
-        identity_public_key: profileContract.data.identity_public_key,
-        signed_identity_public_key: profileContract.data.signed_identity_public_key
-      }
-    };
-
+    console.log("Profile found:");
     console.log(profile);
     return profile;
   }
 }
+
 
 function makeClient(mnemonic?: string): DashClient {
   const clientOpts = {

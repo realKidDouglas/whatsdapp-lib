@@ -15,7 +15,34 @@ declare module 'libsignal' {
     privateKey: string
   }
 
-  export type SignalSessionRecord = any
+  export type SerializedSessionEntry = unknown;
+  export type SerializedSessionRecord = unknown;
+
+  export declare class SessionEntry {
+    inspect(): string
+    addChain(key: Buffer, value: any): void
+    getChain(key: Buffer, value: any): void
+    deleteChain(key: Buffer): void
+    //chains(): Generator
+    serialize(): SerializedSessionEntry
+    static deserialize(data: SerializedSessionEntry): SessionEntry
+  }
+
+  export declare class SessionRecord {
+    serialize(): SerializedSessionRecord
+    static deserialize(data: SerializedSessionRecord): SessionRecord
+    static createEntry(): SessionEntry
+    haveOpenSession(): bool
+    getSession(key: Buffer): SessionEntry
+    getOpenSession(): SessionEntry
+    setSession(session: SessionEntry): void
+    getSessions(session: SessionEntry): Array<SessionEntry>
+    closeSession(session: SessionEntry): void
+    openSession(session: SessionEntry): void
+    isClosed(session: SessionEntry): boolean
+    removeOldSessions(): void
+    deleteAllSessions(): void
+  }
 
   export interface ProtocolStore {
     getOurIdentity: () => Promise<SignalKeyPair>
@@ -29,8 +56,8 @@ declare module 'libsignal' {
     loadSignedPreKey: (keyId: number) => Promise<SignalKeyPair>
     storeSignedPreKey: (keyId: number, keyPair: SignalSignedPreKey) => Promise<void>
     removeSignedPreKey: (keyId: number) => Promise<void>
-    loadSession: (identifier: string) => Promise<SignalSessionRecord>
-    storeSession: (identifier: string, record: SignalSessionRecord) => Promise<void>
+    loadSession: (identifier: string) => Promise<SessionRecord | null>
+    storeSession: (identifier: string, record: SessionRecord) => Promise<void>
     get: (id: string) => SignalKeyPair
     remove: (id: string) => void
   }

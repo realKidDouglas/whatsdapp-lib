@@ -2,7 +2,7 @@
  * @author Panzerknacker, Mr. P
  */
 
-import type {WhatsDappConnection, WhatsDappProfileContent} from "../WhatsDapp";
+import type {RawProfile, WhatsDappConnection, WhatsDappProfileContent} from "../WhatsDapp";
 
 /**
  * Create a profile
@@ -47,15 +47,15 @@ export async function createProfile(connection: WhatsDappConnection, content: Wh
  * @param connection {WhatsDappConnection}
  * @param ownerid {string} The ownerId in HEX
  * @returns Returns a document, that the profile was created
+ * TODO: Maybe its better to use the DashIdentity Type instead of the ownerid as a string
  */
-export async function getProfile(connection: WhatsDappConnection, ownerid: string): Promise<any> {
+export async function getProfile(connection: WhatsDappConnection, ownerid: string): Promise<RawProfile> {
   try {
     // Retrieve the existing document
     const documents = await connection.platform.documents.get(
       'profile_contract.profile',
       {where: [['$ownerId', '==', ownerid]]}
     );
-
     // Sign and submit the document replace transition
     return documents[0];
   } catch (e) {

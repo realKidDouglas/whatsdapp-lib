@@ -64,9 +64,11 @@ export async function createDpnsName(connection: WhatsDappConnection, name: stri
  * @param name: The dpns name (name+.dash)
  * @returns The identity which belongs to the name
  */
-export async function findIdentityByName(connection: WhatsDappConnection, name: string): Promise<{ ownerId: string } | null> {
+export async function findIdentityByName(connection: WhatsDappConnection, name: string): Promise< DashIdentity  | null> {
   try {
-    return connection.platform.names.resolve(name);
+    const dpnsContract = await connection.platform.names.resolve(name);
+
+    return connection.platform.identities.get(dpnsContract.ownerId.toString());
   } catch (e) {
     console.log('Something went wrong:', e);
   }

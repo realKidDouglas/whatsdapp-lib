@@ -81,7 +81,7 @@ export class SignalWrapper {
 
   async decryptMessage(whatsDappStore: any, senderId: string, base64: string): Promise<string> {
     if (base64 == "hallo") return base64;
-    const cipherText = SignalWrapper._b64ToCypherText(base64);
+    const cipherText = SignalWrapper._b64toCipherText(base64);
     const deviceId = 1; // TODO: This shouldn't be hardcoded
     const store = new SignalProtocolStore(whatsDappStore, senderId);
     const address = new libsignal.ProtocolAddress(senderId, deviceId);
@@ -95,14 +95,14 @@ export class SignalWrapper {
     } else {
       plaintext = await sessionCipher.decryptWhisperMessage(Buffer.from(cipherText.body.data), 'binary');
     }
-    return arrayBufferToString(plaintext, 'binary');
+    return arrayBufferToString(plaintext, 'utf8');
   }
 
   async buildAndPersistSession(whatsDappStore: any, identifier: string, preKeyBundle: WhatsDappSignalPrekeyBundle): Promise<void> {
     const deviceId = 1; // TODO: This shouldn't be hardcoded
     const store = new SignalProtocolStore(whatsDappStore, identifier);
     const address = new libsignal.ProtocolAddress(identifier, deviceId);
-    const sessionBuilder = await new libsignal.SessionBuilder(store, address);
+    const sessionBuilder = new libsignal.SessionBuilder(store, address);
     await sessionBuilder.initOutgoing(preKeyBundle);
   }
 
@@ -116,10 +116,9 @@ export class SignalWrapper {
     return libsignal.keyhelper.generateSignedPreKey(identityKeyPair, signedPreKeyId);
   }
 
-  static _b64ToCypherText(b64: string): WhatsDappSignalCipherText {
-    // TODO: ascii probably will mess up unicode chars
+  static _b64toCipherText(b64: string): WhatsDappSignalCipherText {
     const obj = JSON.parse(new Buffer(b64, 'base64').toString('ascii'));
-    if (obj['body'] == null || typeof obj.body.data != 'string') throw new Error("ciphertext has no data.");
+    if (obj['body'] == null || !Array.isArray(obj.body.data)) throw new Error("ciphertext has no data.");
     if (obj['type'] == null || typeof obj.type != 'number') throw new Error("ciphertext has no type.");
     return obj;
   }

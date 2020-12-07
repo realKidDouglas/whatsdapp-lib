@@ -17,6 +17,6 @@
     "semi": 2,
     "no-var": 2,
     "no-multiple-empty-lines": 2,
-    "class-methods-use-this": 2
+    "class-methods-use-this": 1
   }
 }

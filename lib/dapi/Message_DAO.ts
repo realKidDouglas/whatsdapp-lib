@@ -23,7 +23,8 @@ export async function createMessage(connection: WhatsDappConnection, receiverid:
   const document_batch = {
     create: [message_document],
   };
-
+  console.log("Sending: ");
+  console.log(document_batch);
   return connection.platform.documents.broadcast(document_batch, connection.identity);
 }
 
@@ -141,6 +142,7 @@ export async function getMessageFromByTime(connection: WhatsDappConnection, time
         ],
       },
     );
+
 
     return documents;
   } catch (e) {
