@@ -184,10 +184,9 @@ export class WhatsDapp extends EventEmitter {
   async _broadcastNewMessage(rawMessage: RawMessage): Promise<void> {
     const message: WhatsDappMessage = new WhatsDappMessage(rawMessage);
     const session = await this._getOrCreateSession(rawMessage.ownerId, message.senderHandle);
-    const sentByUs = (message.ownerId === this._connection.ownerId);
     await new Promise(r => setTimeout(r, 2000)); // TODO: Solve race condition
     // TODO: Separate Signals for messages sent by us and other people
-    this.emit('new-message', message, session, sentByUs);
+    this.emit('new-message', message, session);
     this._lastPollTime = Math.max(this._lastPollTime, message.timestamp + 1);
   }
 
@@ -196,7 +195,6 @@ export class WhatsDapp extends EventEmitter {
     if (session == null) {
       session = {profile_name: senderHandle, identity_receiver: ownerId};
       const preKeyBundle = (await dapi.getProfile(this._connection, ownerId)).data;
-
       this._sessions[ownerId] = session;
       this.emit('new-session', session, preKeyBundle);
     }
@@ -242,7 +240,7 @@ export class WhatsDapp extends EventEmitter {
   }
 
 
-  async getProfileByName(name: string): Promise<WhatsDappProfile | null> {
+  async getProfileByName(name: string): Promise<WhatsDappSession | null> {
     // Resolve DPNS-Name to Identity
     const dpnsName: string = name + ".dash";
     const identity: DashIdentity | null = await dapi.findIdentityByName(this._connection, dpnsName);
@@ -250,17 +248,9 @@ export class WhatsDapp extends EventEmitter {
       console.log("no identity found for " + name);
       return null;
     }
-    //Resolve Identity to WhatsDappProfile
-    const rawProfile : RawProfile = await dapi.getProfile(this._connection, identity.id.toString());
-    if (rawProfile == null) {
-      console.log("no WhatsDapp profile found for " + name);
-      return null;
-    }
-    const profile : WhatsDappProfile = new WhatsDappProfile(rawProfile);
-
-    console.log("Profile found:");
-    console.log(profile);
-    return profile;
+    //TODO: Es sollte nicht bei jedem suchen eine Session erzeugt werden
+    const session = await this._getOrCreateSession(identity.getId(), identity.getId().toString()); // TODO: Was soll der Anzeigename sein
+    return session;
   }
 }
 
