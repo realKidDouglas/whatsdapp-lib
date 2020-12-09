@@ -72,4 +72,5 @@ Gesamtziel: secure and safty messaging without dependency of any company
 - auf XSS attacken hinweisen
 
 ## License
-Licensed under the GPLv3: http://www.gnu.org/licenses/gpl-3.0.html
+[Licensed under the MIT License](https://opensource.org/licenses/MIT).
+Note that the [signal-protocol lib](https://www.npmjs.com/package/libsignal) we currently use is licensed under the [GPLv3](http://www.gnu.org/licenses/gpl-3.0.html).
