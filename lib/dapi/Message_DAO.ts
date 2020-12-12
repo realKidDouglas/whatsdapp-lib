@@ -11,7 +11,7 @@ import type {RawMessage, WhatsDappConnection} from "../WhatsDapp";
  * @param content {string} The content of the message
  * @returns The check, that the message is published
  */
-export async function createMessage(connection: WhatsDappConnection, receiverid: string, content: string): Promise<boolean> {
+export async function createMessage(connection: WhatsDappConnection, receiverid: string, content: string): Promise<any> {
   const doc_properties = {receiverid, content};
   // Create the message document
   const message_document = await connection.platform.documents.create(

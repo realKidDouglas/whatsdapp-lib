@@ -206,27 +206,24 @@ export class WhatsDapp extends EventEmitter {
    * TODO: timeout and reject after some amount
    * TODO: of time and mark message for retry in GUI
    * @param receiver {string} B58?
-   * @param content {string}
+   * @param ciphertext {string}
+   * @param plaintext {string}
    * @returns {Promise<boolean>}
    */
-  async sendMessage(receiver: string, content: string) {
-
-    // TODO: Hier kommt der Signalkram rein -> enc msg
-    // TODO: keybundle soll der messenger sich selbst beschaffen,
-    // TODO: muss nicht als arg kommen.
-
+  async sendMessage(receiver: string, ciphertext: string, plaintext: string) {
     console.log("start init sending");
     await this.initialized;
     console.log("end init sending");
 
     /*const batch = */
-    await dapi.createMessage(this._connection, receiver, content);
-    //await dapi.createMessage(this._connection, receiver, content);
+    const sentMessage : RawMessage = await dapi.createMessage(this._connection, receiver, ciphertext);
+    console.log(sentMessage);
+    //await dapi.createMessage(this._connection, receiver, ciphertext);
     //const message = transitionToMessage(batch.transitions[0], this._connection.identity)
 
     // GUI listens to this, can then remove send-progressbar or w/e
     // storage also listens and will save the message.
-    //this.emit('new-message', message, {handle: receiver})
+    this.emit('new-message-sent', plaintext, {handle: receiver});
     console.log("sent");
   }
 
