@@ -266,7 +266,7 @@ export class WhatsDapp extends EventEmitter {
   createInputMessage(plaintext: string):string {
     const inputMessage: WhatsDappMessageContent = {message: plaintext, deleteTime: new Date().getTime()};
     const inputMessageJson = JSON.stringify(inputMessage);
-    return inputMessageJson.toString();
+    return inputMessageJson;
   }
 
   getSessions() {
