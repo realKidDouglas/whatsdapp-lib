@@ -93,7 +93,7 @@ type ConnectOptions = {
 
 type WhatsDappMessageContent = {
   message: string,
-  deleteTime: Date
+  deleteTime: number
 }
 
 type ConnectResult = {
@@ -253,12 +253,11 @@ export class WhatsDapp extends EventEmitter {
   }
 
   createInputMessage(plaintext: string):string {
-    const inputMessage: WhatsDappMessageContent = {message: plaintext, deleteTime: new Date()};
-    console.log("InputMessage:");
-    console.log(inputMessage);
+    const inputMessage: WhatsDappMessageContent = {message: plaintext, deleteTime: new Date().getTime()};
     const inputMessageJson = JSON.stringify(inputMessage);
-    console.log("InputMessageJSON:");
-    console.log(inputMessageJson);
+    const inputMessages= JSON.parse(inputMessageJson);
+    console.log(inputMessages.message);
+    console.log(inputMessages.deleteTime);
     return inputMessageJson;
   }
 
