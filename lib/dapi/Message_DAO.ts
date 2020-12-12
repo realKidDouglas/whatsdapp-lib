@@ -131,7 +131,12 @@ export async function deleteMessage(connection: WhatsDappConnection, time: numbe
     console.log("Delete Messages:");
     console.log(document);
     if(document != undefined){
-      return connection.platform.documents.broadcast({delete: [document]}, connection.identity);
+      const document_batch = {
+        delete: [document],
+      };
+      console.log("Sending: ");
+      console.log(document_batch);
+      return connection.platform.documents.broadcast(document_batch, connection.identity);
     }
     return false;
   } catch (e) {
