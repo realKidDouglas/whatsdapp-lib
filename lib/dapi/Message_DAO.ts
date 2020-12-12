@@ -112,7 +112,7 @@ export async function deleteMessage(connection: WhatsDappConnection, time: numbe
     const [document] = await connection.platform.documents.get(
       'message_contract.message',
       {where:[
-        ['$ownerId', "==", connection.identity.getId().toJSON()],
+        ['$ownerId', "==", connection.identity.getId()],
         ['$createdAt', "<=", time]
         ]
       }
