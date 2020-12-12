@@ -5,6 +5,7 @@ export type DashIdentifier = {
   toBuffer: () => Buffer,
   toJSON: () => string,
   encodeCBOR: (encoder: Encoder) => boolean,
+
 }
 export type DashIdentity = {
   id: DashIdentifier,

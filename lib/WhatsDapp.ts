@@ -216,14 +216,33 @@ export class WhatsDapp extends EventEmitter {
     console.log("end init sending");
 
     /*const batch = */
-    const sentMessage : RawMessage = await dapi.createMessage(this._connection, receiver, ciphertext);
+    const sentMessage : any = await dapi.createMessage(this._connection, receiver, ciphertext);
+
+    console.log("sentmessage");
     console.log(sentMessage);
+
+    const rIdentity = await this._connection.platform.identities.get(receiver);
+
+    const rMessage: RawMessage = {
+      ownerId: sentMessage.ownerId,
+      createdAt: sentMessage.transitions[0].createdAt,
+      data: {
+        receiverId: receiver,
+        content: plaintext
+      },
+      id: sentMessage.transitions[0].id
+    };
+
+    console.log(rMessage);
+
+    const wMessage: WhatsDappMessage = new WhatsDappMessage(rMessage);
     //await dapi.createMessage(this._connection, receiver, ciphertext);
     //const message = transitionToMessage(batch.transitions[0], this._connection.identity)
 
     // GUI listens to this, can then remove send-progressbar or w/e
     // storage also listens and will save the message.
-    this.emit('new-message-sent', plaintext, {handle: receiver});
+    console.log({profile_name: receiver, identity_receiver: rIdentity.getId()});
+    this.emit('new-message-sent', wMessage, {profile_name: receiver, identity_receiver: rIdentity.getId()});
     console.log("sent");
   }
 
