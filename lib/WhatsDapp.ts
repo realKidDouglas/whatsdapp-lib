@@ -202,8 +202,8 @@ export class WhatsDapp extends EventEmitter {
     return JSON.parse(content).deleteTime;
   }
 
-  async _deleteMessages(deleteTime:number): Promise<void>{
-    dapi.deleteMessage(this._connection, deleteTime);
+  async _deleteMessages(deleteTime:number, senderid:string): Promise<void>{
+    dapi.deleteMessage(this._connection, deleteTime, senderid);
   }
 
 

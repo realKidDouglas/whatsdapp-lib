@@ -107,19 +107,33 @@ export async function getMessagesByTime(connection: WhatsDappConnection, time: n
  * @param time: {number}
  * @returns {Promise<*>}
  */
-export async function deleteMessage(connection: WhatsDappConnection, time: number, ): Promise<boolean> {
+export async function deleteMessage(connection: WhatsDappConnection, time: number, senderid:string): Promise<boolean> {
+  console.log("vergleichswerte:");
+  console.log(connection.identity.getId());
+  console.log(senderid);
+  console.log(time);
   try {// Retrieve the existing document
+    console.log("vergleichswerte:");
+    console.log(connection.identity.getId());
+    console.log(senderid);
+    console.log(time);
     const [document] = await connection.platform.documents.get(
       'message_contract.message',
       {where:[
-        ['$ownerId', "==", connection.identity.getId()],
-        ['$createdAt', "<=", time]
+          ['$ownerId', "==", connection.identity.getId()],
+          ['receiverid', "==", senderid],
+          ['$createdAt', "<=", time]
         ]
       }
     );
 
     // Sign and submit the document delete transition
-    return connection.platform.documents.broadcast({delete: [document]}, connection.identity);
+    console.log("Delete Messages:");
+    console.log(document);
+    if(document != undefined){
+      return connection.platform.documents.broadcast({delete: [document]}, connection.identity);
+    }
+    return false;
   } catch (e) {
     console.log('Something went wrong:', e);
     throw e;
