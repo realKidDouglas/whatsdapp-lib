@@ -65,7 +65,6 @@ type WhatsDappKeyBundle = {
   signed_identity_public_key: string;
 }
 
-
 type WhatsDappProfile = {
   identity: string,
   whatsDappName: string,
@@ -90,6 +89,11 @@ type ConnectOptions = {
   displayname: string,
   lastTimestamp: number,
   preKeyBundle: any
+}
+
+type WhatsDappMessageContent = {
+  message: string,
+  deleteTime: number
 }
 
 type ConnectResult = {
@@ -190,6 +194,19 @@ export class WhatsDapp extends EventEmitter {
     this._lastPollTime = Math.max(this._lastPollTime, message.timestamp + 1);
   }
 
+  _getMessageFromContent(content:string):string{
+    return JSON.parse(content).message;
+  }
+
+  _getDeleteTimeFromContent(content:string):number{
+    return JSON.parse(content).deleteTime;
+  }
+
+  async _deleteMessages(deleteTime:number, senderid:string): Promise<void>{
+    dapi.deleteMessage(this._connection, deleteTime, senderid);
+  }
+
+
   async _getOrCreateSession(ownerId: any, senderHandle: string): Promise<WhatsDappSession> {
     let session: WhatsDappSession = this._sessions[ownerId] as WhatsDappSession;
     if (session == null) {
@@ -244,6 +261,12 @@ export class WhatsDapp extends EventEmitter {
     console.log({profile_name: receiver, identity_receiver: rIdentity.getId()});
     this.emit('new-message-sent', wMessage, {profile_name: receiver, identity_receiver: rIdentity.getId()});
     console.log("sent");
+  }
+
+  createInputMessage(plaintext: string):string {
+    const inputMessage: WhatsDappMessageContent = {message: plaintext, deleteTime: new Date().getTime()};
+    const inputMessageJson = JSON.stringify(inputMessage);
+    return inputMessageJson;
   }
 
   getSessions() {
