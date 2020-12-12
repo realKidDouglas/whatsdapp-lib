@@ -107,11 +107,15 @@ export async function getMessagesByTime(connection: WhatsDappConnection, time: n
  * @param time: {number}
  * @returns {Promise<*>}
  */
-export async function deleteMessage(connection: WhatsDappConnection, time: number): Promise<boolean> {
+export async function deleteMessage(connection: WhatsDappConnection, time: number, ): Promise<boolean> {
   try {// Retrieve the existing document
     const [document] = await connection.platform.documents.get(
       'message_contract.message',
-      {where: ['$createdAt', "<=", time]}
+      {where:[
+        ['$ownerId', "==", connection.identity.getId().toJSON()],
+        ['$createdAt', "<=", time]
+        ]
+      }
     );
 
     // Sign and submit the document delete transition
