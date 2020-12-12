@@ -187,12 +187,23 @@ export class WhatsDapp extends EventEmitter {
 
   async _broadcastNewMessage(rawMessage: RawMessage): Promise<void> {
     const message: WhatsDappMessage = new WhatsDappMessage(rawMessage);
-    dapi.deleteMessage(this._connection, message.deleteTime);
     const session = await this._getOrCreateSession(rawMessage.ownerId, message.senderHandle);
     await new Promise(r => setTimeout(r, 2000)); // TODO: Solve race condition
     // TODO: Separate Signals for messages sent by us and other people
     this.emit('new-message', message, session);
     this._lastPollTime = Math.max(this._lastPollTime, message.timestamp + 1);
+  }
+
+  _getMessageFromContent(content:string):string{
+    return JSON.parse(content).message;
+  }
+
+  _getDeleteTimeFromContent(content:string):number{
+    return JSON.parse(content).deleteTime;
+  }
+
+  async _deleteMessages(deleteTime:number): Promise<void>{
+    dapi.deleteMessage(this._connection, deleteTime);
   }
 
 

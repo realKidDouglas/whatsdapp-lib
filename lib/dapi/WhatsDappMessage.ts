@@ -6,13 +6,11 @@ export class WhatsDappMessage {
   public content: string;
   public id: string;
   public ownerId: string;
-  public deleteTime: number;
 
   constructor(rawMessage: RawMessage) {
     this.senderHandle = rawMessage.ownerId.toString();
     this.timestamp = Number(rawMessage.createdAt);
-    this.content = JSON.parse(rawMessage.data.content).message;
-    this.deleteTime = JSON.parse(rawMessage.data.content).deleteTime;
+    this.content = rawMessage.data.content;
     console.log(this.content);
     this.id = rawMessage.id.toString();
     this.ownerId = rawMessage.ownerId.toString();
