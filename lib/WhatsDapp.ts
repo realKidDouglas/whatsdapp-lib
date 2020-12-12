@@ -65,7 +65,6 @@ type WhatsDappKeyBundle = {
   signed_identity_public_key: string;
 }
 
-
 type WhatsDappProfile = {
   identity: string,
   whatsDappName: string,
@@ -90,6 +89,11 @@ type ConnectOptions = {
   displayname: string,
   lastTimestamp: number,
   preKeyBundle: any
+}
+
+type WhatsDappMessageContent = {
+  message: string,
+  deleteTime: Date
 }
 
 type ConnectResult = {
@@ -244,6 +248,16 @@ export class WhatsDapp extends EventEmitter {
     console.log({profile_name: receiver, identity_receiver: rIdentity.getId()});
     this.emit('new-message-sent', wMessage, {profile_name: receiver, identity_receiver: rIdentity.getId()});
     console.log("sent");
+  }
+
+  createInputMessage(plaintext: string):string {
+    const inputMessage: WhatsDappMessageContent = {message: plaintext, deleteTime: new Date()};
+    console.log("InputMessage:");
+    console.log(inputMessage);
+    const inputMessageJson = JSON.stringify(inputMessage);
+    console.log("InputMessageJSON:");
+    console.log(inputMessageJson);
+    return inputMessageJson;
   }
 
   getSessions() {
