@@ -206,27 +206,43 @@ export class WhatsDapp extends EventEmitter {
    * TODO: timeout and reject after some amount
    * TODO: of time and mark message for retry in GUI
    * @param receiver {string} B58?
-   * @param content {string}
+   * @param ciphertext {string}
+   * @param plaintext {string}
    * @returns {Promise<boolean>}
    */
-  async sendMessage(receiver: string, content: string) {
-
-    // TODO: Hier kommt der Signalkram rein -> enc msg
-    // TODO: keybundle soll der messenger sich selbst beschaffen,
-    // TODO: muss nicht als arg kommen.
-
+  async sendMessage(receiver: string, ciphertext: string, plaintext: string) {
     console.log("start init sending");
     await this.initialized;
     console.log("end init sending");
 
     /*const batch = */
-    await dapi.createMessage(this._connection, receiver, content);
-    //await dapi.createMessage(this._connection, receiver, content);
+    const sentMessage : any = await dapi.createMessage(this._connection, receiver, ciphertext);
+
+    console.log("sentmessage");
+    console.log(sentMessage);
+
+    const rIdentity = await this._connection.platform.identities.get(receiver);
+
+    const rMessage: RawMessage = {
+      ownerId: sentMessage.ownerId,
+      createdAt: sentMessage.transitions[0].createdAt,
+      data: {
+        receiverId: receiver,
+        content: plaintext
+      },
+      id: sentMessage.transitions[0].id
+    };
+
+    console.log(rMessage);
+
+    const wMessage: WhatsDappMessage = new WhatsDappMessage(rMessage);
+    //await dapi.createMessage(this._connection, receiver, ciphertext);
     //const message = transitionToMessage(batch.transitions[0], this._connection.identity)
 
     // GUI listens to this, can then remove send-progressbar or w/e
     // storage also listens and will save the message.
-    //this.emit('new-message', message, {handle: receiver})
+    console.log({profile_name: receiver, identity_receiver: rIdentity.getId()});
+    this.emit('new-message-sent', wMessage, {profile_name: receiver, identity_receiver: rIdentity.getId()});
     console.log("sent");
   }
 
