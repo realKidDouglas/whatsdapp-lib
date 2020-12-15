@@ -1,3 +1,6 @@
+# macos
+.DS_Store
+
 # ignore JetBrains IDE project specific files
 .idea
 
