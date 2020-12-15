@@ -65,7 +65,6 @@ type WhatsDappKeyBundle = {
   signed_identity_public_key: string;
 }
 
-
 type WhatsDappProfile = {
   identity: string,
   whatsDappName: string,
@@ -90,6 +89,11 @@ type ConnectOptions = {
   displayname: string,
   lastTimestamp: number,
   preKeyBundle: any
+}
+
+type WhatsDappMessageContent = {
+  message: string,
+  deleteTime: number
 }
 
 type ConnectResult = {
@@ -184,19 +188,30 @@ export class WhatsDapp extends EventEmitter {
   async _broadcastNewMessage(rawMessage: RawMessage): Promise<void> {
     const message: WhatsDappMessage = new WhatsDappMessage(rawMessage);
     const session = await this._getOrCreateSession(rawMessage.ownerId, message.senderHandle);
-    const sentByUs = (message.ownerId === this._connection.ownerId);
     await new Promise(r => setTimeout(r, 2000)); // TODO: Solve race condition
     // TODO: Separate Signals for messages sent by us and other people
-    this.emit('new-message', message, session, sentByUs);
+    this.emit('new-message', message, session);
     this._lastPollTime = Math.max(this._lastPollTime, message.timestamp + 1);
   }
+
+  _getMessageFromContent(content:string):string{
+    return JSON.parse(content).message;
+  }
+
+  _getDeleteTimeFromContent(content:string):number{
+    return JSON.parse(content).deleteTime;
+  }
+
+  async _deleteMessages(deleteTime:number, senderid:string): Promise<void>{
+    dapi.deleteMessage(this._connection, deleteTime, senderid);
+  }
+
 
   async _getOrCreateSession(ownerId: any, senderHandle: string): Promise<WhatsDappSession> {
     let session: WhatsDappSession = this._sessions[ownerId] as WhatsDappSession;
     if (session == null) {
       session = {profile_name: senderHandle, identity_receiver: ownerId};
       const preKeyBundle = (await dapi.getProfile(this._connection, ownerId)).data;
-
       this._sessions[ownerId] = session;
       this.emit('new-session', session, preKeyBundle);
     }
@@ -208,28 +223,50 @@ export class WhatsDapp extends EventEmitter {
    * TODO: timeout and reject after some amount
    * TODO: of time and mark message for retry in GUI
    * @param receiver {string} B58?
-   * @param content {string}
+   * @param ciphertext {string}
+   * @param plaintext {string}
    * @returns {Promise<boolean>}
    */
-  async sendMessage(receiver: string, content: string) {
-
-    // TODO: Hier kommt der Signalkram rein -> enc msg
-    // TODO: keybundle soll der messenger sich selbst beschaffen,
-    // TODO: muss nicht als arg kommen.
-
+  async sendMessage(receiver: string, ciphertext: string, plaintext: string) {
     console.log("start init sending");
     await this.initialized;
     console.log("end init sending");
 
     /*const batch = */
-    await dapi.createMessage(this._connection, receiver, content);
-    //await dapi.createMessage(this._connection, receiver, content);
+    const sentMessage : any = await dapi.createMessage(this._connection, receiver, ciphertext);
+
+    console.log("sentmessage");
+    console.log(sentMessage);
+
+    const rIdentity = await this._connection.platform.identities.get(receiver);
+
+    const rMessage: RawMessage = {
+      ownerId: sentMessage.ownerId,
+      createdAt: sentMessage.transitions[0].createdAt,
+      data: {
+        receiverId: receiver,
+        content: plaintext
+      },
+      id: sentMessage.transitions[0].id
+    };
+
+    console.log(rMessage);
+
+    const wMessage: WhatsDappMessage = new WhatsDappMessage(rMessage);
+    //await dapi.createMessage(this._connection, receiver, ciphertext);
     //const message = transitionToMessage(batch.transitions[0], this._connection.identity)
 
     // GUI listens to this, can then remove send-progressbar or w/e
     // storage also listens and will save the message.
-    //this.emit('new-message', message, {handle: receiver})
+    console.log({profile_name: receiver, identity_receiver: rIdentity.getId()});
+    this.emit('new-message-sent', wMessage, {profile_name: receiver, identity_receiver: rIdentity.getId()});
     console.log("sent");
+  }
+
+  createInputMessage(plaintext: string):string {
+    const inputMessage: WhatsDappMessageContent = {message: plaintext, deleteTime: new Date().getTime()};
+    const inputMessageJson = JSON.stringify(inputMessage);
+    return inputMessageJson;
   }
 
   getSessions() {
@@ -242,7 +279,7 @@ export class WhatsDapp extends EventEmitter {
   }
 
 
-  async getProfileByName(name: string): Promise<WhatsDappProfile | null> {
+  async getProfileByName(name: string): Promise<WhatsDappSession | null> {
     // Resolve DPNS-Name to Identity
     const dpnsName: string = name + ".dash";
     const identity: DashIdentity | null = await dapi.findIdentityByName(this._connection, dpnsName);
@@ -250,17 +287,9 @@ export class WhatsDapp extends EventEmitter {
       console.log("no identity found for " + name);
       return null;
     }
-    //Resolve Identity to WhatsDappProfile
-    const rawProfile : RawProfile = await dapi.getProfile(this._connection, identity.id.toString());
-    if (rawProfile == null) {
-      console.log("no WhatsDapp profile found for " + name);
-      return null;
-    }
-    const profile : WhatsDappProfile = new WhatsDappProfile(rawProfile);
-
-    console.log("Profile found:");
-    console.log(profile);
-    return profile;
+    //TODO: Es sollte nicht bei jedem suchen eine Session erzeugt werden
+    const session = await this._getOrCreateSession(identity.getId(), identity.getId().toString()); // TODO: Was soll der Anzeigename sein
+    return session;
   }
 }
 

@@ -11,7 +11,6 @@ export class WhatsDappMessage {
     this.senderHandle = rawMessage.ownerId.toString();
     this.timestamp = Number(rawMessage.createdAt);
     this.content = rawMessage.data.content;
-    console.log(this.content);
     this.id = rawMessage.id.toString();
     this.ownerId = rawMessage.ownerId.toString();
   }

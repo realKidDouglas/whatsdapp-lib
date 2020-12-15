@@ -11,7 +11,7 @@ import type {RawMessage, WhatsDappConnection} from "../WhatsDapp";
  * @param content {string} The content of the message
  * @returns The check, that the message is published
  */
-export async function createMessage(connection: WhatsDappConnection, receiverid: string, content: string): Promise<boolean> {
+export async function createMessage(connection: WhatsDappConnection, receiverid: string, content: string): Promise<any> {
   const doc_properties = {receiverid, content};
   // Create the message document
   const message_document = await connection.platform.documents.create(
@@ -104,19 +104,41 @@ export async function getMessagesByTime(connection: WhatsDappConnection, time: n
 
 /**
  * Delete a message by id
- * @param connection {WhatsDappConnection}
- * @param messageid {string}
+ * @param time: {number}
  * @returns {Promise<*>}
  */
-export async function deleteMessage(connection: WhatsDappConnection, messageid: string): Promise<boolean> {
+export async function deleteMessage(connection: WhatsDappConnection, time: number, senderid:string): Promise<boolean> {
+  console.log("vergleichswerte:");
+  console.log(connection.identity.getId());
+  console.log(senderid);
+  console.log(time);
   try {// Retrieve the existing document
+    console.log("vergleichswerte:");
+    console.log(connection.identity.getId());
+    console.log(senderid);
+    console.log(time);
     const [document] = await connection.platform.documents.get(
       'message_contract.message',
-      {where: [['$id', '==', messageid]]}
+      {where:[
+          ['$ownerId', "==", connection.identity.getId()],
+          ['receiverid', "==", senderid],
+          ['$createdAt', "<=", time]
+        ]
+      }
     );
 
     // Sign and submit the document delete transition
-    return connection.platform.documents.broadcast({delete: [document]}, connection.identity);
+    console.log("Delete Messages:");
+    console.log(document);
+    if(document != undefined){
+      const document_batch = {
+        delete: [document],
+      };
+      console.log("Sending: ");
+      console.log(document_batch);
+      return connection.platform.documents.broadcast(document_batch, connection.identity);
+    }
+    return false;
   } catch (e) {
     console.log('Something went wrong:', e);
     throw e;
