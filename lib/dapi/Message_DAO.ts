@@ -117,8 +117,9 @@ export async function deleteMessage(connection: WhatsDappConnection, time: numbe
     console.log(connection.identity.getId());
     console.log(senderid);
     console.log(time);
+    let document = [];
     do {
-      const [document] = await connection.platform.documents.get(
+      [document] = await connection.platform.documents.get(
         'message_contract.message',
         {
           where: [
