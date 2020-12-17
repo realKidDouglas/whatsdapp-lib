@@ -1,76 +1,71 @@
+<img src="/images/whatsDapp.png" width="100" height="100">
+
 # WhatsDapp
 
-## Overview
+WhatsDapp library applies the signal-protocol to the Dash Drive blockchain.
 
-- [Abstract](#abstract)
-- [Goals](#goals)
-- [Usage](#usage)
-    - [Install](#install)
-    - [Quick start](#quick start)
-    - [Used packages](#used packages)
-- [Doc](#doc)
-- [Pitfall](#pitfall)
-- [License](#license)
+The prototype of our reference implementation Dapp you'll find here:
+https://github.com/realKidDouglas/whatsdapp-ui-example
 
+This development corresponds to the [Private Messenger Dapp project](https://trello.com/c/LUyEnwJ9/46-private-messenger-dapp) 
+on Dash Incubator App.
 
-
-## Abstract
-This is a library to apply signal-protocol to Dash-Drive.
-
-Signal is a messaging-protocol to send every message absolutliy secure over unsecury structurs.
-This is achieved via Diffie-Hellman key exchange for every message.
-For more information consolidate this [page](https://signal.org/docs/specifications/x3dh/#security-considerations).
-
-Dash is a ...
+There will be several variants of obfuscation in future. 
+Find details in our [concept](https://docs.google.com/document/d/e/2PACX-1vSFlK-EMX8ItSCOH4cqDLcNncb--vzK2EI-3xzjWPwwbM9IGRj4j4wabeyc7QlZ_E1iSjReXZkC7VMr/pub)
+.
 
 
-Attempt at a secure messaging library using the js-dash-sdk.
-clone it next to your messenger-dapp-gui-prototype folder
-
-## Goals
-
-- Vorteile von Dash,
-    - Manipulationssicher
-    - DDOS sicher
-    - Blockierungssicher
-
-- Vorteile Signal
-    - jede Nachricht wird mit eigenem Key verschlüsselt, geht ein Key verloren, ist nur die eine Nachricht betroffen die mit diesem Key verschlüsselt wurde
-    - 
-
-Gesamtziel: secure and safty messaging without dependency of any company
-
-## Usage
+# Goals
+The core of whatsDapp as a private messenger library should be an asynchronous, 
+censorship- and ddos-resistant (availability) end-2-end-encrypted communication channel (integrity) 
+with forward- and backward-secrecy (confidentiality).
 
 
-### Install 
+## Why Signal?
+Storing private messages in the blockchain *forever* is risky.
+For that we chose Signal protocol for its forward- and backward-secrecy. 
+This way it’s not possible to find any previous or future keys from one compromised message-key. 
+The basis is a double-key-ratchet that generates new keys for every message of each session. 
+One ratchet performs extended triple Diffie-Hellman (X3DH) based on EC. 
+There are 4 keypairs used for generating session key. 
+This session key then runs through a hash-ratchet that generates new keys for each message. 
+Each message will be encrypted AES-256 with kind of HMAC with an unique key. 
+For further well-arranged protocol info see https://signal.org/docs/specifications/x3dh/ .
 
--
--
--
+
+# Doc
+
+- Jump in [documentation folder](/doc).
+
+- Current [data contracts](/doc/data_contracts.md).
+
+- Find Typedoc documentation in [doc/tsdocs/](/doc/tsdocs/).  
+(converted with https://www.npmjs.com/package/typedoc-plugin-markdown)
 
 
-### Quick start
+# Pitfall
 
--
--
--
--
+- Currently our implementation does not support refreshing signals prekey bundle. 
+  Changing these keys periodically ensures the forward secrecy.
+  Not changing it and keeping private prekey hides the risk of leaking it and the possibility of reconstructing session-keys.
+  - We will go this on soon ;)
 
-### Used packages
+- Messages you receive are not validated yet, just decrypted and displayed. We need to think about XSS protection.
 
-- https://github.com/ForstaLabs/libsignal-node
-    - diese Package wird verwendet, weil das offizielle nicht ohne Browser funktioniert (fehler hinzufügen?)
-    - alternative: https://github.com/signalapp/libsignal-protocol-javascript
-- https://github.com/dashevo/js-dash-sdk
-- 
 
-## Doc
-- 
+# Requirements
+ - node v12+
+ - npm v6+
 
-## Pitfall
-- auf XSS attacken hinweisen
+## Used packages
 
-## License
+- Node implementation of signal library: https://github.com/ForstaLabs/libsignal-node
+  - The official [js signal-protocol](https://github.com/signalapp/libsignal-protocol-javascript) 
+  needs crypto-feature of a browser and is not suitable for node.
+- [Dash SDK](https://github.com/dashevo/js-dash-sdk)
+
+
+# License
 [Licensed under the MIT License](https://opensource.org/licenses/MIT).
+
 Note that the [signal-protocol lib](https://www.npmjs.com/package/libsignal) we currently use is licensed under the [GPLv3](http://www.gnu.org/licenses/gpl-3.0.html).
