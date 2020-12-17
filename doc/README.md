@@ -1,6 +1,3 @@
-**[whatsdapp](README.md)**
-
-> [Globals](globals.md)
 
 <img src="/images/whatsDapp.png" width="100" height="100">
 
