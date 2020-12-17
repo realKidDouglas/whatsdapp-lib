@@ -138,10 +138,10 @@ export async function deleteMessage(connection: WhatsDappConnection, time: numbe
         };
         console.log("Sending: ");
         console.log(document_batch);
-        return connection.platform.documents.broadcast(document_batch, connection.identity);
+        console.log(connection.platform.documents.broadcast(document_batch, connection.identity));
       }
-      return false;
     }while(document != undefined);
+    return true;
   } catch (e) {
     console.log('Something went wrong:', e);
     throw e;
