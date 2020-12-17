@@ -203,6 +203,7 @@ export class WhatsDapp extends EventEmitter {
   }
 
   async _deleteMessages(deleteTime:number, senderid:string): Promise<void>{
+    console.log("Delete old Messages, Deltetime " + deleteTime +"SenderID: "+ senderid);
     //dapi.deleteMessage(this._connection, deleteTime, senderid);
   }
 
