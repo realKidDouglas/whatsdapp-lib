@@ -117,28 +117,31 @@ export async function deleteMessage(connection: WhatsDappConnection, time: numbe
     console.log(connection.identity.getId());
     console.log(senderid);
     console.log(time);
-    const [document] = await connection.platform.documents.get(
-      'message_contract.message',
-      {where:[
-          ['$ownerId', "==", connection.identity.getId()],
-          ['receiverid', "==", senderid],
-          ['$createdAt', "<=", time]
-        ]
-      }
-    );
+    do {
+      const [document] = await connection.platform.documents.get(
+        'message_contract.message',
+        {
+          where: [
+            ['$ownerId', "==", connection.identity.getId()],
+            ['receiverid', "==", senderid],
+            ['$createdAt', "<=", time]
+          ]
+        }
+      );
 
-    // Sign and submit the document delete transition
-    console.log("Delete Messages:");
-    console.log(document);
-    if(document != undefined){
-      const document_batch = {
-        delete: [document],
-      };
-      console.log("Sending: ");
-      console.log(document_batch);
-      return connection.platform.documents.broadcast(document_batch, connection.identity);
-    }
-    return false;
+      // Sign and submit the document delete transition
+      console.log("Delete Messages:");
+      console.log(document);
+      if (document != undefined) {
+        const document_batch = {
+          delete: [document],
+        };
+        console.log("Sending: ");
+        console.log(document_batch);
+        return connection.platform.documents.broadcast(document_batch, connection.identity);
+      }
+      return false;
+    }while(document != undefined);
   } catch (e) {
     console.log('Something went wrong:', e);
     throw e;
