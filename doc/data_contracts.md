@@ -1,13 +1,15 @@
 # Data Contracts
 
-## User Profil
-Attribute:
-- OwnerID: ID des Profils, nachdem gequeried werden kann.
-- identityKey: Für X3DH - Würde den Identity-Public-Key dafür nehmen
-- registrationId: Für X3DH
-- signedPreKey: Für X3DH
-- preKey: Für X3DH
-- Pre Keys: Für X3DH, nur einmal gültig. Jeder Key braucht ne Unique ID. Werden ID's wiederverwendet, könnte es zu Kollisionen kommen
+## User Profile
+Attributes:
+- ownerID: dash identity of the profile you can query (not a public key).
+- identityKey: X3DH
+- registrationId: X3DH
+- signedPreKey: X3DH
+- preKey: X3DH
+- PreKeys: X3DH, should be used only once.
+
+
 ```
 const contractDocuments = {
 		profile: {
@@ -86,16 +88,11 @@ const contractDocuments = {
 	};
 ```
 
-Anmerkungen:
-1. OwnerID ist die ID der Identity (nicht der Public Key)
-2. Resolve von DPNS zu Identity sollte auf der Clientseite mittels SDK stattfinden
-3. Alle Attribute sind öffentlich einsehbar und es kann nur nach OwnerID gesucht werden
-
 
 ## Message
-Attribute:
-- Receiver: ID in Base58Check vom Empfänger
-- Messages: Verschlüsselste Nachrichten via Ratchet mit Timestamp und Sender
+Attributes:
+- receiver: ID of receiver in base58Check
+- messages: encrypted messages with timestamp and sender id.
 
 
 ```
