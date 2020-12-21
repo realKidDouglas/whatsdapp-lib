@@ -87,6 +87,7 @@ type ConnectOptions = {
   sessions: Array<WhatsDappSession>,
   identity: any,
   displayname: string,
+  createDpnsName: string | null,
   lastTimestamp: number,
   preKeyBundle: any
 }
@@ -97,7 +98,8 @@ type WhatsDappMessageContent = {
 }
 
 type ConnectResult = {
-  profile_name: string,
+  displayName: string,
+  createDpnsName: string | null,
   identity: DashIdentity
 }
 
@@ -124,7 +126,7 @@ export class WhatsDapp extends EventEmitter {
    */
   async connect(opts: ConnectOptions): Promise<ConnectResult> {
     let {identity} = opts;
-    const {mnemonic, sessions, displayname, lastTimestamp, preKeyBundle} = opts;
+    const {mnemonic, sessions, displayname, lastTimestamp, preKeyBundle, createDpnsName} = opts;
     this._lastPollTime = lastTimestamp + 1;
     this._client = makeClient(mnemonic);
     this._connection.platform = this._client.platform;
@@ -137,6 +139,12 @@ export class WhatsDapp extends EventEmitter {
     }
 
     this._connection.identity = await this._connection.platform.identities.get(identity);
+
+    let dpnsResult: string | null = null;
+    if(createDpnsName) {
+      dpnsResult = ((await dapi.createDpnsName(this._connection, (createDpnsName + ".dash"))) === false ? null : createDpnsName);
+    }
+
     let profile = await dapi.getProfile(this._connection, identity);
 
     if (profile == null) {
@@ -155,7 +163,7 @@ export class WhatsDapp extends EventEmitter {
     this.initialized = Promise.resolve()
       .then(() => this._pollTimeout = setTimeout(() => this._poll(), 0)) // first poll is immediate
       .catch(e => console.log("error", e))
-      .then(() => ({profile_name: displayname, identity: identity}));
+      .then(() => ({displayName: displayname, identity: identity, createDpnsName: dpnsResult}));
 
     return this.initialized;
   }
@@ -277,6 +285,7 @@ export class WhatsDapp extends EventEmitter {
   disconnect() {
     if (this._pollTimeout) clearTimeout(this._pollTimeout);
     this._pollTimeout = null;
+    console.log("WhatsDapp: Disconnect!");
   }
 
 
