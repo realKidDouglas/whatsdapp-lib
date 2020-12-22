@@ -91,9 +91,9 @@ export class SignalProtocolStore implements ProtocolStore {
   }
 
   async removePreKey(_keyId: number): Promise<void> {
-    const privateData = await this.store.getPrivateData();
-    delete privateData['preKey'];
-    return Promise.resolve(this.store.setPrivateData(privateData));
+    /* Since we have no implementation of one-time prekey handling at the moment,
+    we use a single static long time prekey. This will be addressed in the future. */
+    return;
   }
 
   /** TODO: what's the arg for? */
