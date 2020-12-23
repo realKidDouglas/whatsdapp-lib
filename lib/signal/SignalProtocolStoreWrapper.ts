@@ -39,16 +39,26 @@ export class SignalProtocolStore implements ProtocolStore {
     if (identifier == null) {
       throw new Error("tried to check identity key for undefined/null key");
     }
+
+    let identity;
+    try {
+      const address = libsignal.ProtocolAddress.from(identifier);
+      identity = address.id;
+    } catch(e) {
+      identity = identifier;
+    }
+
     if (!(identityKey instanceof Buffer)) {
       throw new Error("Expected identityKey to be an ArrayBuffer");
     }
-    const trusted = this.store.getSessionKeys(identifier)['identityKey'];
-    if (trusted == null) {
+    const trusted = await this.store.getSessionKeys(identity);
+    if (trusted == null || trusted['identityKey'] == undefined) {
       return Promise.resolve(true);
     }
-    return Promise.resolve(arrayBufferToString(identityKey, 'binary') === arrayBufferToString(trusted, 'binary'));
+    return Promise.resolve(arrayBufferToString(identityKey, 'binary') === arrayBufferToString(trusted['identityKey'], 'binary'));
   }
 
+  /* Not used by libsignal-node */
   async loadIdentityKey(identifier: string): Promise<SignalKeyPair> {
     if (identifier == null)
       throw new Error("Tried to get identity key for undefined/null key");
@@ -60,17 +70,17 @@ export class SignalProtocolStore implements ProtocolStore {
       throw new Error("Tried to put identity key for undefined/null key");
 
     const address = libsignal.ProtocolAddress.from(identifier);
-    // identifier is name.deviceId
-    const deviceId = this._getDeviceId(identifier);
-    const name = identifier.replace("." + deviceId, "");
-
-    const existing = this.get('identityKey' + address.getName());
-    const sessionKeys = this.store.getSessionKeys(name);
-    sessionKeys['identityKey' + deviceId] = identityKey;
-    this.store.updateSessionKeys(name, sessionKeys);
+    const existing = await this.store.getSessionKeys(address.id);
+    let sessionKeys;
+    if (existing == undefined)
+      sessionKeys = {};
+    else
+      sessionKeys = existing;
+    sessionKeys['identityKey'] = identityKey; // TODO: Multi device support
+    this.store.updateSessionKeys(address.id, sessionKeys);
 
     // TODO: What's the actual type of the keys?
-    if (existing && arrayBufferToString(identityKey, 'binary') !== arrayBufferToString(existing as any, 'binary')) {
+    if (existing && arrayBufferToString(identityKey, 'binary') !== arrayBufferToString(existing['identityKey'] as any, 'binary')) {
       return Promise.resolve(true);
     } else {
       return Promise.resolve(false);
@@ -122,9 +132,9 @@ export class SignalProtocolStore implements ProtocolStore {
       console.log('unreachable');
       throw e;
     }
-    const data = await this.store.getSessionKeys(identityId, deviceString);
+    const data = await this.store.getSessionKeys(identityId);
     if(data == null) return null;
-    return SessionRecord.deserialize(data);
+    return SessionRecord.deserialize(data[deviceString]);
   }
 
   /** TODO: find out types of record */

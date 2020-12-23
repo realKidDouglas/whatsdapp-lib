@@ -28,13 +28,13 @@ type WhatsDappSignalPreKey = {
 }
 
 export type WhatsDappSignalPrekeyBundle = {
-  preKey: { keyId: number, publicKey: string },
-  identityKey: string,
-  registrationId: string,
+  preKey: { keyId: number, publicKey: ArrayBuffer },
+  identityKey: ArrayBuffer,
+  registrationId: number,
   signedPreKey: {
     keyId: number,
-    publicKey: string,
-    signature: string
+    publicKey: ArrayBuffer,
+    signature: ArrayBuffer
   }
 }
 
@@ -104,6 +104,7 @@ export class SignalWrapper {
     const address = new libsignal.ProtocolAddress(identifier, deviceId);
     const sessionBuilder = new libsignal.SessionBuilder(store, address);
     await sessionBuilder.initOutgoing(preKeyBundle);
+    await store.saveIdentity(address.toString(), preKeyBundle.identityKey);
   }
 
   _generatePreKey(): SignalPreKey {

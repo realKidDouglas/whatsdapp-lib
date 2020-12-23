@@ -2,7 +2,7 @@ declare module 'libsignal' {
   import type {SignalProtocolStore} from '../signal/SignalProtocolStoreWrapper';
 
   export type SignalSignedPreKey = SignalPreKey & {
-    signature: string,
+    signature: ArrayBuffer,
   }
 
   export type SignalPreKey = {
@@ -11,8 +11,8 @@ declare module 'libsignal' {
   }
 
   export type SignalKeyPair = {
-    pubKey: string,
-    privateKey: string
+    pubKey: ArrayBuffer,
+    privateKey: ArrayBuffer
   }
 
   export type SerializedSessionEntry = unknown;
@@ -47,7 +47,7 @@ declare module 'libsignal' {
   export interface ProtocolStore {
     getOurIdentity: () => Promise<SignalKeyPair>
     getOurRegistrationId: () => Promise<number>
-    isTrustedIdentity: (identitifier: string, identityKey: any, _direction: number) => Promise<boolean>
+    isTrustedIdentity: (identifier: string, identityKey: any, _direction: number) => Promise<boolean>
     loadIdentityKey: (identifier: string) => Promise<SignalKeyPair>
     saveIdentity: (identifier: string, identityKey: ArrayBuffer) => Promise<boolean>
     loadPreKey: (keyId: number) => Promise<SignalKeyPair>
@@ -72,7 +72,7 @@ declare module 'libsignal' {
   export class ProtocolAddress {
     constructor(receiverId: string, deviceId: number)
     static from(identifier: string): ProtocolAddress
-    getName(): string
+    toString(): string
     id: string
     deviceId: number
   }
