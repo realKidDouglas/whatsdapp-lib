@@ -44,7 +44,7 @@ export class SignalProtocolStore implements ProtocolStore {
     try {
       const address = libsignal.ProtocolAddress.from(identifier);
       identity = address.id;
-    } catch(e) {
+    } catch (e) {
       identity = identifier;
     }
 
@@ -58,11 +58,9 @@ export class SignalProtocolStore implements ProtocolStore {
     return Promise.resolve(arrayBufferToString(identityKey, 'binary') === arrayBufferToString(trusted['identityKey'], 'binary'));
   }
 
-  /* Not used by libsignal-node */
-  async loadIdentityKey(identifier: string): Promise<SignalKeyPair> {
-    if (identifier == null)
-      throw new Error("Tried to get identity key for undefined/null key");
-    return Promise.resolve(this.get('identityKey' + identifier));
+  async loadIdentityKey(_identifier: string): Promise<void> {
+    /* This function is currently not needed and therefore does nothing. */
+    return;
   }
 
   async saveIdentity(identifier: string, identityKey: ArrayBuffer): Promise<boolean> {
@@ -116,8 +114,10 @@ export class SignalProtocolStore implements ProtocolStore {
     return Promise.resolve(this.store.setPrivateData('signedPreKey_' + keyId, keyPair)['signedPreKey_' + keyId]);
   }
 
-  async removeSignedPreKey(keyId: number): Promise<void> {
-    return Promise.resolve(this.remove('25519KeysignedKey' + keyId));
+  async removeSignedPreKey(_keyId: number): Promise<void> {
+    /* Changing SignedPreKeys is currently not implemented, so this function does nothing.
+    This will be addressed in the future. */
+    return;
   }
 
   /** TODO: find out what's actually returned here */
@@ -128,12 +128,12 @@ export class SignalProtocolStore implements ProtocolStore {
       const address = libsignal.ProtocolAddress.from(identifier);
       identityId = address.id;
       deviceString = "device" + address.deviceId;
-    } catch (e){
+    } catch (e) {
       console.log('unreachable');
       throw e;
     }
     const data = await this.store.getSessionKeys(identityId);
-    if(data == null) return null;
+    if (data == null) return null;
     return SessionRecord.deserialize(data[deviceString]);
   }
 
@@ -145,7 +145,7 @@ export class SignalProtocolStore implements ProtocolStore {
       const address = libsignal.ProtocolAddress.from(identifier);
       identityId = address.id;
       deviceString = "device" + address.deviceId;
-    } catch (e){
+    } catch (e) {
       console.log('unreachable');
       throw e;
     }
@@ -155,17 +155,4 @@ export class SignalProtocolStore implements ProtocolStore {
       await this.store.addSession(identityId, deviceString, record.serialize());
     }
   }
-
-  // TODO: where did this come from?
-  // TODO: introduce maybe type
-  get(id: string): SignalKeyPair {
-    const val = this._keyPairs[id];
-    if (val == null) throw new Error('not found!');
-    return val;
-  }
-
-  remove(id: string): void {
-    delete this._keyPairs[id];
-  }
 }
-

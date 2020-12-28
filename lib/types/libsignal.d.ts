@@ -48,7 +48,7 @@ declare module 'libsignal' {
     getOurIdentity: () => Promise<SignalKeyPair>
     getOurRegistrationId: () => Promise<number>
     isTrustedIdentity: (identifier: string, identityKey: any, _direction: number) => Promise<boolean>
-    loadIdentityKey: (identifier: string) => Promise<SignalKeyPair>
+    loadIdentityKey: (identifier: string) => Promise<void>
     saveIdentity: (identifier: string, identityKey: ArrayBuffer) => Promise<boolean>
     loadPreKey: (keyId: number) => Promise<SignalKeyPair>
     storePreKey: (keyId: number, keyPair: SignalKeyPair) => Promise<void>
@@ -58,8 +58,6 @@ declare module 'libsignal' {
     removeSignedPreKey: (keyId: number) => Promise<void>
     loadSession: (identifier: string) => Promise<SessionRecord | null>
     storeSession: (identifier: string, record: SessionRecord) => Promise<void>
-    get: (id: string) => SignalKeyPair
-    remove: (id: string) => void
   }
 
   export const keyhelper: {
