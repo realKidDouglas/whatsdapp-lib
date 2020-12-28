@@ -7,35 +7,34 @@ import {WhatsDappProfile} from "./dapi/WhatsDappProfile";
 
 type TimerHandle = ReturnType<typeof setTimeout>;
 
-/*
-export type WhatsDappMessage = {
-  // TODO: get senderHandle from (some) public profile!
-  senderHandle: string,
-  timestamp: number,
-  content: string,
-  id: string,
-  ownerId: string
-}
-*/
-
 type WhatsDappSession = {
   //signal: any,
   identity_receiver: string,
   profile_name: string
 }
 
+export enum WhatsDappEvent {
+  NewMessage = 'new-message',
+  NewSession = 'new-session',
+  NewMessageSent = 'new-message-sent',
+  StorageRead = 'storage-read',
+  StorageWrite = 'storage-write'
+}
+
+export type RawPreKeyBundle = {
+  identityKey: Array<string>,
+  registrationId: number,
+  signedPreKey: SignedPreKey,
+  preKey: PreKey,
+  prekeys: Array<string>,
+  displayname: string,
+}
+
 // TODO: get type from contract
 export type RawProfile = {
   createdAt: Date,
   updatedAt: Date
-  data: {
-    identityKey: Array<string>,
-    registrationId: number,
-    signedPreKey: SignedPreKey,
-    preKey: PreKey,
-    prekeys: Array<string>,
-    displayname: string,
-  },
+  data: RawPreKeyBundle,
 }
 
 export type SignedPreKey = {
@@ -58,20 +57,6 @@ export type RawMessage = {
   },
   id: Array<string>
 };
-/*
-type WhatsDappKeyBundle = {
-  prekeys: Array<string>,
-  identity_public_key: string,
-  signed_identity_public_key: string;
-}
-
-type WhatsDappProfile = {
-  identity: string,
-  whatsDappName: string,
-  keybundle: WhatsDappKeyBundle
-}
-
- */
 
 export type WhatsDappProfileContent = {
   identityKey: string // content.identityKey,
@@ -198,7 +183,7 @@ export class WhatsDapp extends EventEmitter {
     const session = await this._getOrCreateSession(rawMessage.ownerId, message.senderHandle);
     await new Promise(r => setTimeout(r, 2000)); // TODO: Solve race condition
     // TODO: Separate Signals for messages sent by us and other people
-    this.emit('new-message', message, session);
+    this.emit(WhatsDappEvent.NewMessage, message, session);
     this._lastPollTime = Math.max(this._lastPollTime, message.timestamp + 1);
   }
 
@@ -222,10 +207,38 @@ export class WhatsDapp extends EventEmitter {
       session = {profile_name: senderHandle, identity_receiver: ownerId};
       const preKeyBundle = (await dapi.getProfile(this._connection, ownerId)).data;
       this._sessions[ownerId] = session;
-      this.emit('new-session', session, preKeyBundle);
+      this.emit(WhatsDappEvent.NewSession, session, preKeyBundle);
     }
     return session;
   }
+
+  emit(ev: WhatsDappEvent.NewMessage, message: WhatsDappMessage, session: WhatsDappSession): boolean;
+  emit(ev: WhatsDappEvent.NewSession, session: WhatsDappSession, bundle: RawPreKeyBundle): boolean;
+  emit(ev: WhatsDappEvent.NewMessageSent, wMessage: WhatsDappMessage, session: { profile_name: any, identity_receiver: any }): boolean;
+  emit(ev: string, ...args: unknown[]): boolean {
+    return super.emit(ev, ...Array.from(args));
+  }
+
+  on(ev: WhatsDappEvent.NewMessage, listener: (msg: WhatsDappMessage, session: WhatsDappSession) => void): this;
+  on(ev: WhatsDappEvent.NewSession, listener: (session: WhatsDappSession, bundle: RawPreKeyBundle) => void): this;
+  on(ev: WhatsDappEvent.NewMessageSent, listener: (wMessage: WhatsDappMessage, session: { profile_name: any, identity_receiver: any }) => void): this;
+  on(ev: string, listener: (...args: any[]) => void): this {
+    return super.on(ev, listener);
+  }
+
+  removeListener(ev: WhatsDappEvent.NewMessage, listener: (msg: WhatsDappMessage, session: WhatsDappSession) => void): this;
+  removeListener(ev: WhatsDappEvent.NewSession, listener: (session: WhatsDappSession, bundle: RawPreKeyBundle) => void): this;
+  removeListener(ev: WhatsDappEvent.NewMessageSent, listener: (wMessage: WhatsDappMessage, session: { profile_name: any, identity_receiver: any }) => void): this;
+  removeListener(ev: string, listener: (...args: any[]) => void): this {
+    return super.removeListener(ev, listener);
+  }
+
+  removeAllListeners(ev?: WhatsDappEvent): this;
+  removeAllListeners(ev?: string): this {
+    return super.removeAllListeners(ev);
+  }
+
+
 
   /**
    * TODO: instead of indefinitely awaiting init, set
@@ -268,7 +281,7 @@ export class WhatsDapp extends EventEmitter {
     // GUI listens to this, can then remove send-progressbar or w/e
     // storage also listens and will save the message.
     console.log({profile_name: receiver, identity_receiver: rIdentity.getId()});
-    this.emit('new-message-sent', wMessage, {profile_name: receiver, identity_receiver: rIdentity.getId()});
+    this.emit(WhatsDappEvent.NewMessageSent, wMessage, {profile_name: receiver, identity_receiver: rIdentity.getId()});
     console.log("sent");
   }
 
