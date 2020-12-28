@@ -18,23 +18,32 @@ export class SignalProtocolStore implements ProtocolStore {
     this._keyPairs = {};
   }
 
-  _getDeviceId(identifier: string): number {
-    const regexMatch = identifier.match(/.*\.(\d+)/);
-    return (regexMatch != null)
-      ? Number(regexMatch[1])
-      : -1;
-  }
-
+  /**
+   * loads the private IdentityKeyPair from the storage
+   * @returns {Promise<SignalKeyPair>}
+   */
   async getOurIdentity(): Promise<SignalKeyPair> {
     const privateData = await this.store.getPrivateData();
     return privateData['identityKeyPair'];
   }
 
+  /**
+   * loads RegistrationID from the storage
+   * @returns {Promise<number>}
+   */
   async getOurRegistrationId(): Promise<number> {
     const privateData = await this.store.getPrivateData();
     return privateData['registrationId'];
   }
 
+  /**
+   * checks whether a given IdentityKey matches the one that is already stored.
+   * If no key is stored, the identityKey is trusted.
+   * @param identifier: Identifier of the session that should be checked
+   * @param identityKey: Key that should be checked
+   * @param _direction: unused
+   * @returns {Promise<boolean>}
+   */
   async isTrustedIdentity(identifier: string, identityKey: any, _direction: number): Promise<boolean> {
     if (identifier == null) {
       throw new Error("tried to check identity key for undefined/null key");
@@ -58,6 +67,11 @@ export class SignalProtocolStore implements ProtocolStore {
     return Promise.resolve(arrayBufferToString(identityKey, 'binary') === arrayBufferToString(trusted['identityKey'], 'binary'));
   }
 
+  /**
+   * this function is part of the signal storage API but is currently not used
+   * @param _identifier: unused
+   * @returns {Promise<void>}
+   */
   async loadIdentityKey(_identifier: string): Promise<void> {
     /* This function is currently not needed and therefore does nothing. */
     return;
@@ -85,42 +99,77 @@ export class SignalProtocolStore implements ProtocolStore {
     }
   }
 
-  /** TODO: what's the arg for? */
+  /**
+   * loads the static PreKeyPair from the storage. This will be changed in
+   * the future to support multiple PreKeyPairs.
+   * @param _keyId: unused
+   * @returns {Promise<SignalKeyPair>}
+   */
   async loadPreKey(_keyId: number): Promise<SignalKeyPair> {
     const res = (await this.store.getPrivateData()).preKey.keyPair;
     return Promise.resolve(res);
   }
 
-  /** TODO: what's the arg for? */
-  async storePreKey(_keyId: number, keyPair: SignalKeyPair): Promise<void> {
-    const privateData = await this.store.getPrivateData();
-    privateData['preKey'] = keyPair;
-    return Promise.resolve(this.store.setPrivateData(privateData));
+  /**
+   * this function is part of the signal storage API but is currently not used
+   * @param _keyId: unused
+   * @param _keyPair: unused
+   * @returns {Promise<void>}
+   */
+  async storePreKey(_keyId: number, _keyPair: SignalKeyPair): Promise<void> {
+    return;
   }
 
+  /**
+   * this function is part of the signal storage API but is currently not used
+   * @param _keyId: unused
+   * @returns {Promise<void>}
+   */
   async removePreKey(_keyId: number): Promise<void> {
     /* Since we have no implementation of one-time prekey handling at the moment,
     we use a single static long time prekey. This will be addressed in the future. */
     return;
   }
 
-  /** TODO: what's the arg for? */
+  /**
+   * loads the static SignedPreKey from the storage. This will be changed in
+   * the future to support SignedPreKey changes.
+   * @param _keyId: unused
+   * @returns {Promise<SignalKeyPair>}
+   */
   async loadSignedPreKey(_keyId: number): Promise<SignalKeyPair> {
     const res = (await this.store.getPrivateData()).signedPreKey.keyPair;
     return Promise.resolve(res);
   }
 
-  async storeSignedPreKey(keyId: number, keyPair: SignalSignedPreKey): Promise<void> {
-    return Promise.resolve(this.store.setPrivateData('signedPreKey_' + keyId, keyPair)['signedPreKey_' + keyId]);
+  /**
+   * this function is part of the signal storage API but is currently not used
+   * @param _keyId: unused
+   * @param _keyPair: unused
+   * @returns {Promise<void>}
+   */
+  async storeSignedPreKey(_keyId: number, _keyPair: SignalSignedPreKey): Promise<void> {
+    /* Changing SignedPreKeys is currently not implemented, so this function does nothing.
+    This will be addressed in the future. */
+    return;
   }
 
+  /**
+   * this function is part of the signal storage API but is currently not used
+   * @param _keyId: unused
+   * @returns {Promise<void>}
+   */
   async removeSignedPreKey(_keyId: number): Promise<void> {
     /* Changing SignedPreKeys is currently not implemented, so this function does nothing.
     This will be addressed in the future. */
     return;
   }
 
-  /** TODO: find out what's actually returned here */
+  /**
+   * loads a persisted session from the storage
+   * @param identifier: Identifier of the communication partner
+   * @returns {Promise<SessionRecord>} if a session was found, else {Promise<null>}
+   */
   async loadSession(identifier: string): Promise<SessionRecord | null> {
     let identityId;
     let deviceString;
@@ -137,7 +186,12 @@ export class SignalProtocolStore implements ProtocolStore {
     return SessionRecord.deserialize(data[deviceString]);
   }
 
-  /** TODO: find out types of record */
+  /**
+   * persists a new session state in the storage
+   * @param identifier: Identifier of the communication partner
+   * @param record: the session that should be persisted
+   * @returns {Promise<void>}
+   */
   async storeSession(identifier: string, record: SessionRecord): Promise<void> {
     let identityId;
     let deviceString;

@@ -46,6 +46,12 @@ export type WhatsDappSignalKeyBundle = {
 export class SignalWrapper {
   //this.createSignalProtocolStoreWrapper('./methods/createSignalProtocolStoreWrapper.js')
 
+  /**
+   * generate a new WhatsDappSignalKeyBundle containing the public keys of the IdentityKey,
+   * PreKey and SignedPreKey and the RegistationID. This bundle will be made publicly available.
+   * In addition it also contains all the Keypairs (with private key) which are to be stored locally.
+   * @returns {Promise<WhatsDappSignalKeyBundle>}
+   */
   async generateSignalKeys(): Promise<WhatsDappSignalKeyBundle> {
     const identityKeyPair = await libsignal.keyhelper.generateIdentityKeyPair();
     const registrationId = await libsignal.keyhelper.generateRegistrationId();
@@ -69,6 +75,13 @@ export class SignalWrapper {
     };
   }
 
+  /**
+   * encrypts a given message for a specific receiver
+   * @param whatsDappStore: Storage object that implements the WhatsDappStorage API
+   * @param receiverId: Identifier of the receiver
+   * @param plaintext
+   * @returns {Promise<string>}: The CipherText object converted into JSON and encoded as Base64
+   */
   async encryptMessage(whatsDappStore: any, receiverId: string, plaintext: string): Promise<string> {
     const deviceId = 1; // TODO: This shouldn't be hardcoded
     const store = new SignalProtocolStore(whatsDappStore, receiverId);
@@ -79,8 +92,14 @@ export class SignalWrapper {
     return Buffer.from(JSON.stringify(cipherText)).toString("base64");
   }
 
+  /**
+   * decrypts a message from a specific receiver
+   * @param whatsDappStore: Storage object that implements the WhatsDappStorage API
+   * @param senderId: Identifier of the sender
+   * @param base64: The CipherText object converted into JSON and encoded as Base64
+   * @returns {Promise<string>}: The original plaintext
+   */
   async decryptMessage(whatsDappStore: any, senderId: string, base64: string): Promise<string> {
-    if (base64 == "hallo") return base64;
     const cipherText = SignalWrapper._b64toCipherText(base64);
     const deviceId = 1; // TODO: This shouldn't be hardcoded
     const store = new SignalProtocolStore(whatsDappStore, senderId);
@@ -98,6 +117,13 @@ export class SignalWrapper {
     return arrayBufferToString(plaintext, 'utf8');
   }
 
+  /**
+   * builds a new outgoing signal session by parsing the preKeyBundle of the
+   * communication partner. This signal session is then persisted.
+   * @param whatsDappStore: Storage object that implements the WhatsDappStorage API
+   * @param identifier: Identifier of the communication partner
+   * @param preKeyBundle: preKeyBundle of the communication partner
+   */
   async buildAndPersistSession(whatsDappStore: any, identifier: string, preKeyBundle: WhatsDappSignalPrekeyBundle): Promise<void> {
     const deviceId = 1; // TODO: This shouldn't be hardcoded
     const store = new SignalProtocolStore(whatsDappStore, identifier);
