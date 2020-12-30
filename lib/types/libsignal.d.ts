@@ -12,7 +12,7 @@ declare module 'libsignal' {
 
   export type SignalKeyPair = {
     pubKey: ArrayBuffer,
-    privateKey: ArrayBuffer
+    privKey: ArrayBuffer
   }
 
   export type SerializedSessionEntry = unknown;

@@ -1,4 +1,4 @@
-import {WhatsDapp} from './WhatsDapp';
+import {WhatsDapp, WhatsDappEvent} from './WhatsDapp';
 import {SignalWrapper} from './signal/SignalWrapper';
 
-export {WhatsDapp, SignalWrapper};
+export {WhatsDapp, SignalWrapper, WhatsDappEvent};
