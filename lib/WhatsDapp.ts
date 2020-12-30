@@ -4,10 +4,12 @@ import DashSDK from "dash";
 import {DashClient, DashIdentity} from "./types/DashTypes";
 import {WhatsDappMessage} from "./dapi/WhatsDappMessage";
 import {WhatsDappProfile} from "./dapi/WhatsDappProfile";
+import {SignalKeyPair, SignalPreKey, SignalSignedPreKey} from "libsignal";
+import {StructuredStorage} from "./storage/StructuredStorage";
 
 type TimerHandle = ReturnType<typeof setTimeout>;
 
-type WhatsDappSession = {
+export type WhatsDappSession = {
   //signal: any,
   identity_receiver: string,
   profile_name: string
@@ -18,7 +20,8 @@ export enum WhatsDappEvent {
   NewSession = 'new-session',
   NewMessageSent = 'new-message-sent',
   StorageRead = 'storage-read',
-  StorageWrite = 'storage-write'
+  StorageWrite = 'storage-write',
+  StorageDelete = 'storage-delete'
 }
 
 export type RawPreKeyBundle = {
@@ -94,6 +97,20 @@ export type WhatsDappConnection = {
   ownerId: any,
 }
 
+export type WhatsDappUserData = {
+  mnemonic: string,
+  displayName: string,
+  identityAddr: string,
+  dpnsName: string
+}
+
+export type WhatsDappPrivateData = {
+  identityKeyPair: SignalKeyPair,
+  registrationId: number,
+  preKey: SignalPreKey,
+  signedPreKey: SignalSignedPreKey
+}
+
 const pollInterval = 5000;
 
 export class WhatsDapp extends EventEmitter {
@@ -104,6 +121,18 @@ export class WhatsDapp extends EventEmitter {
   _profile: WhatsDappProfile | null = null;
   _sessions: Array<WhatsDappSession> = [];
   initialized: Promise<ConnectResult> | null = null;
+  storage: StructuredStorage;
+
+  constructor() {
+    super();
+    // TODO: should this be a class?
+    const store = {
+      get: (key: string) => new Promise(r => this.emit(WhatsDappEvent.StorageRead, key, r)) as Promise<Uint8Array | null>,
+      set: (key: string, value: Uint8Array) => this.emit(WhatsDappEvent.StorageWrite, key, value),
+      del: (key: string) => this.emit(WhatsDappEvent.StorageDelete, key)
+    };
+    this.storage = new StructuredStorage(store);
+  }
 
   /**
    * @param opts {}
@@ -126,8 +155,8 @@ export class WhatsDapp extends EventEmitter {
     this._connection.identity = await this._connection.platform.identities.get(identity);
 
     let dpnsResult: string | null = null;
-    if(createDpnsName) {
-      dpnsResult = ((await dapi.createDpnsName(this._connection, (createDpnsName + ".dash"))) === false ? null : createDpnsName);
+    if (createDpnsName) {
+      dpnsResult = (!(await dapi.createDpnsName(this._connection, (createDpnsName + ".dash"))) ? null : createDpnsName);
     }
 
     let profile = await dapi.getProfile(this._connection, identity);
@@ -166,9 +195,9 @@ export class WhatsDapp extends EventEmitter {
 
     const messagePromises = messages.map((m: RawMessage) => this._broadcastNewMessage(m).catch(e => console.log('broadcast failed!', e)));
     console.log('got', messagePromises.length, 'new messages.');
-    if ( messages.length > 0)  {
+    if (messages.length > 0) {
       const polledMessage = messages[messages.length - 1];
-      if(polledMessage !== undefined)
+      if (polledMessage !== undefined)
         this._lastPollTime = polledMessage.createdAt.getTime();
     }
 
@@ -184,19 +213,20 @@ export class WhatsDapp extends EventEmitter {
     await new Promise(r => setTimeout(r, 2000)); // TODO: Solve race condition
     // TODO: Separate Signals for messages sent by us and other people
     this.emit(WhatsDappEvent.NewMessage, message, session);
+    // TODO: await this.storage.addMessageToSession(session.profile_name, message);
     this._lastPollTime = Math.max(this._lastPollTime, message.timestamp + 1);
   }
 
-  _getMessageFromContent(content:string):string{
+  _getMessageFromContent(content: string): string {
     return JSON.parse(content).message;
   }
 
-  _getDeleteTimeFromContent(content:string):number{
+  _getDeleteTimeFromContent(content: string): number {
     return JSON.parse(content).deleteTime;
   }
 
-  async _deleteMessages(deleteTime:number, senderid:string): Promise<void>{
-    console.log("Delete old Messages, Deltetime " + deleteTime +"SenderID: "+ senderid);
+  async _deleteMessages(deleteTime: number, senderid: string): Promise<void> {
+    console.log("Delete old Messages, Deltetime " + deleteTime + "SenderID: " + senderid);
     //dapi.deleteMessage(this._connection, deleteTime, senderid);
   }
 
@@ -215,6 +245,9 @@ export class WhatsDapp extends EventEmitter {
   emit(ev: WhatsDappEvent.NewMessage, message: WhatsDappMessage, session: WhatsDappSession): boolean;
   emit(ev: WhatsDappEvent.NewSession, session: WhatsDappSession, bundle: RawPreKeyBundle): boolean;
   emit(ev: WhatsDappEvent.NewMessageSent, wMessage: WhatsDappMessage, session: { profile_name: any, identity_receiver: any }): boolean;
+  emit(ev: WhatsDappEvent.StorageRead, storageKey: string, ret: (val: Uint8Array | null) => void): boolean;
+  emit(ev: WhatsDappEvent.StorageWrite, storageKey: string, storageValue: Uint8Array): boolean;
+  emit(ev: WhatsDappEvent.StorageDelete, storageKey: string): boolean;
   emit(ev: string, ...args: unknown[]): boolean {
     return super.emit(ev, ...Array.from(args));
   }
@@ -222,6 +255,9 @@ export class WhatsDapp extends EventEmitter {
   on(ev: WhatsDappEvent.NewMessage, listener: (msg: WhatsDappMessage, session: WhatsDappSession) => void): this;
   on(ev: WhatsDappEvent.NewSession, listener: (session: WhatsDappSession, bundle: RawPreKeyBundle) => void): this;
   on(ev: WhatsDappEvent.NewMessageSent, listener: (wMessage: WhatsDappMessage, session: { profile_name: any, identity_receiver: any }) => void): this;
+  on(ev: WhatsDappEvent.StorageRead, listener: (storageKey: string, ret: (val: Uint8Array | null) => void) => void): this;
+  on(ev: WhatsDappEvent.StorageWrite, listener: (storageKey: string, storageValue: Uint8Array) => void): this;
+  on(ev: WhatsDappEvent.StorageDelete, listener: (storageKey: string, storageValue: Uint8Array) => void): this;
   on(ev: string, listener: (...args: any[]) => void): this {
     return super.on(ev, listener);
   }
@@ -229,6 +265,9 @@ export class WhatsDapp extends EventEmitter {
   removeListener(ev: WhatsDappEvent.NewMessage, listener: (msg: WhatsDappMessage, session: WhatsDappSession) => void): this;
   removeListener(ev: WhatsDappEvent.NewSession, listener: (session: WhatsDappSession, bundle: RawPreKeyBundle) => void): this;
   removeListener(ev: WhatsDappEvent.NewMessageSent, listener: (wMessage: WhatsDappMessage, session: { profile_name: any, identity_receiver: any }) => void): this;
+  removeListener(ev: WhatsDappEvent.StorageRead, listener: (storageKey: string, ret: (val: Uint8Array | null) => void) => void): this;
+  removeListener(ev: WhatsDappEvent.StorageWrite, listener: (storageKey: string, storageValue: Uint8Array) => void): this;
+  removeListener(ev: WhatsDappEvent.StorageDelete, listener: (storageKey: string) => void): this;
   removeListener(ev: string, listener: (...args: any[]) => void): this {
     return super.removeListener(ev, listener);
   }
@@ -237,7 +276,6 @@ export class WhatsDapp extends EventEmitter {
   removeAllListeners(ev?: string): this {
     return super.removeAllListeners(ev);
   }
-
 
 
   /**
@@ -255,7 +293,7 @@ export class WhatsDapp extends EventEmitter {
     console.log("end init sending");
 
     /*const batch = */
-    const sentMessage : any = await dapi.createMessage(this._connection, receiver, ciphertext);
+    const sentMessage: any = await dapi.createMessage(this._connection, receiver, ciphertext);
 
     console.log("sentmessage");
     console.log(sentMessage);
@@ -282,10 +320,11 @@ export class WhatsDapp extends EventEmitter {
     // storage also listens and will save the message.
     console.log({profile_name: receiver, identity_receiver: rIdentity.getId()});
     this.emit(WhatsDappEvent.NewMessageSent, wMessage, {profile_name: receiver, identity_receiver: rIdentity.getId()});
+    await this.storage.addMessageToSession(receiver, wMessage);
     console.log("sent");
   }
 
-  createInputMessage(plaintext: string):string {
+  createInputMessage(plaintext: string): string {
     const inputMessage: WhatsDappMessageContent = {message: plaintext, deleteTime: new Date().getTime()};
     const inputMessageJson = JSON.stringify(inputMessage);
     return inputMessageJson;
