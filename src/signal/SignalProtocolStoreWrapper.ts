@@ -44,7 +44,8 @@ export class SignalProtocolStore implements ProtocolStore {
    * @param _direction: unused
    * @returns {Promise<boolean>}
    */
-  async isTrustedIdentity(identifier: string, identityKey: any, _direction: number): Promise<boolean> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async isTrustedIdentity(identifier: string, identityKey: ArrayBuffer, _direction: number): Promise<boolean> {
     if (identifier == null) {
       throw new Error("tried to check identity key for undefined/null key");
     }
@@ -72,6 +73,7 @@ export class SignalProtocolStore implements ProtocolStore {
    * @param _identifier: unused
    * @returns {Promise<void>}
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async loadIdentityKey(_identifier: string): Promise<void> {
     /* This function is currently not needed and therefore does nothing. */
     return;
@@ -92,7 +94,7 @@ export class SignalProtocolStore implements ProtocolStore {
     this.store.updateSessionKeys(address.id, sessionKeys);
 
     // TODO: What's the actual type of the keys?
-    if (existing && arrayBufferToString(identityKey, 'binary') !== arrayBufferToString(existing['identityKey'] as any, 'binary')) {
+    if (existing && arrayBufferToString(identityKey, 'binary') !== arrayBufferToString(existing['identityKey'] as ArrayBuffer, 'binary')) {
       return Promise.resolve(true);
     } else {
       return Promise.resolve(false);
@@ -105,6 +107,7 @@ export class SignalProtocolStore implements ProtocolStore {
    * @param _keyId: unused
    * @returns {Promise<SignalKeyPair>}
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async loadPreKey(_keyId: number): Promise<SignalKeyPair> {
     const res = (await this.store.getPrivateData()).preKey.keyPair;
     return Promise.resolve(res);
@@ -116,6 +119,7 @@ export class SignalProtocolStore implements ProtocolStore {
    * @param _keyPair: unused
    * @returns {Promise<void>}
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async storePreKey(_keyId: number, _keyPair: SignalKeyPair): Promise<void> {
     return;
   }
@@ -125,6 +129,7 @@ export class SignalProtocolStore implements ProtocolStore {
    * @param _keyId: unused
    * @returns {Promise<void>}
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async removePreKey(_keyId: number): Promise<void> {
     /* Since we have no implementation of one-time prekey handling at the moment,
     we use a single static long time prekey. This will be addressed in the future. */
@@ -137,6 +142,7 @@ export class SignalProtocolStore implements ProtocolStore {
    * @param _keyId: unused
    * @returns {Promise<SignalKeyPair>}
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async loadSignedPreKey(_keyId: number): Promise<SignalKeyPair> {
     const res = (await this.store.getPrivateData()).signedPreKey.keyPair;
     return Promise.resolve(res);
@@ -148,6 +154,7 @@ export class SignalProtocolStore implements ProtocolStore {
    * @param _keyPair: unused
    * @returns {Promise<void>}
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async storeSignedPreKey(_keyId: number, _keyPair: SignalSignedPreKey): Promise<void> {
     /* Changing SignedPreKeys is currently not implemented, so this function does nothing.
     This will be addressed in the future. */
@@ -159,6 +166,7 @@ export class SignalProtocolStore implements ProtocolStore {
    * @param _keyId: unused
    * @returns {Promise<void>}
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async removeSignedPreKey(_keyId: number): Promise<void> {
     /* Changing SignedPreKeys is currently not implemented, so this function does nothing.
     This will be addressed in the future. */

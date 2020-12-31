@@ -47,7 +47,7 @@ declare module 'libsignal' {
   export interface ProtocolStore {
     getOurIdentity: () => Promise<SignalKeyPair>
     getOurRegistrationId: () => Promise<number>
-    isTrustedIdentity: (identifier: string, identityKey: any, _direction: number) => Promise<boolean>
+    isTrustedIdentity: (identifier: string, identityKey: ArrayBuffer, _direction: number) => Promise<boolean>
     loadIdentityKey: (identifier: string) => Promise<void>
     saveIdentity: (identifier: string, identityKey: ArrayBuffer) => Promise<boolean>
     loadPreKey: (keyId: number) => Promise<SignalKeyPair>
@@ -62,7 +62,7 @@ declare module 'libsignal' {
 
   export const keyhelper: {
     generateIdentityKeyPair(): SignalKeyPair,
-    generateRegistrationId(): any,
+    generateRegistrationId(): number,
     generateSignedPreKey(identityKeyPair: SignalKeyPair, signedPreKeyId: number): SignalSignedPreKey,
     generatePreKey(preKeyId: number): SignalPreKey,
   };
