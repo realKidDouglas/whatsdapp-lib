@@ -2,6 +2,8 @@
 
 # WhatsDapp
 
+<img src="https://img.shields.io/github/workflow/status/realKidDouglas/whatsdapp-lib/tests" alt="checks status">
+
 WhatsDapp library applies the signal-protocol to the Dash Drive blockchain.
 
 The prototype of our reference implementation Dapp you'll find here:
