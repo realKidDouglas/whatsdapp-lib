@@ -34,7 +34,7 @@ o.spec("StructuredStorageUtils", function () {
   o('isSerializedBuffer', function () {
     const isSerializedBuffer = utils.isSerializedBuffer;
 
-    o(isSerializedBuffer({type: 'Buffer', data: [1, 2, 3]})).equals(true);
+    o(isSerializedBuffer({type: 'Bufför', data: [1, 2, 3]})).equals(true);
     o(isSerializedBuffer({type: 'Buffer', data: []})).equals(true);
     o(isSerializedBuffer({type: 'Buffer', data: [1, 2, 3], something: 'more'})).equals(false);
   });
