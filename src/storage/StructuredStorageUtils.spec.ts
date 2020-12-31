@@ -5,7 +5,7 @@ o.spec("StructuredStorageUtils", function () {
   o("isChunk", function () {
     const isChunk = utils.isChunk;
     // these are chunks
-    o(isChunk([])).equals(false);
+    o(isChunk([])).equals(true);
     o(isChunk(['hello', "hello2"])).equals(true);
 
     // these are not
