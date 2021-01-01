@@ -358,14 +358,14 @@ export class WhatsDapp extends EventEmitter {
 
 function makeClient(mnemonic?: string): DashClient {
   const clientOpts = {
-    network: 'evonet',
+    network: 'testnet',
     wallet: {mnemonic},
     apps: {
       message_contract: {
-        contractId: '5RNvuFQjFQXZLUDJ4dJdagULLeqsKbHTvh6dUR3LQqbC'
+        contractId: 'H6io7ksbyfzsPxZa6amd7j68ZF52R5TSxfoquvVSYgoz'
       },
       profile_contract: {
-        contractId: 'EZasUKrqisqKx9UrorWs37LU8pxcgnTv7Nbf4o4geNDL'
+        contractId: 'G9at9heXEtXB6sRCngfYjEUJMC7ejs2CjuMRrBSa7KtX'
       }
     }
   };
