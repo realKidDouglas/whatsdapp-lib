@@ -28,7 +28,7 @@ Name | Type |
 `preKeyBundle` | [*WhatsDappSignalPrekeyBundle*](signal_signalwrapper.md#whatsdappsignalprekeybundle) |
 `private` | [*WhatsDappSignalPrivateKeys*](signal_signalwrapper.md#whatsdappsignalprivatekeys) |
 
-Defined in: [lib/signal/SignalWrapper.ts:41](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/SignalWrapper.ts#L41)
+Defined in: [src/signal/SignalWrapper.ts:41](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/SignalWrapper.ts#L41)
 
 ___
 
@@ -45,24 +45,24 @@ Name | Type |
 `registrationId` | *number* |
 `signedPreKey` | { `keyId`: *number* ; `publicKey`: ArrayBuffer ; `signature`: ArrayBuffer  } |
 
-Defined in: [lib/signal/SignalWrapper.ts:30](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/SignalWrapper.ts#L30)
+Defined in: [src/signal/SignalWrapper.ts:30](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/SignalWrapper.ts#L30)
 
 ___
 
 ### WhatsDappSignalPrivateKeys
 
-Ƭ **WhatsDappSignalPrivateKeys**: { `identityKeyPair`: *any* ; `preKey`: *any* ; `registrationId`: *any* ; `signedPreKey`: *any*  }
+Ƭ **WhatsDappSignalPrivateKeys**: { `identityKeyPair`: [*SignalKeyPair*](types_libsignal.md#signalkeypair) ; `preKey`: [*SignalPreKey*](types_libsignal.md#signalprekey) ; `registrationId`: *number* ; `signedPreKey`: [*SignalSignedPreKey*](types_libsignal.md#signalsignedprekey)  }
 
 #### Type declaration:
 
 Name | Type |
 ------ | ------ |
-`identityKeyPair` | *any* |
-`preKey` | *any* |
-`registrationId` | *any* |
-`signedPreKey` | *any* |
+`identityKeyPair` | [*SignalKeyPair*](types_libsignal.md#signalkeypair) |
+`preKey` | [*SignalPreKey*](types_libsignal.md#signalprekey) |
+`registrationId` | *number* |
+`signedPreKey` | [*SignalSignedPreKey*](types_libsignal.md#signalsignedprekey) |
 
-Defined in: [lib/signal/SignalWrapper.ts:14](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/SignalWrapper.ts#L14)
+Defined in: [src/signal/SignalWrapper.ts:14](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/SignalWrapper.ts#L14)
 
 ___
 
@@ -70,4 +70,4 @@ ___
 
 Ƭ **WhatsDappSignalSignedPreKey**: WhatsDappSignalPreKey & { `signature`: *string*  }
 
-Defined in: [lib/signal/SignalWrapper.ts:21](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/SignalWrapper.ts#L21)
+Defined in: [src/signal/SignalWrapper.ts:21](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/SignalWrapper.ts#L21)

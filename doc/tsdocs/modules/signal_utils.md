@@ -23,4 +23,4 @@ Name | Type | Default value |
 
 **Returns:** *string*
 
-Defined in: [lib/signal/utils.ts:3](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/utils.ts#L3)
+Defined in: [src/signal/utils.ts:3](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/utils.ts#L3)

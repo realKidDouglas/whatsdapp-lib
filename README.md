@@ -39,6 +39,8 @@ For further well-arranged protocol info see https://signal.org/docs/specificatio
 
 - Jump in [documentation folder](/doc).
 
+- Find UML Diagrams in[documentation folder](/doc).
+
 - Current [data contracts](/doc/data_contracts.md).
 
 - Find Typedoc documentation in [doc/tsdocs/](/doc/tsdocs/).  

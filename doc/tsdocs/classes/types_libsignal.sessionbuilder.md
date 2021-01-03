@@ -31,7 +31,7 @@ Name | Type |
 
 **Returns:** [*SessionBuilder*](types_libsignal.sessionbuilder.md)
 
-Defined in: [lib/types/libsignal.d.ts:85](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L85)
+Defined in: [src/types/libsignal.d.ts:85](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L85)
 
 ## Methods
 
@@ -47,4 +47,4 @@ Name | Type |
 
 **Returns:** *Promise*<*void*\>
 
-Defined in: [lib/types/libsignal.d.ts:87](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L87)
+Defined in: [src/types/libsignal.d.ts:87](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L87)

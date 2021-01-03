@@ -31,7 +31,7 @@ Name | Type |
 
 check if everything is fine
 
-Defined in: [lib/dapi/Identity_DAO.ts:47](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/Identity_DAO.ts#L47)
+Defined in: [src/dapi/Identity_DAO.ts:47](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/Identity_DAO.ts#L47)
 
 ___
 
@@ -51,7 +51,7 @@ Name | Type | Description |
 
 the resolved identity
 
-Defined in: [lib/dapi/Identity_DAO.ts:16](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/Identity_DAO.ts#L16)
+Defined in: [src/dapi/Identity_DAO.ts:16](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/Identity_DAO.ts#L16)
 
 ___
 
@@ -72,7 +72,7 @@ Name | Type |
 
 The identity which belongs to the name
 
-Defined in: [lib/dapi/Identity_DAO.ts:67](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/Identity_DAO.ts#L67)
+Defined in: [src/dapi/Identity_DAO.ts:67](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/Identity_DAO.ts#L67)
 
 ___
 
@@ -92,7 +92,7 @@ Name | Type |
 
 Credits
 
-Defined in: [lib/dapi/Identity_DAO.ts:83](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/Identity_DAO.ts#L83)
+Defined in: [src/dapi/Identity_DAO.ts:83](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/Identity_DAO.ts#L83)
 
 ___
 
@@ -113,4 +113,4 @@ Name | Type | Description |
 
 check if everything is fine
 
-Defined in: [lib/dapi/Identity_DAO.ts:32](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/Identity_DAO.ts#L32)
+Defined in: [src/dapi/Identity_DAO.ts:32](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/Identity_DAO.ts#L32)

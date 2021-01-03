@@ -34,7 +34,7 @@
 
 • **getOurIdentity**: () => *Promise*<[*SignalKeyPair*](../modules/types_libsignal.md#signalkeypair)\>
 
-Defined in: [lib/types/libsignal.d.ts:48](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L48)
+Defined in: [src/types/libsignal.d.ts:48](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L48)
 
 ___
 
@@ -42,15 +42,15 @@ ___
 
 • **getOurRegistrationId**: () => *Promise*<*number*\>
 
-Defined in: [lib/types/libsignal.d.ts:49](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L49)
+Defined in: [src/types/libsignal.d.ts:49](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L49)
 
 ___
 
 ### isTrustedIdentity
 
-• **isTrustedIdentity**: (`identifier`: *string*, `identityKey`: *any*, `\_direction`: *number*) => *Promise*<*boolean*\>
+• **isTrustedIdentity**: (`identifier`: *string*, `identityKey`: ArrayBuffer, `\_direction`: *number*) => *Promise*<*boolean*\>
 
-Defined in: [lib/types/libsignal.d.ts:50](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L50)
+Defined in: [src/types/libsignal.d.ts:50](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L50)
 
 ___
 
@@ -58,7 +58,7 @@ ___
 
 • **loadIdentityKey**: (`identifier`: *string*) => *Promise*<*void*\>
 
-Defined in: [lib/types/libsignal.d.ts:51](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L51)
+Defined in: [src/types/libsignal.d.ts:51](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L51)
 
 ___
 
@@ -66,7 +66,7 @@ ___
 
 • **loadPreKey**: (`keyId`: *number*) => *Promise*<[*SignalKeyPair*](../modules/types_libsignal.md#signalkeypair)\>
 
-Defined in: [lib/types/libsignal.d.ts:53](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L53)
+Defined in: [src/types/libsignal.d.ts:53](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L53)
 
 ___
 
@@ -74,7 +74,7 @@ ___
 
 • **loadSession**: (`identifier`: *string*) => *Promise*<[*SessionRecord*](../classes/types_libsignal.sessionrecord.md) \| *null*\>
 
-Defined in: [lib/types/libsignal.d.ts:59](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L59)
+Defined in: [src/types/libsignal.d.ts:59](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L59)
 
 ___
 
@@ -82,7 +82,7 @@ ___
 
 • **loadSignedPreKey**: (`keyId`: *number*) => *Promise*<[*SignalKeyPair*](../modules/types_libsignal.md#signalkeypair)\>
 
-Defined in: [lib/types/libsignal.d.ts:56](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L56)
+Defined in: [src/types/libsignal.d.ts:56](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L56)
 
 ___
 
@@ -90,7 +90,7 @@ ___
 
 • **removePreKey**: (`keyId`: *number*) => *Promise*<*void*\>
 
-Defined in: [lib/types/libsignal.d.ts:55](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L55)
+Defined in: [src/types/libsignal.d.ts:55](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L55)
 
 ___
 
@@ -98,7 +98,7 @@ ___
 
 • **removeSignedPreKey**: (`keyId`: *number*) => *Promise*<*void*\>
 
-Defined in: [lib/types/libsignal.d.ts:58](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L58)
+Defined in: [src/types/libsignal.d.ts:58](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L58)
 
 ___
 
@@ -106,7 +106,7 @@ ___
 
 • **saveIdentity**: (`identifier`: *string*, `identityKey`: ArrayBuffer) => *Promise*<*boolean*\>
 
-Defined in: [lib/types/libsignal.d.ts:52](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L52)
+Defined in: [src/types/libsignal.d.ts:52](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L52)
 
 ___
 
@@ -114,7 +114,7 @@ ___
 
 • **storePreKey**: (`keyId`: *number*, `keyPair`: [*SignalKeyPair*](../modules/types_libsignal.md#signalkeypair)) => *Promise*<*void*\>
 
-Defined in: [lib/types/libsignal.d.ts:54](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L54)
+Defined in: [src/types/libsignal.d.ts:54](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L54)
 
 ___
 
@@ -122,7 +122,7 @@ ___
 
 • **storeSession**: (`identifier`: *string*, `record`: [*SessionRecord*](../classes/types_libsignal.sessionrecord.md)) => *Promise*<*void*\>
 
-Defined in: [lib/types/libsignal.d.ts:60](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L60)
+Defined in: [src/types/libsignal.d.ts:60](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L60)
 
 ___
 
@@ -130,4 +130,4 @@ ___
 
 • **storeSignedPreKey**: (`keyId`: *number*, `keyPair`: [*SignalSignedPreKey*](../modules/types_libsignal.md#signalsignedprekey)) => *Promise*<*void*\>
 
-Defined in: [lib/types/libsignal.d.ts:57](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L57)
+Defined in: [src/types/libsignal.d.ts:57](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L57)

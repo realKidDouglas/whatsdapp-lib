@@ -39,7 +39,7 @@ Name | Type |
 
 **Returns:** *Promise*<*boolean*\>
 
-Defined in: [lib/dapi/dapi.ts:36](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/dapi.ts#L36)
+Defined in: [src/dapi/dapi.ts:36](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/dapi.ts#L36)
 
 ___
 
@@ -55,7 +55,7 @@ Name | Type |
 
 **Returns:** *Promise*<*null* \| [*DashIdentity*](types_dashtypes.md#dashidentity)\>
 
-Defined in: [lib/dapi/dapi.ts:34](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/dapi.ts#L34)
+Defined in: [src/dapi/dapi.ts:34](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/dapi.ts#L34)
 
 ___
 
@@ -73,7 +73,7 @@ Name | Type |
 
 **Returns:** *Promise*<*any*\>
 
-Defined in: [lib/dapi/dapi.ts:47](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/dapi.ts#L47)
+Defined in: [src/dapi/dapi.ts:47](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/dapi.ts#L47)
 
 ___
 
@@ -90,7 +90,7 @@ Name | Type |
 
 **Returns:** *Promise*<*any*\>
 
-Defined in: [lib/dapi/dapi.ts:41](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/dapi.ts#L41)
+Defined in: [src/dapi/dapi.ts:41](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/dapi.ts#L41)
 
 ___
 
@@ -106,7 +106,7 @@ Name | Type |
 
 **Returns:** *Promise*<*any*\>
 
-Defined in: [lib/dapi/dapi.ts:30](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/dapi.ts#L30)
+Defined in: [src/dapi/dapi.ts:30](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/dapi.ts#L30)
 
 ___
 
@@ -124,7 +124,7 @@ Name | Type |
 
 **Returns:** *Promise*<*boolean*\>
 
-Defined in: [lib/dapi/dapi.ts:48](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/dapi.ts#L48)
+Defined in: [src/dapi/dapi.ts:48](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/dapi.ts#L48)
 
 ___
 
@@ -140,7 +140,7 @@ Name | Type |
 
 **Returns:** *Promise*<*any*\>
 
-Defined in: [lib/dapi/dapi.ts:43](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/dapi.ts#L43)
+Defined in: [src/dapi/dapi.ts:43](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/dapi.ts#L43)
 
 ___
 
@@ -157,7 +157,7 @@ Name | Type |
 
 **Returns:** *Promise*<*null* \| [*DashIdentity*](types_dashtypes.md#dashidentity)\>
 
-Defined in: [lib/dapi/dapi.ts:37](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/dapi.ts#L37)
+Defined in: [src/dapi/dapi.ts:37](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/dapi.ts#L37)
 
 ___
 
@@ -173,7 +173,7 @@ Name | Type |
 
 **Returns:** *Promise*<*number*\>
 
-Defined in: [lib/dapi/dapi.ts:38](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/dapi.ts#L38)
+Defined in: [src/dapi/dapi.ts:38](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/dapi.ts#L38)
 
 ___
 
@@ -189,7 +189,7 @@ Name | Type |
 
 **Returns:** *Promise*<[*RawMessage*](whatsdapp.md#rawmessage)[]\>
 
-Defined in: [lib/dapi/dapi.ts:51](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/dapi.ts#L51)
+Defined in: [src/dapi/dapi.ts:51](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/dapi.ts#L51)
 
 ___
 
@@ -206,7 +206,7 @@ Name | Type |
 
 **Returns:** *Promise*<[*RawMessage*](whatsdapp.md#rawmessage)[]\>
 
-Defined in: [lib/dapi/dapi.ts:49](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/dapi.ts#L49)
+Defined in: [src/dapi/dapi.ts:49](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/dapi.ts#L49)
 
 ___
 
@@ -223,7 +223,7 @@ Name | Type |
 
 **Returns:** *Promise*<[*RawMessage*](whatsdapp.md#rawmessage)[]\>
 
-Defined in: [lib/dapi/dapi.ts:52](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/dapi.ts#L52)
+Defined in: [src/dapi/dapi.ts:52](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/dapi.ts#L52)
 
 ___
 
@@ -241,7 +241,7 @@ Name | Type |
 
 **Returns:** *Promise*<[*RawMessage*](whatsdapp.md#rawmessage)[]\>
 
-Defined in: [lib/dapi/dapi.ts:50](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/dapi.ts#L50)
+Defined in: [src/dapi/dapi.ts:50](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/dapi.ts#L50)
 
 ___
 
@@ -258,7 +258,7 @@ Name | Type |
 
 **Returns:** *Promise*<[*RawProfile*](whatsdapp.md#rawprofile)\>
 
-Defined in: [lib/dapi/dapi.ts:44](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/dapi.ts#L44)
+Defined in: [src/dapi/dapi.ts:44](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/dapi.ts#L44)
 
 ___
 
@@ -274,7 +274,7 @@ Name | Type |
 
 **Returns:** *Promise*<*any*\>
 
-Defined in: [lib/dapi/dapi.ts:31](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/dapi.ts#L31)
+Defined in: [src/dapi/dapi.ts:31](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/dapi.ts#L31)
 
 ___
 
@@ -291,7 +291,7 @@ Name | Type |
 
 **Returns:** *Promise*<*boolean*\>
 
-Defined in: [lib/dapi/dapi.ts:35](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/dapi.ts#L35)
+Defined in: [src/dapi/dapi.ts:35](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/dapi.ts#L35)
 
 ___
 
@@ -308,4 +308,4 @@ Name | Type |
 
 **Returns:** *Promise*<*any*\>
 
-Defined in: [lib/dapi/dapi.ts:42](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/dapi.ts#L42)
+Defined in: [src/dapi/dapi.ts:42](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/dapi.ts#L42)

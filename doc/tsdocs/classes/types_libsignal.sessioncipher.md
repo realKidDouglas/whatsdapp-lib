@@ -33,7 +33,7 @@ Name | Type |
 
 **Returns:** [*SessionCipher*](types_libsignal.sessioncipher.md)
 
-Defined in: [lib/types/libsignal.d.ts:78](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L78)
+Defined in: [src/types/libsignal.d.ts:78](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L78)
 
 ## Methods
 
@@ -50,7 +50,7 @@ Name | Type |
 
 **Returns:** *Promise*<ArrayBuffer\>
 
-Defined in: [lib/types/libsignal.d.ts:81](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L81)
+Defined in: [src/types/libsignal.d.ts:81](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L81)
 
 ___
 
@@ -67,7 +67,7 @@ Name | Type |
 
 **Returns:** *Promise*<ArrayBuffer\>
 
-Defined in: [lib/types/libsignal.d.ts:82](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L82)
+Defined in: [src/types/libsignal.d.ts:82](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L82)
 
 ___
 
@@ -83,4 +83,4 @@ Name | Type |
 
 **Returns:** ArrayBuffer
 
-Defined in: [lib/types/libsignal.d.ts:80](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L80)
+Defined in: [src/types/libsignal.d.ts:80](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L80)

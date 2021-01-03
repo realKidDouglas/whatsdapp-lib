@@ -33,7 +33,7 @@ Name | Type | Description |
 
 The check, that the message is published
 
-Defined in: [lib/dapi/Message_DAO.ts:14](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/Message_DAO.ts#L14)
+Defined in: [src/dapi/Message_DAO.ts:14](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/Message_DAO.ts#L14)
 
 ___
 
@@ -53,7 +53,7 @@ Name | Type |
 
 **Returns:** *Promise*<*boolean*\>
 
-Defined in: [lib/dapi/Message_DAO.ts:110](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/Message_DAO.ts#L110)
+Defined in: [src/dapi/Message_DAO.ts:110](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/Message_DAO.ts#L110)
 
 ___
 
@@ -71,7 +71,7 @@ Name | Type |
 
 **Returns:** *Promise*<[*RawMessage*](whatsdapp.md#rawmessage)[]\>
 
-Defined in: [lib/dapi/Message_DAO.ts:159](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/Message_DAO.ts#L159)
+Defined in: [src/dapi/Message_DAO.ts:159](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/Message_DAO.ts#L159)
 
 ___
 
@@ -91,7 +91,7 @@ Name | Type |
 
 all messages of the user
 
-Defined in: [lib/dapi/Message_DAO.ts:62](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/Message_DAO.ts#L62)
+Defined in: [src/dapi/Message_DAO.ts:62](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/Message_DAO.ts#L62)
 
 ___
 
@@ -114,7 +114,7 @@ Name | Type | Description |
 
 the messages since time
 
-Defined in: [lib/dapi/Message_DAO.ts:87](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/Message_DAO.ts#L87)
+Defined in: [src/dapi/Message_DAO.ts:87](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/Message_DAO.ts#L87)
 
 ___
 
@@ -136,4 +136,4 @@ Name | Type | Description |
 
 all messages of a specified user
 
-Defined in: [lib/dapi/Message_DAO.ts:38](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/Message_DAO.ts#L38)
+Defined in: [src/dapi/Message_DAO.ts:38](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/Message_DAO.ts#L38)

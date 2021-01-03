@@ -44,7 +44,7 @@ Name | Type |
 `toJSON` | () => [*JsonAssetLock*](types_dashtypes.md#jsonassetlock) |
 `toObject` | () => [*RawAssetLock*](types_dashtypes.md#rawassetlock) |
 
-Defined in: [lib/types/DashTypes.ts:85](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/DashTypes.ts#L85)
+Defined in: [src/types/DashTypes.ts:85](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/DashTypes.ts#L85)
 
 ___
 
@@ -52,7 +52,7 @@ ___
 
 Ƭ **DashClient**: *typeof* DashSDK.Client.prototype
 
-Defined in: [lib/types/DashTypes.ts:3](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/DashTypes.ts#L3)
+Defined in: [src/types/DashTypes.ts:3](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/DashTypes.ts#L3)
 
 ___
 
@@ -68,7 +68,7 @@ Name | Type |
 `toBuffer` | () => Buffer |
 `toJSON` | () => *string* |
 
-Defined in: [lib/types/DashTypes.ts:4](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/DashTypes.ts#L4)
+Defined in: [src/types/DashTypes.ts:4](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/DashTypes.ts#L4)
 
 ___
 
@@ -98,7 +98,7 @@ Name | Type |
 `toJSON` | () => [*JsonIdentity*](types_dashtypes.md#jsonidentity) |
 `toObject` | () => [*RawIdentity*](types_dashtypes.md#rawidentity) |
 
-Defined in: [lib/types/DashTypes.ts:10](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/DashTypes.ts#L10)
+Defined in: [src/types/DashTypes.ts:10](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/DashTypes.ts#L10)
 
 ___
 
@@ -112,7 +112,7 @@ Name | Type |
 ------ | ------ |
 `pushAny` | (`buf`: Buffer) => *void* |
 
-Defined in: [lib/types/DashTypes.ts:77](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/DashTypes.ts#L77)
+Defined in: [src/types/DashTypes.ts:77](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/DashTypes.ts#L77)
 
 ___
 
@@ -120,7 +120,7 @@ ___
 
 Ƭ **IdentityPublicKey**: [*RawIdentityPublicKey*](types_dashtypes.md#rawidentitypublickey) & { `getData`: () => Buffer ; `getId`: () => *number* ; `getType`: () => *number* ; `hash`: () => Buffer ; `setData`: (`data`: Buffer) => [*IdentityPublicKey*](types_dashtypes.md#identitypublickey) ; `setId`: (`id`: *number*) => [*IdentityPublicKey*](types_dashtypes.md#identitypublickey) ; `setType`: (`type`: *number*) => [*IdentityPublicKey*](types_dashtypes.md#identitypublickey) ; `toJSON`: () => [*JsonIdentityPublicKey*](types_dashtypes.md#jsonidentitypublickey) ; `toObject`: () => [*RawIdentityPublicKey*](types_dashtypes.md#rawidentitypublickey)  }
 
-Defined in: [lib/types/DashTypes.ts:108](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/DashTypes.ts#L108)
+Defined in: [src/types/DashTypes.ts:108](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/DashTypes.ts#L108)
 
 ___
 
@@ -128,7 +128,7 @@ ___
 
 Ƭ **InstantAssetLockProof**: [*RawInstantAssetLockProof*](types_dashtypes.md#rawinstantassetlockproof) & { `getInstantLock`: () => [*InstantLock*](types_dashtypes.md#instantlock) ; `getType`: () => *number* ; `toJSON`: () => [*JsonInstantAssetLockProof*](types_dashtypes.md#jsoninstantassetlockproof) ; `toObject`: () => [*RawInstantAssetLockProof*](types_dashtypes.md#rawinstantassetlockproof)  }
 
-Defined in: [lib/types/DashTypes.ts:48](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/DashTypes.ts#L48)
+Defined in: [src/types/DashTypes.ts:48](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/DashTypes.ts#L48)
 
 ___
 
@@ -136,7 +136,7 @@ ___
 
 Ƭ **InstantLock**: *any*
 
-Defined in: [lib/types/DashTypes.ts:46](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/DashTypes.ts#L46)
+Defined in: [src/types/DashTypes.ts:46](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/DashTypes.ts#L46)
 
 ___
 
@@ -152,7 +152,7 @@ Name | Type |
 `proof` | [*JsonInstantAssetLockProof*](types_dashtypes.md#jsoninstantassetlockproof) |
 `transaction` | *string* |
 
-Defined in: [lib/types/DashTypes.ts:65](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/DashTypes.ts#L65)
+Defined in: [src/types/DashTypes.ts:65](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/DashTypes.ts#L65)
 
 ___
 
@@ -170,7 +170,7 @@ Name | Type |
 `publicKeys` | *Array*<[*JsonIdentityPublicKey*](types_dashtypes.md#jsonidentitypublickey)\> |
 `revision` | *number* |
 
-Defined in: [lib/types/DashTypes.ts:30](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/DashTypes.ts#L30)
+Defined in: [src/types/DashTypes.ts:30](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/DashTypes.ts#L30)
 
 ___
 
@@ -186,7 +186,7 @@ Name | Type |
 `id` | *number* |
 `type` | *number* |
 
-Defined in: [lib/types/DashTypes.ts:96](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/DashTypes.ts#L96)
+Defined in: [src/types/DashTypes.ts:96](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/DashTypes.ts#L96)
 
 ___
 
@@ -201,7 +201,7 @@ Name | Type |
 `instantLock` | *string* |
 `type` | *number* |
 
-Defined in: [lib/types/DashTypes.ts:60](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/DashTypes.ts#L60)
+Defined in: [src/types/DashTypes.ts:60](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/DashTypes.ts#L60)
 
 ___
 
@@ -217,7 +217,7 @@ Name | Type |
 `proof` | [*RawInstantAssetLockProof*](types_dashtypes.md#rawinstantassetlockproof) |
 `transaction` | Buffer |
 
-Defined in: [lib/types/DashTypes.ts:71](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/DashTypes.ts#L71)
+Defined in: [src/types/DashTypes.ts:71](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/DashTypes.ts#L71)
 
 ___
 
@@ -235,7 +235,7 @@ Name | Type |
 `publicKeys` | *Array*<[*RawIdentityPublicKey*](types_dashtypes.md#rawidentitypublickey)\> |
 `revision` | *number* |
 
-Defined in: [lib/types/DashTypes.ts:38](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/DashTypes.ts#L38)
+Defined in: [src/types/DashTypes.ts:38](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/DashTypes.ts#L38)
 
 ___
 
@@ -251,7 +251,7 @@ Name | Type |
 `id` | *number* |
 `type` | *number* |
 
-Defined in: [lib/types/DashTypes.ts:102](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/DashTypes.ts#L102)
+Defined in: [src/types/DashTypes.ts:102](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/DashTypes.ts#L102)
 
 ___
 
@@ -266,7 +266,7 @@ Name | Type |
 `instantLock` | Buffer |
 `type` | *number* |
 
-Defined in: [lib/types/DashTypes.ts:55](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/DashTypes.ts#L55)
+Defined in: [src/types/DashTypes.ts:55](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/DashTypes.ts#L55)
 
 ___
 
@@ -274,7 +274,7 @@ ___
 
 Ƭ **Transaction**: *any*
 
-Defined in: [lib/types/DashTypes.ts:80](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/DashTypes.ts#L80)
+Defined in: [src/types/DashTypes.ts:80](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/DashTypes.ts#L80)
 
 ___
 
@@ -282,4 +282,4 @@ ___
 
 Ƭ **TransactionOutput**: *any*
 
-Defined in: [lib/types/DashTypes.ts:83](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/DashTypes.ts#L83)
+Defined in: [src/types/DashTypes.ts:83](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/DashTypes.ts#L83)

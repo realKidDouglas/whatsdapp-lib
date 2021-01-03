@@ -4,6 +4,10 @@
 
 ## Index
 
+### Enumerations
+
+* [WhatsDappEvent](../enums/whatsdapp.whatsdappevent.md)
+
 ### Classes
 
 * [WhatsDapp](../classes/whatsdapp.whatsdapp-1.md)
@@ -12,10 +16,14 @@
 
 * [PreKey](whatsdapp.md#prekey)
 * [RawMessage](whatsdapp.md#rawmessage)
+* [RawPreKeyBundle](whatsdapp.md#rawprekeybundle)
 * [RawProfile](whatsdapp.md#rawprofile)
 * [SignedPreKey](whatsdapp.md#signedprekey)
 * [WhatsDappConnection](whatsdapp.md#whatsdappconnection)
+* [WhatsDappPrivateData](whatsdapp.md#whatsdappprivatedata)
 * [WhatsDappProfileContent](whatsdapp.md#whatsdappprofilecontent)
+* [WhatsDappSession](whatsdapp.md#whatsdappsession)
+* [WhatsDappUserData](whatsdapp.md#whatsdappuserdata)
 
 ## Type aliases
 
@@ -31,7 +39,7 @@ Name | Type |
 `publicKey` | *Array*<*string*\> |
 `signature` | *Array*<*string*\> |
 
-Defined in: [lib/WhatsDapp.ts:46](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/WhatsDapp.ts#L46)
+Defined in: [src/WhatsDapp.ts:48](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/WhatsDapp.ts#L48)
 
 ___
 
@@ -48,23 +56,42 @@ Name | Type |
 `id` | *Array*<*string*\> |
 `ownerId` | *Array*<*string*\> |
 
-Defined in: [lib/WhatsDapp.ts:52](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/WhatsDapp.ts#L52)
+Defined in: [src/WhatsDapp.ts:54](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/WhatsDapp.ts#L54)
+
+___
+
+### RawPreKeyBundle
+
+Ƭ **RawPreKeyBundle**: { `displayname`: *string* ; `identityKey`: *Array*<*string*\> ; `preKey`: [*PreKey*](whatsdapp.md#prekey) ; `prekeys`: *Array*<*string*\> ; `registrationId`: *number* ; `signedPreKey`: [*SignedPreKey*](whatsdapp.md#signedprekey)  }
+
+#### Type declaration:
+
+Name | Type |
+------ | ------ |
+`displayname` | *string* |
+`identityKey` | *Array*<*string*\> |
+`preKey` | [*PreKey*](whatsdapp.md#prekey) |
+`prekeys` | *Array*<*string*\> |
+`registrationId` | *number* |
+`signedPreKey` | [*SignedPreKey*](whatsdapp.md#signedprekey) |
+
+Defined in: [src/WhatsDapp.ts:27](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/WhatsDapp.ts#L27)
 
 ___
 
 ### RawProfile
 
-Ƭ **RawProfile**: { `createdAt`: Date ; `data`: { `displayname`: *string* ; `identityKey`: *Array*<*string*\> ; `preKey`: [*PreKey*](whatsdapp.md#prekey) ; `prekeys`: *Array*<*string*\> ; `registrationId`: *number* ; `signedPreKey`: [*SignedPreKey*](whatsdapp.md#signedprekey)  } ; `updatedAt`: Date  }
+Ƭ **RawProfile**: { `createdAt`: Date ; `data`: [*RawPreKeyBundle*](whatsdapp.md#rawprekeybundle) ; `updatedAt`: Date  }
 
 #### Type declaration:
 
 Name | Type |
 ------ | ------ |
 `createdAt` | Date |
-`data` | { `displayname`: *string* ; `identityKey`: *Array*<*string*\> ; `preKey`: [*PreKey*](whatsdapp.md#prekey) ; `prekeys`: *Array*<*string*\> ; `registrationId`: *number* ; `signedPreKey`: [*SignedPreKey*](whatsdapp.md#signedprekey)  } |
+`data` | [*RawPreKeyBundle*](whatsdapp.md#rawprekeybundle) |
 `updatedAt` | Date |
 
-Defined in: [lib/WhatsDapp.ts:28](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/WhatsDapp.ts#L28)
+Defined in: [src/WhatsDapp.ts:37](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/WhatsDapp.ts#L37)
 
 ___
 
@@ -79,7 +106,7 @@ Name | Type |
 `keyId` | *number* |
 `publicKey` | *Array*<*string*\> |
 
-Defined in: [lib/WhatsDapp.ts:41](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/WhatsDapp.ts#L41)
+Defined in: [src/WhatsDapp.ts:43](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/WhatsDapp.ts#L43)
 
 ___
 
@@ -95,7 +122,24 @@ Name | Type |
 `ownerId` | *any* |
 `platform` | *any* |
 
-Defined in: [lib/WhatsDapp.ts:106](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/WhatsDapp.ts#L106)
+Defined in: [src/WhatsDapp.ts:94](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/WhatsDapp.ts#L94)
+
+___
+
+### WhatsDappPrivateData
+
+Ƭ **WhatsDappPrivateData**: { `identityKeyPair`: [*SignalKeyPair*](types_libsignal.md#signalkeypair) ; `preKey`: [*SignalPreKey*](types_libsignal.md#signalprekey) ; `registrationId`: *number* ; `signedPreKey`: [*SignalSignedPreKey*](types_libsignal.md#signalsignedprekey)  }
+
+#### Type declaration:
+
+Name | Type |
+------ | ------ |
+`identityKeyPair` | [*SignalKeyPair*](types_libsignal.md#signalkeypair) |
+`preKey` | [*SignalPreKey*](types_libsignal.md#signalprekey) |
+`registrationId` | *number* |
+`signedPreKey` | [*SignalSignedPreKey*](types_libsignal.md#signalsignedprekey) |
+
+Defined in: [src/WhatsDapp.ts:107](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/WhatsDapp.ts#L107)
 
 ___
 
@@ -114,4 +158,36 @@ Name | Type |
 `registrationId` | *string* |
 `signedPreKey` | *string* |
 
-Defined in: [lib/WhatsDapp.ts:76](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/WhatsDapp.ts#L76)
+Defined in: [src/WhatsDapp.ts:64](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/WhatsDapp.ts#L64)
+
+___
+
+### WhatsDappSession
+
+Ƭ **WhatsDappSession**: { `identity_receiver`: *string* ; `profile_name`: *string*  }
+
+#### Type declaration:
+
+Name | Type |
+------ | ------ |
+`identity_receiver` | *string* |
+`profile_name` | *string* |
+
+Defined in: [src/WhatsDapp.ts:12](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/WhatsDapp.ts#L12)
+
+___
+
+### WhatsDappUserData
+
+Ƭ **WhatsDappUserData**: { `displayName`: *string* ; `dpnsName`: *string* ; `identityAddr`: *string* ; `mnemonic`: *string*  }
+
+#### Type declaration:
+
+Name | Type |
+------ | ------ |
+`displayName` | *string* |
+`dpnsName` | *string* |
+`identityAddr` | *string* |
+`mnemonic` | *string* |
+
+Defined in: [src/WhatsDapp.ts:100](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/WhatsDapp.ts#L100)

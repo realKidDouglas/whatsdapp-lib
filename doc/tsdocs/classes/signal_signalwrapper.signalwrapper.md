@@ -38,7 +38,7 @@
 
 **Returns:** [*SignalPreKey*](../modules/types_libsignal.md#signalprekey)
 
-Defined in: [lib/signal/SignalWrapper.ts:136](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/SignalWrapper.ts#L136)
+Defined in: [src/signal/SignalWrapper.ts:136](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/SignalWrapper.ts#L136)
 
 ___
 
@@ -54,7 +54,7 @@ Name | Type |
 
 **Returns:** [*SignalSignedPreKey*](../modules/types_libsignal.md#signalsignedprekey)
 
-Defined in: [lib/signal/SignalWrapper.ts:141](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/SignalWrapper.ts#L141)
+Defined in: [src/signal/SignalWrapper.ts:141](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/SignalWrapper.ts#L141)
 
 ___
 
@@ -75,7 +75,7 @@ Name | Type |
 
 **Returns:** *Promise*<*void*\>
 
-Defined in: [lib/signal/SignalWrapper.ts:127](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/SignalWrapper.ts#L127)
+Defined in: [src/signal/SignalWrapper.ts:127](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/SignalWrapper.ts#L127)
 
 ___
 
@@ -97,7 +97,7 @@ Name | Type |
 
 : The original plaintext
 
-Defined in: [lib/signal/SignalWrapper.ts:102](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/SignalWrapper.ts#L102)
+Defined in: [src/signal/SignalWrapper.ts:102](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/SignalWrapper.ts#L102)
 
 ___
 
@@ -119,7 +119,7 @@ Name | Type |
 
 : The CipherText object converted into JSON and encoded as Base64
 
-Defined in: [lib/signal/SignalWrapper.ts:85](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/SignalWrapper.ts#L85)
+Defined in: [src/signal/SignalWrapper.ts:85](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/SignalWrapper.ts#L85)
 
 ___
 
@@ -133,7 +133,7 @@ In addition it also contains all the Keypairs (with private key) which are to be
 
 **Returns:** *Promise*<[*WhatsDappSignalKeyBundle*](../modules/signal_signalwrapper.md#whatsdappsignalkeybundle)\>
 
-Defined in: [lib/signal/SignalWrapper.ts:55](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/SignalWrapper.ts#L55)
+Defined in: [src/signal/SignalWrapper.ts:55](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/SignalWrapper.ts#L55)
 
 ___
 
@@ -149,4 +149,4 @@ Name | Type |
 
 **Returns:** WhatsDappSignalCipherText
 
-Defined in: [lib/signal/SignalWrapper.ts:146](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/SignalWrapper.ts#L146)
+Defined in: [src/signal/SignalWrapper.ts:146](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/SignalWrapper.ts#L146)

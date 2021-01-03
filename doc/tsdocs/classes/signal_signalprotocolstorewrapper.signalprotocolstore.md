@@ -54,7 +54,7 @@ Name | Type |
 
 **Returns:** [*SignalProtocolStore*](signal_signalprotocolstorewrapper.signalprotocolstore.md)
 
-Defined in: [lib/signal/SignalProtocolStoreWrapper.ts:13](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/SignalProtocolStoreWrapper.ts#L13)
+Defined in: [src/signal/SignalProtocolStoreWrapper.ts:13](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/SignalProtocolStoreWrapper.ts#L13)
 
 ## Properties
 
@@ -62,7 +62,7 @@ Defined in: [lib/signal/SignalProtocolStoreWrapper.ts:13](https://github.com/rea
 
 • **\_keyPairs**: { [key: string]: [*SignalKeyPair*](../modules/types_libsignal.md#signalkeypair);  }
 
-Defined in: [lib/signal/SignalProtocolStoreWrapper.ts:13](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/SignalProtocolStoreWrapper.ts#L13)
+Defined in: [src/signal/SignalProtocolStoreWrapper.ts:13](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/SignalProtocolStoreWrapper.ts#L13)
 
 ___
 
@@ -70,7 +70,7 @@ ___
 
 • **remoteIdentity**: *string*
 
-Defined in: [lib/signal/SignalProtocolStoreWrapper.ts:12](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/SignalProtocolStoreWrapper.ts#L12)
+Defined in: [src/signal/SignalProtocolStoreWrapper.ts:12](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/SignalProtocolStoreWrapper.ts#L12)
 
 ___
 
@@ -78,7 +78,7 @@ ___
 
 • **store**: *any*
 
-Defined in: [lib/signal/SignalProtocolStoreWrapper.ts:11](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/SignalProtocolStoreWrapper.ts#L11)
+Defined in: [src/signal/SignalProtocolStoreWrapper.ts:11](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/SignalProtocolStoreWrapper.ts#L11)
 
 ___
 
@@ -93,7 +93,7 @@ Name | Type |
 `RECEIVING` | *number* |
 `SENDING` | *number* |
 
-Defined in: [lib/signal/SignalProtocolStoreWrapper.ts:6](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/SignalProtocolStoreWrapper.ts#L6)
+Defined in: [src/signal/SignalProtocolStoreWrapper.ts:6](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/SignalProtocolStoreWrapper.ts#L6)
 
 ## Methods
 
@@ -105,7 +105,7 @@ loads the private IdentityKeyPair from the storage
 
 **Returns:** *Promise*<[*SignalKeyPair*](../modules/types_libsignal.md#signalkeypair)\>
 
-Defined in: [lib/signal/SignalProtocolStoreWrapper.ts:25](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/SignalProtocolStoreWrapper.ts#L25)
+Defined in: [src/signal/SignalProtocolStoreWrapper.ts:25](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/SignalProtocolStoreWrapper.ts#L25)
 
 ___
 
@@ -117,13 +117,13 @@ loads RegistrationID from the storage
 
 **Returns:** *Promise*<*number*\>
 
-Defined in: [lib/signal/SignalProtocolStoreWrapper.ts:34](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/SignalProtocolStoreWrapper.ts#L34)
+Defined in: [src/signal/SignalProtocolStoreWrapper.ts:34](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/SignalProtocolStoreWrapper.ts#L34)
 
 ___
 
 ### isTrustedIdentity
 
-▸ **isTrustedIdentity**(`identifier`: *string*, `identityKey`: *any*, `_direction`: *number*): *Promise*<*boolean*\>
+▸ **isTrustedIdentity**(`identifier`: *string*, `identityKey`: ArrayBuffer, `_direction`: *number*): *Promise*<*boolean*\>
 
 checks whether a given IdentityKey matches the one that is already stored.
 If no key is stored, the identityKey is trusted.
@@ -133,12 +133,12 @@ If no key is stored, the identityKey is trusted.
 Name | Type |
 ------ | ------ |
 `identifier` | *string* |
-`identityKey` | *any* |
+`identityKey` | ArrayBuffer |
 `_direction` | *number* |
 
 **Returns:** *Promise*<*boolean*\>
 
-Defined in: [lib/signal/SignalProtocolStoreWrapper.ts:47](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/SignalProtocolStoreWrapper.ts#L47)
+Defined in: [src/signal/SignalProtocolStoreWrapper.ts:48](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/SignalProtocolStoreWrapper.ts#L48)
 
 ___
 
@@ -156,7 +156,7 @@ Name | Type |
 
 **Returns:** *Promise*<*void*\>
 
-Defined in: [lib/signal/SignalProtocolStoreWrapper.ts:75](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/SignalProtocolStoreWrapper.ts#L75)
+Defined in: [src/signal/SignalProtocolStoreWrapper.ts:77](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/SignalProtocolStoreWrapper.ts#L77)
 
 ___
 
@@ -175,7 +175,7 @@ Name | Type |
 
 **Returns:** *Promise*<[*SignalKeyPair*](../modules/types_libsignal.md#signalkeypair)\>
 
-Defined in: [lib/signal/SignalProtocolStoreWrapper.ts:108](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/SignalProtocolStoreWrapper.ts#L108)
+Defined in: [src/signal/SignalProtocolStoreWrapper.ts:111](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/SignalProtocolStoreWrapper.ts#L111)
 
 ___
 
@@ -195,7 +195,7 @@ Name | Type |
 
 if a session was found, else {Promise<null>}
 
-Defined in: [lib/signal/SignalProtocolStoreWrapper.ts:173](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/SignalProtocolStoreWrapper.ts#L173)
+Defined in: [src/signal/SignalProtocolStoreWrapper.ts:181](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/SignalProtocolStoreWrapper.ts#L181)
 
 ___
 
@@ -214,7 +214,7 @@ Name | Type |
 
 **Returns:** *Promise*<[*SignalKeyPair*](../modules/types_libsignal.md#signalkeypair)\>
 
-Defined in: [lib/signal/SignalProtocolStoreWrapper.ts:140](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/SignalProtocolStoreWrapper.ts#L140)
+Defined in: [src/signal/SignalProtocolStoreWrapper.ts:146](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/SignalProtocolStoreWrapper.ts#L146)
 
 ___
 
@@ -232,7 +232,7 @@ Name | Type |
 
 **Returns:** *Promise*<*void*\>
 
-Defined in: [lib/signal/SignalProtocolStoreWrapper.ts:128](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/SignalProtocolStoreWrapper.ts#L128)
+Defined in: [src/signal/SignalProtocolStoreWrapper.ts:133](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/SignalProtocolStoreWrapper.ts#L133)
 
 ___
 
@@ -250,7 +250,7 @@ Name | Type |
 
 **Returns:** *Promise*<*void*\>
 
-Defined in: [lib/signal/SignalProtocolStoreWrapper.ts:162](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/SignalProtocolStoreWrapper.ts#L162)
+Defined in: [src/signal/SignalProtocolStoreWrapper.ts:170](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/SignalProtocolStoreWrapper.ts#L170)
 
 ___
 
@@ -267,7 +267,7 @@ Name | Type |
 
 **Returns:** *Promise*<*boolean*\>
 
-Defined in: [lib/signal/SignalProtocolStoreWrapper.ts:80](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/SignalProtocolStoreWrapper.ts#L80)
+Defined in: [src/signal/SignalProtocolStoreWrapper.ts:82](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/SignalProtocolStoreWrapper.ts#L82)
 
 ___
 
@@ -286,7 +286,7 @@ Name | Type |
 
 **Returns:** *Promise*<*void*\>
 
-Defined in: [lib/signal/SignalProtocolStoreWrapper.ts:119](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/SignalProtocolStoreWrapper.ts#L119)
+Defined in: [src/signal/SignalProtocolStoreWrapper.ts:123](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/SignalProtocolStoreWrapper.ts#L123)
 
 ___
 
@@ -305,7 +305,7 @@ Name | Type |
 
 **Returns:** *Promise*<*void*\>
 
-Defined in: [lib/signal/SignalProtocolStoreWrapper.ts:195](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/SignalProtocolStoreWrapper.ts#L195)
+Defined in: [src/signal/SignalProtocolStoreWrapper.ts:203](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/SignalProtocolStoreWrapper.ts#L203)
 
 ___
 
@@ -324,4 +324,4 @@ Name | Type |
 
 **Returns:** *Promise*<*void*\>
 
-Defined in: [lib/signal/SignalProtocolStoreWrapper.ts:151](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/signal/SignalProtocolStoreWrapper.ts#L151)
+Defined in: [src/signal/SignalProtocolStoreWrapper.ts:158](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/signal/SignalProtocolStoreWrapper.ts#L158)

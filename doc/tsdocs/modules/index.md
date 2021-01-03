@@ -8,6 +8,7 @@
 
 * [SignalWrapper](index.md#signalwrapper)
 * [WhatsDapp](index.md#whatsdapp)
+* [WhatsDappEvent](index.md#whatsdappevent)
 
 ## References
 
@@ -20,3 +21,9 @@ ___
 ### WhatsDapp
 
 Re-exports: [WhatsDapp](../classes/whatsdapp.whatsdapp-1.md)
+
+___
+
+### WhatsDappEvent
+
+Re-exports: [WhatsDappEvent](../enums/whatsdapp.whatsdappevent.md)

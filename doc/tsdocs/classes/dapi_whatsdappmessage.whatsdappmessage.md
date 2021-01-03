@@ -34,7 +34,7 @@ Name | Type |
 
 **Returns:** [*WhatsDappMessage*](dapi_whatsdappmessage.whatsdappmessage.md)
 
-Defined in: [lib/dapi/WhatsDappMessage.ts:8](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/WhatsDappMessage.ts#L8)
+Defined in: [src/dapi/WhatsDappMessage.ts:8](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/WhatsDappMessage.ts#L8)
 
 ## Properties
 
@@ -42,7 +42,7 @@ Defined in: [lib/dapi/WhatsDappMessage.ts:8](https://github.com/realKidDouglas/w
 
 • **content**: *string*
 
-Defined in: [lib/dapi/WhatsDappMessage.ts:6](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/WhatsDappMessage.ts#L6)
+Defined in: [src/dapi/WhatsDappMessage.ts:6](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/WhatsDappMessage.ts#L6)
 
 ___
 
@@ -50,7 +50,7 @@ ___
 
 • **id**: *string*
 
-Defined in: [lib/dapi/WhatsDappMessage.ts:7](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/WhatsDappMessage.ts#L7)
+Defined in: [src/dapi/WhatsDappMessage.ts:7](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/WhatsDappMessage.ts#L7)
 
 ___
 
@@ -58,7 +58,7 @@ ___
 
 • **ownerId**: *string*
 
-Defined in: [lib/dapi/WhatsDappMessage.ts:8](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/WhatsDappMessage.ts#L8)
+Defined in: [src/dapi/WhatsDappMessage.ts:8](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/WhatsDappMessage.ts#L8)
 
 ___
 
@@ -66,7 +66,7 @@ ___
 
 • **senderHandle**: *string*
 
-Defined in: [lib/dapi/WhatsDappMessage.ts:4](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/WhatsDappMessage.ts#L4)
+Defined in: [src/dapi/WhatsDappMessage.ts:4](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/WhatsDappMessage.ts#L4)
 
 ___
 
@@ -74,4 +74,4 @@ ___
 
 • **timestamp**: *number*
 
-Defined in: [lib/dapi/WhatsDappMessage.ts:5](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/WhatsDappMessage.ts#L5)
+Defined in: [src/dapi/WhatsDappMessage.ts:5](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/WhatsDappMessage.ts#L5)

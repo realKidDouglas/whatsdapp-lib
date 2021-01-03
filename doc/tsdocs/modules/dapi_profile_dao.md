@@ -28,7 +28,7 @@ Name | Type |
 
 **Returns:** *Promise*<*any*\>
 
-Defined in: [lib/dapi/Profile_DAO.ts:13](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/Profile_DAO.ts#L13)
+Defined in: [src/dapi/Profile_DAO.ts:13](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/Profile_DAO.ts#L13)
 
 ___
 
@@ -48,7 +48,7 @@ Name | Type |
 
 Returns a document, that the profile was updated
 
-Defined in: [lib/dapi/Profile_DAO.ts:100](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/Profile_DAO.ts#L100)
+Defined in: [src/dapi/Profile_DAO.ts:100](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/Profile_DAO.ts#L100)
 
 ___
 
@@ -70,7 +70,7 @@ Name | Type | Description |
 Returns a document, that the profile was created
 TODO: Maybe its better to use the DashIdentity Type instead of the ownerid as a string
 
-Defined in: [lib/dapi/Profile_DAO.ts:52](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/Profile_DAO.ts#L52)
+Defined in: [src/dapi/Profile_DAO.ts:52](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/Profile_DAO.ts#L52)
 
 ___
 
@@ -89,4 +89,4 @@ Name | Type |
 
 Returns a document, that the profile was updated
 
-Defined in: [lib/dapi/Profile_DAO.ts:73](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/Profile_DAO.ts#L73)
+Defined in: [src/dapi/Profile_DAO.ts:73](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/Profile_DAO.ts#L73)

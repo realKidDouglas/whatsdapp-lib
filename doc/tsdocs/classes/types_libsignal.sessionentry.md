@@ -44,7 +44,7 @@ Name | Type |
 
 **Returns:** *void*
 
-Defined in: [lib/types/libsignal.d.ts:23](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L23)
+Defined in: [src/types/libsignal.d.ts:23](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L23)
 
 ___
 
@@ -60,7 +60,7 @@ Name | Type |
 
 **Returns:** *void*
 
-Defined in: [lib/types/libsignal.d.ts:25](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L25)
+Defined in: [src/types/libsignal.d.ts:25](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L25)
 
 ___
 
@@ -77,7 +77,7 @@ Name | Type |
 
 **Returns:** *void*
 
-Defined in: [lib/types/libsignal.d.ts:24](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L24)
+Defined in: [src/types/libsignal.d.ts:24](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L24)
 
 ___
 
@@ -87,7 +87,7 @@ ___
 
 **Returns:** *string*
 
-Defined in: [lib/types/libsignal.d.ts:22](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L22)
+Defined in: [src/types/libsignal.d.ts:22](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L22)
 
 ___
 
@@ -97,7 +97,7 @@ ___
 
 **Returns:** *unknown*
 
-Defined in: [lib/types/libsignal.d.ts:27](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L27)
+Defined in: [src/types/libsignal.d.ts:27](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L27)
 
 ___
 
@@ -113,4 +113,4 @@ Name | Type |
 
 **Returns:** [*SessionEntry*](types_libsignal.sessionentry.md)
 
-Defined in: [lib/types/libsignal.d.ts:28](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L28)
+Defined in: [src/types/libsignal.d.ts:28](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L28)

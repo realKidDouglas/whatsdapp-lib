@@ -23,7 +23,7 @@ Name | Type |
 
 **Returns:** *Promise*<*any*\>
 
-Defined in: [lib/dapi/Wallet_DAO.ts:3](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/Wallet_DAO.ts#L3)
+Defined in: [src/dapi/Wallet_DAO.ts:3](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/Wallet_DAO.ts#L3)
 
 ___
 
@@ -39,4 +39,4 @@ Name | Type |
 
 **Returns:** *Promise*<*any*\>
 
-Defined in: [lib/dapi/Wallet_DAO.ts:11](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/Wallet_DAO.ts#L11)
+Defined in: [src/dapi/Wallet_DAO.ts:11](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/Wallet_DAO.ts#L11)

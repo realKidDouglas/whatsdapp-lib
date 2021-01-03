@@ -34,7 +34,7 @@
 
 Ƭ **SerializedSessionEntry**: *unknown*
 
-Defined in: [lib/types/libsignal.d.ts:18](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L18)
+Defined in: [src/types/libsignal.d.ts:18](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L18)
 
 ___
 
@@ -42,22 +42,22 @@ ___
 
 Ƭ **SerializedSessionRecord**: *unknown*
 
-Defined in: [lib/types/libsignal.d.ts:19](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L19)
+Defined in: [src/types/libsignal.d.ts:19](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L19)
 
 ___
 
 ### SignalKeyPair
 
-Ƭ **SignalKeyPair**: { `privateKey`: ArrayBuffer ; `pubKey`: ArrayBuffer  }
+Ƭ **SignalKeyPair**: { `privKey`: ArrayBuffer ; `pubKey`: ArrayBuffer  }
 
 #### Type declaration:
 
 Name | Type |
 ------ | ------ |
-`privateKey` | ArrayBuffer |
+`privKey` | ArrayBuffer |
 `pubKey` | ArrayBuffer |
 
-Defined in: [lib/types/libsignal.d.ts:13](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L13)
+Defined in: [src/types/libsignal.d.ts:13](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L13)
 
 ___
 
@@ -72,7 +72,7 @@ Name | Type |
 `keyId` | *number* |
 `keyPair` | [*SignalKeyPair*](types_libsignal.md#signalkeypair) |
 
-Defined in: [lib/types/libsignal.d.ts:8](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L8)
+Defined in: [src/types/libsignal.d.ts:8](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L8)
 
 ___
 
@@ -80,7 +80,7 @@ ___
 
 Ƭ **SignalSignedPreKey**: [*SignalPreKey*](types_libsignal.md#signalprekey) & { `signature`: ArrayBuffer  }
 
-Defined in: [lib/types/libsignal.d.ts:4](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L4)
+Defined in: [src/types/libsignal.d.ts:4](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L4)
 
 ## Variables
 
@@ -94,7 +94,7 @@ Name | Type | Value |
 ------ | ------ | ------ |
 `generateIdentityKeyPair` | function | () => [*SignalKeyPair*](types_libsignal.md#signalkeypair) |
 `generatePreKey` | function | (`preKeyId`: *number*) => [*SignalPreKey*](types_libsignal.md#signalprekey) |
-`generateRegistrationId` | function | () => *any* |
+`generateRegistrationId` | function | () => *number* |
 `generateSignedPreKey` | function | (`identityKeyPair`: [*SignalKeyPair*](types_libsignal.md#signalkeypair), `signedPreKeyId`: *number*) => [*SignalSignedPreKey*](types_libsignal.md#signalsignedprekey) |
 
-Defined in: [lib/types/libsignal.d.ts:63](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L63)
+Defined in: [src/types/libsignal.d.ts:63](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L63)

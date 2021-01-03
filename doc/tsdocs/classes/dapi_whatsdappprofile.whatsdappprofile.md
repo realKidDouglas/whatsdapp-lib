@@ -37,7 +37,7 @@ Name | Type |
 
 **Returns:** [*WhatsDappProfile*](dapi_whatsdappprofile.whatsdappprofile.md)
 
-Defined in: [lib/dapi/WhatsDappProfile.ts:11](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/WhatsDappProfile.ts#L11)
+Defined in: [src/dapi/WhatsDappProfile.ts:11](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/WhatsDappProfile.ts#L11)
 
 ## Properties
 
@@ -45,7 +45,7 @@ Defined in: [lib/dapi/WhatsDappProfile.ts:11](https://github.com/realKidDouglas/
 
 • **createdAt**: Date
 
-Defined in: [lib/dapi/WhatsDappProfile.ts:10](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/WhatsDappProfile.ts#L10)
+Defined in: [src/dapi/WhatsDappProfile.ts:10](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/WhatsDappProfile.ts#L10)
 
 ___
 
@@ -53,7 +53,7 @@ ___
 
 • **displayName**: *string*
 
-Defined in: [lib/dapi/WhatsDappProfile.ts:9](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/WhatsDappProfile.ts#L9)
+Defined in: [src/dapi/WhatsDappProfile.ts:9](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/WhatsDappProfile.ts#L9)
 
 ___
 
@@ -61,7 +61,7 @@ ___
 
 • **identityKey**: *Array*<*string*\>
 
-Defined in: [lib/dapi/WhatsDappProfile.ts:4](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/WhatsDappProfile.ts#L4)
+Defined in: [src/dapi/WhatsDappProfile.ts:4](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/WhatsDappProfile.ts#L4)
 
 ___
 
@@ -69,7 +69,7 @@ ___
 
 • **preKey**: [*PreKey*](../modules/whatsdapp.md#prekey)
 
-Defined in: [lib/dapi/WhatsDappProfile.ts:7](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/WhatsDappProfile.ts#L7)
+Defined in: [src/dapi/WhatsDappProfile.ts:7](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/WhatsDappProfile.ts#L7)
 
 ___
 
@@ -77,7 +77,7 @@ ___
 
 • **preKeys**: *Array*<*string*\>
 
-Defined in: [lib/dapi/WhatsDappProfile.ts:8](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/WhatsDappProfile.ts#L8)
+Defined in: [src/dapi/WhatsDappProfile.ts:8](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/WhatsDappProfile.ts#L8)
 
 ___
 
@@ -85,7 +85,7 @@ ___
 
 • **registrationId**: *number*
 
-Defined in: [lib/dapi/WhatsDappProfile.ts:5](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/WhatsDappProfile.ts#L5)
+Defined in: [src/dapi/WhatsDappProfile.ts:5](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/WhatsDappProfile.ts#L5)
 
 ___
 
@@ -93,7 +93,7 @@ ___
 
 • **signedPreKey**: [*SignedPreKey*](../modules/whatsdapp.md#signedprekey)
 
-Defined in: [lib/dapi/WhatsDappProfile.ts:6](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/WhatsDappProfile.ts#L6)
+Defined in: [src/dapi/WhatsDappProfile.ts:6](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/WhatsDappProfile.ts#L6)
 
 ___
 
@@ -101,4 +101,4 @@ ___
 
 • **updatedAt**: Date
 
-Defined in: [lib/dapi/WhatsDappProfile.ts:11](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/dapi/WhatsDappProfile.ts#L11)
+Defined in: [src/dapi/WhatsDappProfile.ts:11](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/WhatsDappProfile.ts#L11)

@@ -37,7 +37,7 @@ Name | Type |
 
 **Returns:** [*ProtocolAddress*](types_libsignal.protocoladdress.md)
 
-Defined in: [lib/types/libsignal.d.ts:70](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L70)
+Defined in: [src/types/libsignal.d.ts:70](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L70)
 
 ## Properties
 
@@ -45,7 +45,7 @@ Defined in: [lib/types/libsignal.d.ts:70](https://github.com/realKidDouglas/what
 
 • **deviceId**: *number*
 
-Defined in: [lib/types/libsignal.d.ts:75](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L75)
+Defined in: [src/types/libsignal.d.ts:75](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L75)
 
 ___
 
@@ -53,7 +53,7 @@ ___
 
 • **id**: *string*
 
-Defined in: [lib/types/libsignal.d.ts:74](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L74)
+Defined in: [src/types/libsignal.d.ts:74](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L74)
 
 ## Methods
 
@@ -63,7 +63,7 @@ Defined in: [lib/types/libsignal.d.ts:74](https://github.com/realKidDouglas/what
 
 **Returns:** *string*
 
-Defined in: [lib/types/libsignal.d.ts:73](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L73)
+Defined in: [src/types/libsignal.d.ts:73](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L73)
 
 ___
 
@@ -79,4 +79,4 @@ Name | Type |
 
 **Returns:** [*ProtocolAddress*](types_libsignal.protocoladdress.md)
 
-Defined in: [lib/types/libsignal.d.ts:72](https://github.com/realKidDouglas/whatsdapp-lib/blob/5db9bb0/lib/types/libsignal.d.ts#L72)
+Defined in: [src/types/libsignal.d.ts:72](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/types/libsignal.d.ts#L72)
