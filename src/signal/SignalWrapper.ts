@@ -82,7 +82,7 @@ export class SignalWrapper {
    * @param plaintext
    * @returns {Promise<string>}: The CipherText object converted into JSON and encoded as Base64
    */
-  async ncryptMessage(whatsDappStore: any, receiverId: string, plaintext: string): Promise<string> {
+  async encryptMessage(whatsDappStore: any, receiverId: string, plaintext: string): Promise<string> {
     const deviceId = 1; // TODO: This shouldn't be hardcoded
     const store = new SignalProtocolStore(whatsDappStore, receiverId);
     const address = new libsignal.ProtocolAddress(receiverId, deviceId);
