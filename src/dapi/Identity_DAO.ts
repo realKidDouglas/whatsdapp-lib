@@ -17,7 +17,7 @@ export async function createIdentity(connection: WhatsDappConnection): Promise<D
   try {
     return await connection.platform.identities.register();
   } catch (e) {
-    console.error('Something went wrong:', e);
+    console.log('Something went wrong:', e);
   }
 
   return null;
@@ -33,7 +33,7 @@ export async function topUpIdentity(connection: WhatsDappConnection, topUpAmount
   try {
     return await connection.platform.identities.topUp(connection.identity.getId().toJSON(), topUpAmount);
   } catch (e) {
-    console.error('Something went wrong:', e);
+    console.log('Something went wrong:', e);
   }
   return false;
 }
@@ -53,7 +53,7 @@ export async function createDpnsName(connection: WhatsDappConnection, name: stri
     );
 
   } catch (e) {
-    console.error('Something went wrong:', e);
+    console.log('Something went wrong:', e);
   }
   return false;
 }
