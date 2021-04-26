@@ -127,7 +127,14 @@ export class SignalWrapper {
     const store = new SignalProtocolStore(whatsDappStore, identifier);
     const address = new libsignal.ProtocolAddress(identifier, deviceId);
     const sessionBuilder = new libsignal.SessionBuilder(store, address);
-    await sessionBuilder.initOutgoing(preKeyBundle);
+    // Pick one Onetime Prekey from the list at random
+    const signalKeyBundle = {
+      identityKey: preKeyBundle.identityKey,
+      signedPreKey: preKeyBundle.signedPreKey,
+      registrationId: preKeyBundle.registrationId,
+      preKey: preKeyBundle.preKeys[Math.floor(Math.random() * preKeyBundle.preKeys.length)]
+    };
+    await sessionBuilder.initOutgoing(signalKeyBundle);
     await store.saveIdentity(address.toString(), preKeyBundle.identityKey);
   }
 
