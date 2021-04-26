@@ -28,8 +28,7 @@ export type RawPreKeyBundle = {
   identityKey: Array<string>,
   registrationId: number,
   signedPreKey: SignedPreKey,
-  preKey: PreKey,
-  prekeys: Array<string>,
+  preKeys: Array<string>,
   displayname: string,
 }
 
@@ -65,8 +64,7 @@ export type WhatsDappProfileContent = {
   identityKey: string // content.identityKey,
   registrationId: string // content.registrationId,
   signedPreKey: string // content.signedPreKey,
-  preKey: string // content.preKey,
-  prekeys: Array<string>// content.prekeys,
+  preKeys: Array<string>// content.preKeys,
   displayname: string //content.displayname
 }
 
@@ -107,7 +105,7 @@ export type WhatsDappUserData = {
 export type WhatsDappPrivateData = {
   identityKeyPair: SignalKeyPair,
   registrationId: number,
-  preKey: SignalPreKey,
+  preKeys: Map<number, SignalPreKey>,
   signedPreKey: SignalSignedPreKey
 }
 
@@ -165,7 +163,6 @@ export class WhatsDapp extends EventEmitter {
       console.log("creating new profile!");
       const content = preKeyBundle;
       content.displayname = displayname;
-      content.prekeys = [];
       console.log(content);
       await dapi.createProfile(this._connection, content);
       profile = await dapi.getProfile(this._connection, identity);

@@ -6,7 +6,7 @@ Attributes:
 - identityKey: X3DH
 - registrationId: X3DH
 - signedPreKey: X3DH
-- preKey: X3DH
+- preKeys: X3DH
 - PreKeys: X3DH, should be used only once.
 
 
@@ -32,7 +32,7 @@ const contractDocuments = {
 					type: "number",
 					maxLength: 500,
 				},
-				preKey: {
+				preKeys: {
 					type: "object",
 					properties: {
 						keyId: {
@@ -82,7 +82,7 @@ const contractDocuments = {
 					maxLength: 50
 				}
 			},
-			required: ["identityKey", "registrationId", "preKey", "signedPreKey", "$createdAt", "$updatedAt"],
+			required: ["identityKey", "registrationId", "preKeys", "signedPreKey", "$createdAt", "$updatedAt"],
 			additionalProperties: false
 		}
 	};

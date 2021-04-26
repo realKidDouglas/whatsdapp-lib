@@ -62,7 +62,7 @@ ___
 
 ### RawPreKeyBundle
 
-Ƭ **RawPreKeyBundle**: { `displayname`: *string* ; `identityKey`: *Array*<*string*\> ; `preKey`: [*PreKey*](whatsdapp.md#prekey) ; `prekeys`: *Array*<*string*\> ; `registrationId`: *number* ; `signedPreKey`: [*SignedPreKey*](whatsdapp.md#signedprekey)  }
+Ƭ **RawPreKeyBundle**: { `displayname`: *string* ; `identityKey`: *Array*<*string*\> ; `preKeys`: [*PreKey*](whatsdapp.md#prekey) ; `prekeys`: *Array*<*string*\> ; `registrationId`: *number* ; `signedPreKey`: [*SignedPreKey*](whatsdapp.md#signedprekey)  }
 
 #### Type declaration:
 
@@ -70,7 +70,7 @@ Name | Type |
 ------ | ------ |
 `displayname` | *string* |
 `identityKey` | *Array*<*string*\> |
-`preKey` | [*PreKey*](whatsdapp.md#prekey) |
+`preKeys` | [*PreKey*](whatsdapp.md#prekey) |
 `prekeys` | *Array*<*string*\> |
 `registrationId` | *number* |
 `signedPreKey` | [*SignedPreKey*](whatsdapp.md#signedprekey) |
@@ -128,14 +128,14 @@ ___
 
 ### WhatsDappPrivateData
 
-Ƭ **WhatsDappPrivateData**: { `identityKeyPair`: [*SignalKeyPair*](types_libsignal.md#signalkeypair) ; `preKey`: [*SignalPreKey*](types_libsignal.md#signalprekey) ; `registrationId`: *number* ; `signedPreKey`: [*SignalSignedPreKey*](types_libsignal.md#signalsignedprekey)  }
+Ƭ **WhatsDappPrivateData**: { `identityKeyPair`: [*SignalKeyPair*](types_libsignal.md#signalkeypair) ; `preKeys`: [*SignalPreKey*](types_libsignal.md#signalprekey) ; `registrationId`: *number* ; `signedPreKey`: [*SignalSignedPreKey*](types_libsignal.md#signalsignedprekey)  }
 
 #### Type declaration:
 
 Name | Type |
 ------ | ------ |
 `identityKeyPair` | [*SignalKeyPair*](types_libsignal.md#signalkeypair) |
-`preKey` | [*SignalPreKey*](types_libsignal.md#signalprekey) |
+`preKeys` | [*SignalPreKey*](types_libsignal.md#signalprekey) |
 `registrationId` | *number* |
 `signedPreKey` | [*SignalSignedPreKey*](types_libsignal.md#signalsignedprekey) |
 
@@ -145,7 +145,7 @@ ___
 
 ### WhatsDappProfileContent
 
-Ƭ **WhatsDappProfileContent**: { `displayname`: *string* ; `identityKey`: *string* ; `preKey`: *string* ; `prekeys`: *Array*<*string*\> ; `registrationId`: *string* ; `signedPreKey`: *string*  }
+Ƭ **WhatsDappProfileContent**: { `displayname`: *string* ; `identityKey`: *string* ; `preKeys`: *string* ; `prekeys`: *Array*<*string*\> ; `registrationId`: *string* ; `signedPreKey`: *string*  }
 
 #### Type declaration:
 
@@ -153,7 +153,7 @@ Name | Type |
 ------ | ------ |
 `displayname` | *string* |
 `identityKey` | *string* |
-`preKey` | *string* |
+`preKeys` | *string* |
 `prekeys` | *Array*<*string*\> |
 `registrationId` | *string* |
 `signedPreKey` | *string* |

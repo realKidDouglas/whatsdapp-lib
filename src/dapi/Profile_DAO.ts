@@ -17,8 +17,7 @@ export async function createProfile(connection: WhatsDappConnection, content: Wh
     identityKey: content.identityKey,
     registrationId: content.registrationId,
     signedPreKey: content.signedPreKey,
-    preKey: content.preKey,
-    prekeys: content.prekeys,
+    preKeys: content.preKeys,
     displayname: content.displayname
   };
 
@@ -82,8 +81,7 @@ export async function updateProfile(connection: WhatsDappConnection, content: Wh
     document.set('identityKey', content.identityKey);
     document.set('registrationId', content.registrationId);
     document.set('signedPreKey', content.signedPreKey);
-    document.set('preKey', content.preKey);
-    document.set('prekeys', content.prekeys);
+    document.set('preKeys', content.preKeys);
     // Sign and submit the document replace transition
     return connection.platform.documents.broadcast({replace: [document]}, connection.identity);
   } catch (e) {
