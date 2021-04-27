@@ -1,11 +1,11 @@
 import * as dapi from './dapi/dapi';
 import {EventEmitter} from 'events';
-import DashSDK from "dash";
 import {DashClient, DashIdentity} from "./types/DashTypes";
 import {WhatsDappMessage} from "./dapi/WhatsDappMessage";
 import {WhatsDappProfile} from "./dapi/WhatsDappProfile";
 import {SignalKeyPair, SignalPreKey, SignalSignedPreKey} from "libsignal";
 import {StructuredStorage} from "./storage/StructuredStorage";
+import {makeClient} from "./dapi/dash_client/DashClient";
 
 type TimerHandle = ReturnType<typeof setTimeout>;
 
@@ -353,26 +353,4 @@ export class WhatsDapp extends EventEmitter {
     const session = await this._getOrCreateSession(identity.getId(), identity.getId().toString()); // TODO: Was soll der Anzeigename sein
     return session;
   }
-}
-
-
-function makeClient(mnemonic?: string): DashClient {
-  const clientOpts = {
-    network: 'testnet',
-    wallet: {
-      mnemonic,
-      unsafeOptions: {
-        skipSynchronizationBeforeHeight: 415000, // only sync from start of 2021
-      },
-    },
-    apps: {
-      message_contract: {
-        contractId: 'JCwyZuX9E2SHQXmnccTeY3DwWsB3SMwZ7TybNPxGhNfs'
-      },
-      profile_contract: {
-        contractId: 'HK3baj7Mp3HZX6rgma3C95Wd2CkBWxn6FyD9Xavfs7dE'
-      }
-    }
-  };
-  return new DashSDK.Client(clientOpts);
 }
