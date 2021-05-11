@@ -1,5 +1,5 @@
 import {METADATA_FILE_NAME} from "./StructuredStorageConstants";
-import {WhatsDappPrivateData, WhatsDappUserData} from "../WhatsDapp";
+import {WhatsDappPrivateData, WhatsDappUserData} from "./StructuredStorage";
 
 export function objectToUint8Array(obj: unknown): Uint8Array {
   const json = JSON.stringify(obj);

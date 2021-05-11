@@ -12,5 +12,5 @@ export const DEFAULT_MSG_COUNT = 20;
 export const CHUNK_SIZE_SOFT_MAX = 1024 * 8;
 // how big a chunk may get (due to out-of-order messages) before the history will be rewritten
 export const CHUNK_SIZE_MAX = 1024 * 64;
-// how fuzzy the chunk size is (ie 5 bytes will be considered empty)
+// how fuzzy the chunk size is (ie set to 5 to have a chunk of 5 bytes considered empty)
 export const CHUNK_SIZE_BUF = 5;

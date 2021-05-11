@@ -3,8 +3,8 @@ import {EventEmitter} from 'events';
 import {DashClient, DashIdentity} from "./types/DashTypes";
 import {WhatsDappMessage} from "./dapi/WhatsDappMessage";
 import {WhatsDappProfile} from "./dapi/WhatsDappProfile";
-import {SignalKeyPair, SignalPreKey, SignalSignedPreKey} from "libsignal";
 import {StructuredStorage} from "./storage/StructuredStorage";
+import type {KVStore, Mapper} from "./storage/StructuredStorage";
 import {makeClient} from "./dapi/dash_client/DashClient";
 
 type TimerHandle = ReturnType<typeof setTimeout>;
@@ -16,12 +16,10 @@ export type WhatsDappSession = {
 }
 
 export enum WhatsDappEvent {
+  Initialized = 'initialized',
   NewMessage = 'new-message',
   NewSession = 'new-session',
-  NewMessageSent = 'new-message-sent',
-  StorageRead = 'storage-read',
-  StorageWrite = 'storage-write',
-  StorageDelete = 'storage-delete'
+  NewMessageSent = 'new-message-sent'
 }
 
 export type RawPreKeyBundle = {
@@ -97,20 +95,6 @@ export type WhatsDappConnection = {
   ownerId: any,
 }
 
-export type WhatsDappUserData = {
-  mnemonic: string,
-  displayName: string,
-  identityAddr: string,
-  dpnsName: string
-}
-
-export type WhatsDappPrivateData = {
-  identityKeyPair: SignalKeyPair,
-  registrationId: number,
-  preKey: SignalPreKey,
-  signedPreKey: SignalSignedPreKey
-}
-
 const pollInterval = 5000;
 
 export class WhatsDapp extends EventEmitter {
@@ -121,17 +105,17 @@ export class WhatsDapp extends EventEmitter {
   _profile: WhatsDappProfile | null = null;
   _sessions: Array<WhatsDappSession> = [];
   initialized: Promise<ConnectResult> | null = null;
-  storage: StructuredStorage;
+  _storage: StructuredStorage;
 
-  constructor() {
+  constructor(kvstore: KVStore) {
     super();
-    // TODO: should this be a class?
-    const store = {
-      get: (key: string) => new Promise(r => this.emit(WhatsDappEvent.StorageRead, key, r)) as Promise<Uint8Array | null>,
-      set: (key: string, value: Uint8Array) => this.emit(WhatsDappEvent.StorageWrite, key, value),
-      del: (key: string) => this.emit(WhatsDappEvent.StorageDelete, key)
-    };
-    this.storage = new StructuredStorage(store);
+    this._storage = new StructuredStorage(kvstore);
+    this._storage.getMarker().then(dpn => this.emit(WhatsDappEvent.Initialized, dpn));
+  }
+
+  getStorage(mapper: Mapper) : StructuredStorage {
+    this._storage.setMapper(mapper);
+    return this._storage;
   }
 
   /**
@@ -177,6 +161,7 @@ export class WhatsDapp extends EventEmitter {
     this.initialized = Promise.resolve()
       .then(() => this._pollTimeout = setTimeout(() => this._poll(), 0)) // first poll is immediate
       .catch(e => console.log("error", e))
+      .then(() => this._storage.setMarker(displayname))
       .then(() => ({displayName: displayname, identity: identity, createDpnsName: dpnsResult}));
 
     return this.initialized;
@@ -230,6 +215,13 @@ export class WhatsDapp extends EventEmitter {
     //dapi.deleteMessage(this._connection, deleteTime, senderid);
   }
 
+  async getLocalProfile() : Promise<void> {
+    return;
+  }
+
+  async clearLocalProfile() : Promise<void> {
+    return;
+  }
 
   async _getOrCreateSession(ownerId: any, senderHandle: string): Promise<WhatsDappSession> {
     let session: WhatsDappSession = this._sessions[ownerId] as WhatsDappSession;
@@ -242,32 +234,26 @@ export class WhatsDapp extends EventEmitter {
     return session;
   }
 
+  emit(ev: WhatsDappEvent.Initialized, displayName: string | null) : boolean;
   emit(ev: WhatsDappEvent.NewMessage, message: WhatsDappMessage, session: WhatsDappSession): boolean;
   emit(ev: WhatsDappEvent.NewSession, session: WhatsDappSession, bundle: RawPreKeyBundle): boolean;
   emit(ev: WhatsDappEvent.NewMessageSent, wMessage: WhatsDappMessage, session: { profile_name: any, identity_receiver: any }): boolean;
-  emit(ev: WhatsDappEvent.StorageRead, storageKey: string, ret: (val: Uint8Array | null) => void): boolean;
-  emit(ev: WhatsDappEvent.StorageWrite, storageKey: string, storageValue: Uint8Array): boolean;
-  emit(ev: WhatsDappEvent.StorageDelete, storageKey: string): boolean;
   emit(ev: string, ...args: unknown[]): boolean {
     return super.emit(ev, ...Array.from(args));
   }
 
+  on(ev: WhatsDappEvent.Initialized, listener: (displayName: string | null) => void): this;
   on(ev: WhatsDappEvent.NewMessage, listener: (msg: WhatsDappMessage, session: WhatsDappSession) => void): this;
   on(ev: WhatsDappEvent.NewSession, listener: (session: WhatsDappSession, bundle: RawPreKeyBundle) => void): this;
   on(ev: WhatsDappEvent.NewMessageSent, listener: (wMessage: WhatsDappMessage, session: { profile_name: any, identity_receiver: any }) => void): this;
-  on(ev: WhatsDappEvent.StorageRead, listener: (storageKey: string, ret: (val: Uint8Array | null) => void) => void): this;
-  on(ev: WhatsDappEvent.StorageWrite, listener: (storageKey: string, storageValue: Uint8Array) => void): this;
-  on(ev: WhatsDappEvent.StorageDelete, listener: (storageKey: string, storageValue: Uint8Array) => void): this;
   on(ev: string, listener: (...args: any[]) => void): this {
     return super.on(ev, listener);
   }
 
+  removeListener(ev: WhatsDappEvent.Initialized, listener: (displayName: string | null) => void): this;
   removeListener(ev: WhatsDappEvent.NewMessage, listener: (msg: WhatsDappMessage, session: WhatsDappSession) => void): this;
   removeListener(ev: WhatsDappEvent.NewSession, listener: (session: WhatsDappSession, bundle: RawPreKeyBundle) => void): this;
   removeListener(ev: WhatsDappEvent.NewMessageSent, listener: (wMessage: WhatsDappMessage, session: { profile_name: any, identity_receiver: any }) => void): this;
-  removeListener(ev: WhatsDappEvent.StorageRead, listener: (storageKey: string, ret: (val: Uint8Array | null) => void) => void): this;
-  removeListener(ev: WhatsDappEvent.StorageWrite, listener: (storageKey: string, storageValue: Uint8Array) => void): this;
-  removeListener(ev: WhatsDappEvent.StorageDelete, listener: (storageKey: string) => void): this;
   removeListener(ev: string, listener: (...args: any[]) => void): this {
     return super.removeListener(ev, listener);
   }
@@ -276,7 +262,6 @@ export class WhatsDapp extends EventEmitter {
   removeAllListeners(ev?: string): this {
     return super.removeAllListeners(ev);
   }
-
 
   /**
    * TODO: instead of indefinitely awaiting init, set
@@ -320,7 +305,7 @@ export class WhatsDapp extends EventEmitter {
     // storage also listens and will save the message.
     console.log({profile_name: receiver, identity_receiver: rIdentity.getId()});
     this.emit(WhatsDappEvent.NewMessageSent, wMessage, {profile_name: receiver, identity_receiver: rIdentity.getId()});
-    await this.storage.addMessageToSession(receiver, wMessage);
+    await this._storage.addMessageToSession(receiver, wMessage);
     console.log("sent");
   }
 
@@ -339,7 +324,6 @@ export class WhatsDapp extends EventEmitter {
     this._pollTimeout = null;
     console.log("WhatsDapp: Disconnect!");
   }
-
 
   async getProfileByName(name: string): Promise<WhatsDappSession | null> {
     // Resolve DPNS-Name to Identity

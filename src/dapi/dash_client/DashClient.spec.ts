@@ -22,7 +22,7 @@ o.spec("Contracts", async function () {
             o(retrievedContract.documents).deepEquals(format);
             return null;
           })
-          .catch(e => threw = e.message)
+          .catch(e => threw = e)
           .then(() => client.disconnect())
           .then(() => o(threw).equals(false));
       }));
