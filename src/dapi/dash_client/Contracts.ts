@@ -137,11 +137,11 @@ const messageContractFormat = {
 
 const contracts : Record<string, PlatformContract>= {
   "profile_contract":{
-    contractId: "HK3baj7Mp3HZX6rgma3C95Wd2CkBWxn6FyD9Xavfs7dE",
+    contractId: "DjMSzc5bRDij3UN1W8E5dKsbxki9vYQ67ChNKKTTUHwm",
     contractFormat: userProfileContractFormat
   },
   "message_contract": {
-    contractId: "JCwyZuX9E2SHQXmnccTeY3DwWsB3SMwZ7TybNPxGhNfs",
+    contractId: "FKY4fxmSzbDKewQRKsytxZ8HMBNgM2oTbzSKVEbtr2eP",
     contractFormat: messageContractFormat
   }
 };
