@@ -14,7 +14,7 @@ type WhatsDappSignalCipherText = {
 export type WhatsDappSignalPrivateKeys = {
   identityKeyPair: SignalKeyPair,
   registrationId: number,
-  preKey: SignalPreKey,
+  preKeys: Map<number, SignalPreKey>,
   signedPreKey: SignalSignedPreKey,
 }
 
@@ -28,7 +28,7 @@ type WhatsDappSignalPreKey = {
 }
 
 export type WhatsDappSignalPrekeyBundle = {
-  preKey: { keyId: number, publicKey: ArrayBuffer },
+  preKeys: Array<{ keyId: number, publicKey: ArrayBuffer }>,
   identityKey: ArrayBuffer,
   registrationId: number,
   signedPreKey: {
@@ -55,17 +55,15 @@ export class SignalWrapper {
   async generateSignalKeys(): Promise<WhatsDappSignalKeyBundle> {
     const identityKeyPair = await libsignal.keyhelper.generateIdentityKeyPair();
     const registrationId = await libsignal.keyhelper.generateRegistrationId();
-    const preKey = this._generatePreKey();
+    const preKeys = this._generatePreKey();
+    const preKeysPublic = Array.from(preKeys.values()).map(key => ({keyId: key.keyId, publicKey: key.keyPair.pubKey}));
     const signedPreKey = await this._generateSignedPreKey(identityKeyPair);
     return {
-      private: {identityKeyPair, registrationId, preKey, signedPreKey},
+      private: {identityKeyPair, registrationId, preKeys, signedPreKey},
       preKeyBundle: {
         identityKey: identityKeyPair.pubKey,
         registrationId: registrationId,
-        preKey: {
-          keyId: preKey.keyId,
-          publicKey: preKey.keyPair.pubKey
-        },
+        preKeys: preKeysPublic,
         signedPreKey: {
           keyId: signedPreKey.keyId,
           publicKey: signedPreKey.keyPair.pubKey,
@@ -129,13 +127,24 @@ export class SignalWrapper {
     const store = new SignalProtocolStore(whatsDappStore, identifier);
     const address = new libsignal.ProtocolAddress(identifier, deviceId);
     const sessionBuilder = new libsignal.SessionBuilder(store, address);
-    await sessionBuilder.initOutgoing(preKeyBundle);
+    // Pick one Onetime Prekey from the list at random
+    const signalKeyBundle = {
+      identityKey: preKeyBundle.identityKey,
+      signedPreKey: preKeyBundle.signedPreKey,
+      registrationId: preKeyBundle.registrationId,
+      preKey: preKeyBundle.preKeys[Math.floor(Math.random() * preKeyBundle.preKeys.length)]
+    };
+    await sessionBuilder.initOutgoing(signalKeyBundle);
     await store.saveIdentity(address.toString(), preKeyBundle.identityKey);
   }
 
-  _generatePreKey(): SignalPreKey {
-    const preKeyId = 42; // TODO: replace
-    return libsignal.keyhelper.generatePreKey(preKeyId);
+  _generatePreKey(lastKeyId = 0): Map<number, WhatsDappSignalPreKey> {
+    const keyBundleSize = 100; // TODO: This should probably be available globally
+    const preKeys: Map<number, WhatsDappSignalPreKey> = new Map<number, WhatsDappSignalPreKey>();
+    for (let preKeyId = 0 + lastKeyId; preKeyId < keyBundleSize + lastKeyId; preKeyId++) {
+      preKeys.set(preKeyId, libsignal.keyhelper.generatePreKey(preKeyId));
+    }
+    return preKeys;
   }
 
   _generateSignedPreKey(identityKeyPair: SignalKeyPair): SignalSignedPreKey {

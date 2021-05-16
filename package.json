@@ -28,8 +28,8 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.2.2",
     "base-58": "0.0.1",
-    "dash": "3.18.2",
-    "grpc": "^1.24.4",
+    "dash": "3.19.1",
+    "grpc": "^1.24.9",
     "libsignal": "^2.0.1"
   }
 }

@@ -41,22 +41,6 @@ const userProfileContractFormat = {
         type: "number",
         maxLength: 500,
       },
-      preKey: {
-        type: "object",
-        properties: {
-          keyId: {
-            type: "number",
-            maxLength: 500
-          },
-          publicKey: {
-            "type": "array",
-            "byteArray": true,
-            "minItems": 30,
-            "maxItems": 40
-          }
-        },
-        additionalProperties: false
-      },
       signedPreKey: {
         type: "object",
         properties: {
@@ -79,19 +63,33 @@ const userProfileContractFormat = {
         },
         additionalProperties: false
       },
-      prekeys: {
+      preKeys: {
         type: "array",
         items: {
-          type: "string",
-          maxLength: 500
-        }
+          type: "object",
+          properties: {
+            keyId: {
+              type: "number",
+              maxLength: 500
+            },
+            publicKey: {
+              "type": "array",
+              "byteArray": true,
+              "minItems": 30,
+              "maxItems": 40
+            }
+          },
+          additionalProperties: false
+        },
+        "minItems": 100,
+        "maxItems": 100
       },
       displayname: {
         type: "string",
         maxLength: 50
       }
     },
-    required: ["identityKey", "registrationId", "preKey", "signedPreKey", "$createdAt", "$updatedAt"],
+    required: ["identityKey", "registrationId", "preKeys", "signedPreKey", "$createdAt", "$updatedAt"],
     additionalProperties: false
   }
 };
@@ -137,11 +135,11 @@ const messageContractFormat = {
 
 const contracts : Record<string, PlatformContract>= {
   "profile_contract":{
-    contractId: "HK3baj7Mp3HZX6rgma3C95Wd2CkBWxn6FyD9Xavfs7dE",
+    contractId: "EG8PeZzrUMtqqAo7piA423eJRacePwfYR3KskHmAARPd",
     contractFormat: userProfileContractFormat
   },
   "message_contract": {
-    contractId: "JCwyZuX9E2SHQXmnccTeY3DwWsB3SMwZ7TybNPxGhNfs",
+    contractId: "FKY4fxmSzbDKewQRKsytxZ8HMBNgM2oTbzSKVEbtr2eP",
     contractFormat: messageContractFormat
   }
 };

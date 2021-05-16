@@ -34,14 +34,14 @@ ___
 
 ### WhatsDappSignalPrekeyBundle
 
-Ƭ **WhatsDappSignalPrekeyBundle**: { `identityKey`: ArrayBuffer ; `preKey`: { `keyId`: *number* ; `publicKey`: ArrayBuffer  } ; `registrationId`: *number* ; `signedPreKey`: { `keyId`: *number* ; `publicKey`: ArrayBuffer ; `signature`: ArrayBuffer  }  }
+Ƭ **WhatsDappSignalPrekeyBundle**: { `identityKey`: ArrayBuffer ; `preKeys`: { `keyId`: *number* ; `publicKey`: ArrayBuffer  } ; `registrationId`: *number* ; `signedPreKey`: { `keyId`: *number* ; `publicKey`: ArrayBuffer ; `signature`: ArrayBuffer  }  }
 
 #### Type declaration:
 
 Name | Type |
 ------ | ------ |
 `identityKey` | ArrayBuffer |
-`preKey` | { `keyId`: *number* ; `publicKey`: ArrayBuffer  } |
+`preKeys` | { `keyId`: *number* ; `publicKey`: ArrayBuffer  } |
 `registrationId` | *number* |
 `signedPreKey` | { `keyId`: *number* ; `publicKey`: ArrayBuffer ; `signature`: ArrayBuffer  } |
 
@@ -51,14 +51,14 @@ ___
 
 ### WhatsDappSignalPrivateKeys
 
-Ƭ **WhatsDappSignalPrivateKeys**: { `identityKeyPair`: [*SignalKeyPair*](types_libsignal.md#signalkeypair) ; `preKey`: [*SignalPreKey*](types_libsignal.md#signalprekey) ; `registrationId`: *number* ; `signedPreKey`: [*SignalSignedPreKey*](types_libsignal.md#signalsignedprekey)  }
+Ƭ **WhatsDappSignalPrivateKeys**: { `identityKeyPair`: [*SignalKeyPair*](types_libsignal.md#signalkeypair) ; `preKeys`: [*SignalPreKey*](types_libsignal.md#signalprekey) ; `registrationId`: *number* ; `signedPreKey`: [*SignalSignedPreKey*](types_libsignal.md#signalsignedprekey)  }
 
 #### Type declaration:
 
 Name | Type |
 ------ | ------ |
 `identityKeyPair` | [*SignalKeyPair*](types_libsignal.md#signalkeypair) |
-`preKey` | [*SignalPreKey*](types_libsignal.md#signalprekey) |
+`preKeys` | [*SignalPreKey*](types_libsignal.md#signalprekey) |
 `registrationId` | *number* |
 `signedPreKey` | [*SignalSignedPreKey*](types_libsignal.md#signalsignedprekey) |
 

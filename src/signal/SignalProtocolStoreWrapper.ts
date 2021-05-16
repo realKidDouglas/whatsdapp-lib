@@ -107,9 +107,8 @@ export class SignalProtocolStore implements ProtocolStore {
    * @param _keyId: unused
    * @returns {Promise<SignalKeyPair>}
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async loadPreKey(_keyId: number): Promise<SignalKeyPair> {
-    const res = (await this.store.getPrivateData()).preKey.keyPair;
+  async loadPreKey(keyId: number): Promise<SignalKeyPair> {
+    const res = await this.store.getPrivateData().preKeys.get(keyId).keyPair;
     return Promise.resolve(res);
   }
 
