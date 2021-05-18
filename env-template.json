@@ -1,0 +1,16 @@
+{
+  "COMMENT": "fill out values, remove this line and save as env.json",
+  "TESTNET_DEPLOY_WALLET": {
+    "mnemonic": "wallet used to deploy contracts",
+    "address": "address to fund this wallet",
+    "identity": "identity used to deploy contracts"
+  },
+  "ALICE_WALLET": {
+    "mnemonic": "wallet A for e2e tests",
+    "address": "address to fund this wallet"
+  },
+  "BOB_WALLET": {
+    "mnemonic": "wallet B for e2e tests",
+    "address": "address to fund this wallet"
+  }
+}

@@ -2,11 +2,12 @@
   "name": "whatsdapp",
   "version": "0.1.0",
   "description": "",
-  "main": "dist/index.js",
+  "main": "dist/index",
   "scripts": {
     "lint": "eslint . --fix --ext .ts",
     "dist": "npm run lint && tsc",
-    "test": "node ./test/run.js unit",
+    "test": "node ./test/run.js",
+    "deploy": "node tools/deploy.js",
     "doc": "npx typedoc --plugin typedoc-plugin-markdown --out doc/tsdocs src/"
   },
   "keywords": [],
@@ -17,6 +18,7 @@
     "@types/ospec": "^4.0.2",
     "@typescript-eslint/eslint-plugin": "^4.9.0",
     "@typescript-eslint/parser": "^4.9.0",
+    "commander": "7.2.0",
     "eslint": "^7.14.0",
     "fast-glob": "^3.2.4",
     "ospec": "^4.1.1",

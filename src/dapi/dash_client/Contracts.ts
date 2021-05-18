@@ -135,13 +135,13 @@ const messageContractFormat = {
   }
 };
 
-const contracts : Record<string, PlatformContract>= {
+const contracts : Record<string, PlatformContract> = {
   "profile_contract":{
-    contractId: "HK3baj7Mp3HZX6rgma3C95Wd2CkBWxn6FyD9Xavfs7dE",
+    contractId: "27fohYeZkj3sbQF36Dhszw9TJrDfiz5no4TgeZwMpdnc",
     contractFormat: userProfileContractFormat
   },
   "message_contract": {
-    contractId: "JCwyZuX9E2SHQXmnccTeY3DwWsB3SMwZ7TybNPxGhNfs",
+    contractId: "9NLGTyc8GMoqAbLbcpsFgevqP36evdQGmjEMVkSwDPf9",
     contractFormat: messageContractFormat
   }
 };

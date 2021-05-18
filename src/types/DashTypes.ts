@@ -1,12 +1,14 @@
 import DashSDK from "dash";
 
 export type DashClient = typeof DashSDK.Client.prototype;
+
 export type DashIdentifier = {
   toBuffer: () => Buffer,
   toJSON: () => string,
   encodeCBOR: (encoder: Encoder) => boolean,
 
 }
+
 export type DashIdentity = {
   id: DashIdentifier,
   getProtocolVersion: () => number,

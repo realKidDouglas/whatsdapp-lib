@@ -23,15 +23,9 @@ import {SignalKeyPair, SignalPreKey, SignalSignedPreKey} from "libsignal";
 
 export type KVStore = {
   get(key: string): Promise<Uint8Array | null>,
-  set(key: string, value: Uint8Array): void,
-  del(key: string): void,
+  set(key: string, value: Uint8Array): Promise<void>,
+  del(key: string): Promise<void>,
   clear(): void,
-}
-
-export type Mapper = {
-  encrypt: (data: Uint8Array) => Promise<Uint8Array>,
-  decrypt: (data: Uint8Array) => Promise<Uint8Array>,
-  hash: (data: string) => Promise<string>
 }
 
 export type SessionMetaData = {
@@ -43,8 +37,9 @@ export type SessionMetaData = {
 export type WhatsDappUserData = {
   mnemonic: string,
   displayName: string,
-  identityAddr: string,
-  dpnsName: string
+  identityId: string,
+  dpnsName: string,
+  extraDpnsNames: Array<string>
 }
 
 export type WhatsDappPrivateData = {
@@ -72,7 +67,6 @@ export class StructuredStorage {
   _metadata: { [key: string]: SessionMetaData } | null;
   _userData: WhatsDappUserData | null;
   _privateData: WhatsDappPrivateData | null;
-  _storeEnc: KVStore | null;
   _store: KVStore;
 
   /**
@@ -86,22 +80,7 @@ export class StructuredStorage {
     this._userData = null;
     this._privateData = null;
     this._store = store;
-    this._storeEnc = null;
   }
-
-  setMapper(mapper: Mapper) : void {
-    this._storeEnc = {
-      set: async (key, value) => this._store.set(await mapper.hash(key), await mapper.encrypt(value)),
-      get: async (key) => this._store.get(await mapper.hash(key)),
-      del: async (key) => this._store.del(await mapper.hash(key)),
-      clear: async () => this._store.clear()
-    };
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    this.setMapper = (_mapper: Mapper) => {
-      throw new Error("mapper already set!");
-    };
-  }
-
   async getSessionKeys(identityId: string): Promise<any> {
     if (this._metadata == null) {
       this._metadata = await this._loadMetaData();
@@ -123,7 +102,6 @@ export class StructuredStorage {
   }
 
   async addSession(identityId: string, device: string, info: any): Promise<void> {
-    if(this._storeEnc == null) throw new Error("called addSession before setMapper.");
 
     if (this._metadata == null) {
       this._metadata = await this._loadMetaData();
@@ -138,13 +116,12 @@ export class StructuredStorage {
     };
 
     const chunkKey = makeChunkKey(identityId, 0);
-    this._storeEnc.set(chunkKey, objectToUint8Array([]));
+    await this._store.set(chunkKey, objectToUint8Array([]));
     await this._saveSessions();
     return this._saveMetaData(identityId);
   }
 
   async addMessageToSession(identityId: string, message: WhatsDappMessage): Promise<void> {
-    if(this._storeEnc == null) throw new Error("mapper not set.");
     if (this._metadata == null) {
       this._metadata = await this._loadMetaData();
     }
@@ -161,7 +138,7 @@ export class StructuredStorage {
     const chunks = md.chunks;
     const targetChunkIndex = getTargetChunkIndex(timestamp, chunks);
     let histKey = makeChunkKey(identityId, targetChunkIndex);
-    const currentChunkArr = await this._storeEnc.get(histKey);
+    const currentChunkArr = await this._store.get(histKey);
     if (currentChunkArr == null) {
       console.log('missing chunk, the history is corrupt!');
       return;
@@ -179,15 +156,15 @@ export class StructuredStorage {
         histKey = makeChunkKey(identityId, targetChunkIndex + 1);
         md.chunks.push(timestamp);
         const histChunk = [newEntryStr];
-        this._storeEnc.set(histKey, objectToUint8Array(histChunk));
+        await this._store.set(histKey, objectToUint8Array(histChunk));
       } else {
         const newChunk = insertMessageToChunk(timestamp, newEntryStr, currentChunk);
-        this._storeEnc.set(histKey, objectToUint8Array(newChunk));
+        await this._store.set(histKey, objectToUint8Array(newChunk));
       }
     } else {
       // it's a delayed message, add to the found histFile and check afterwards if hardMaxSize was exceeded
       const newChunk = insertMessageToChunk(timestamp, newEntryStr, currentChunk);
-      this._storeEnc.set(histKey, objectToUint8Array(newChunk));
+      await this._store.set(histKey, objectToUint8Array(newChunk));
       // TODO: if (Buffer.byteLength(json, 'utf8') > CHUNK_SIZE_MAX) await this._reorganizeHistory(identityId)
     }
 
@@ -203,14 +180,14 @@ export class StructuredStorage {
   }
 
   async deleteSession(identityId: string): Promise<void> {
-    if(this._storeEnc == null) throw new Error("mapper not set");
-    const storeEnc = this._storeEnc;
     if (this._metadata == null) this._metadata = await this._loadMetaData();
     const md = this._metadata[identityId];
     if (md == null) return;
-    md.chunks.forEach(n => storeEnc.del(makeChunkKey(identityId, n)));
+    for(const n of md.chunks) {
+      await this._store.del(makeChunkKey(identityId, n));
+    }
     delete this._metadata[identityId];
-    storeEnc.del(makeMetadataKey(identityId));
+    await this._store.del(makeMetadataKey(identityId));
     await this._saveSessions();
   }
 
@@ -240,17 +217,15 @@ export class StructuredStorage {
   }
 
   private async _loadSessions(): Promise<Array<string>> {
-    if(this._storeEnc == null) throw new Error("mapper not set");
-    const arr = await this._storeEnc.get(SESSIONS_FILE_NAME);
+    const arr = await this._store.get(SESSIONS_FILE_NAME);
     return arr == null
       ? []
       : uint8ArrayToObject(arr) as Array<string>;
   }
 
   private async _saveSessions(): Promise<void> {
-    if(this._storeEnc == null) throw new Error("mapper not set");
     const sessions = await this.getSessions();
-    this._storeEnc.set(SESSIONS_FILE_NAME, objectToUint8Array(sessions));
+    return this._store.set(SESSIONS_FILE_NAME, objectToUint8Array(sessions));
   }
 
   private async _loadMetaData(): Promise<{ [key: string]: SessionMetaData }> {
@@ -267,15 +242,13 @@ export class StructuredStorage {
   }
 
   private async _loadBlockMap(identityId: string): Promise<SessionMetaData | null> {
-    if(this._storeEnc == null) throw new Error("mapper not set");
-    const arr = await this._storeEnc.get(makeMetadataKey(identityId));
+    const arr = await this._store.get(makeMetadataKey(identityId));
     return arr == null
       ? null
       : uint8ArrayToObject(arr) as SessionMetaData;
   }
 
   private async _saveMetaData(identityId: string): Promise<void> {
-    if(this._storeEnc == null) throw new Error("mapper not set");
     console.log("save metadata");
     if (this._metadata == null) {
       this._metadata = await this._loadMetaData();
@@ -290,7 +263,7 @@ export class StructuredStorage {
       chunks: md.chunks
     };
     const mdArr = objectToUint8Array(contents);
-    this._storeEnc.set(mdKey, mdArr);
+    return this._store.set(mdKey, mdArr);
   }
 
   //
@@ -319,16 +292,14 @@ export class StructuredStorage {
    * @private
    */
   private async _savePrivateData(): Promise<void> {
-    if(this._storeEnc == null) throw new Error("mapper not set");
     console.log("save private data");
     const pd = await this.getPrivateData();
-    return this._storeEnc.set(PRIVATE_FILE_NAME, objectToUint8Array(pd));
+    return this._store.set(PRIVATE_FILE_NAME, objectToUint8Array(pd));
   }
 
   private async _loadPrivateData(): Promise<WhatsDappPrivateData | null> {
-    if(this._storeEnc == null) throw new Error("mapper not set");
     console.log("getting private data!");
-    const loadedPrivateData = await this._storeEnc.get(PRIVATE_FILE_NAME);
+    const loadedPrivateData = await this._store.get(PRIVATE_FILE_NAME);
     if (loadedPrivateData == null) return null;
     const pdObj = uint8ArrayToObject(loadedPrivateData);
     return restoreBuffers(pdObj) as WhatsDappPrivateData;
@@ -358,31 +329,15 @@ export class StructuredStorage {
   }
 
   private async _saveUserData(): Promise<void> {
-    if(this._storeEnc == null) throw new Error("mapper not set");
     const userData = await this.getUserData();
-    this._storeEnc.set(USER_FILE_NAME, objectToUint8Array(userData));
+    return this._store.set(USER_FILE_NAME, objectToUint8Array(userData));
   }
 
   private async _loadUserData(): Promise<WhatsDappUserData | null> {
-    if(this._storeEnc == null) throw new Error("mapper not set");
-    const arr = await this._storeEnc.get(USER_FILE_NAME);
+    const arr = await this._store.get(USER_FILE_NAME);
     return arr == null
       ? null
       : uint8ArrayToObject(arr) as WhatsDappUserData;
-  }
-
-  //
-  // marker for the user data
-  //
-
-  async setMarker(displayName: string) : Promise<void> {
-    return this._store.set('marker', objectToUint8Array(displayName));
-  }
-
-  async getMarker() : Promise<string|null> {
-    const arr = await this._store.get('marker');
-    if(arr == null) return null;
-    return uint8ArrayToObject(arr) as string;
   }
 
   //
@@ -420,7 +375,6 @@ export class StructuredStorage {
   }
 
   private async _getMessageByTimestamp(identityId: string, timestamp: number, limit: number, older: boolean): Promise<Array<WhatsDappMessage>> {
-    if (this._storeEnc == null) throw new Error("mapper not set.");
     if (this._metadata == null) {
       this._metadata = await this._loadMetaData();
     }
@@ -459,7 +413,7 @@ export class StructuredStorage {
     for (let i = targetChunkIndex; i !== stopVal; i = i + dir) {
       // read in chunk contents
       const chunkKey = makeChunkKey(identityId, i);
-      const chunkArr = await this._storeEnc.get(chunkKey);
+      const chunkArr = await this._store.get(chunkKey);
       if (chunkArr == null) {
         console.log("history is corrupt, chunkArr null!");
         break;

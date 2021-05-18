@@ -1,3 +1,4 @@
+/* eslint @typescript-eslint/no-var-requires: "off" */
 // enable requiring typescript files
 require('ts-node').register();
 
@@ -24,7 +25,7 @@ function unit() {
 }
 
 function e2e() {
-  require('./e2e/e2e.ts').run();
+  require('./e2e/e2e.ts').run().then(() => console.log("e2e test done!"));
 }
 
 function help() {

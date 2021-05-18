@@ -3,10 +3,11 @@ import {EventEmitter} from 'events';
 import {DashClient, DashIdentity} from "./types/DashTypes";
 import {WhatsDappMessage} from "./dapi/WhatsDappMessage";
 import {WhatsDappProfile} from "./dapi/WhatsDappProfile";
-import {StructuredStorage} from "./storage/StructuredStorage";
-import type {KVStore, Mapper} from "./storage/StructuredStorage";
+import {StructuredStorage, WhatsDappUserData} from "./storage/StructuredStorage";
 import {makeClient} from "./dapi/dash_client/DashClient";
-
+import {SignalWrapper} from "./signal/SignalWrapper";
+import {IdentityCreateError, WhatsDappError} from "./error/WhatsDappError";
+import {Err, Result} from "./types/Result";
 type TimerHandle = ReturnType<typeof setTimeout>;
 
 export type WhatsDappSession = {
@@ -16,7 +17,6 @@ export type WhatsDappSession = {
 }
 
 export enum WhatsDappEvent {
-  Initialized = 'initialized',
   NewMessage = 'new-message',
   NewSession = 'new-session',
   NewMessageSent = 'new-message-sent'
@@ -68,25 +68,39 @@ export type WhatsDappProfileContent = {
   displayname: string //content.displayname
 }
 
-type ConnectOptions = {
+
+/**
+ * partial WhatsDappUserData that needs to be completed before it can be used
+ * to connect
+ */
+type LoginInfo = {
   mnemonic: string,
-  sessions: Array<WhatsDappSession>,
-  identity: any,
-  displayname: string,
-  createDpnsName: string | null,
+  identityId: string | null,
+  dpnsNames: Array<string>,
+  displayName: string | null,
+}
+
+/**
+ * Connecting with locally saved profile: only password needed
+ * Connecting with profile that's not saved locally:
+ *  - mnemonic & password needed (to save the profile)
+ * Connecting with no profile:
+ *  - mnemonic & password needed
+ *  - displayname & dpns needed
+ */
+export type ConnectOptions = {
+  mnemonic: string,
+  identityId: string | null,
+  dpnsName: string,
+  extraDpnsNames: Array<string>,
+  displayName: string,
   lastTimestamp: number,
-  preKeyBundle: any
+  password: string,
 }
 
 type WhatsDappMessageContent = {
   message: string,
   deleteTime: number
-}
-
-type ConnectResult = {
-  displayName: string,
-  createDpnsName: string | null,
-  identity: DashIdentity
 }
 
 export type WhatsDappConnection = {
@@ -104,67 +118,140 @@ export class WhatsDapp extends EventEmitter {
   _client: DashClient | null = null;
   _profile: WhatsDappProfile | null = null;
   _sessions: Array<WhatsDappSession> = [];
-  initialized: Promise<ConnectResult> | null = null;
+  initialized: Promise<WhatsDappUserData> | null = null;
   _storage: StructuredStorage;
+  _signal: SignalWrapper;
 
-  constructor(kvstore: KVStore) {
+  constructor(storage: StructuredStorage) {
     super();
-    this._storage = new StructuredStorage(kvstore);
-    this._storage.getMarker().then(dpn => this.emit(WhatsDappEvent.Initialized, dpn));
-  }
-
-  getStorage(mapper: Mapper) : StructuredStorage {
-    this._storage.setMapper(mapper);
-    return this._storage;
+    this._storage = storage;
+    this._signal = new SignalWrapper();
   }
 
   /**
-   * @param opts {}
-   * @returns {Promise<{profile_name:string, identity}>}
+   * get the stored login from the storage
    */
-  async connect(opts: ConnectOptions): Promise<ConnectResult> {
-    let {identity} = opts;
-    const {mnemonic, sessions, displayname, lastTimestamp, preKeyBundle, createDpnsName} = opts;
+  async getSavedLogin() : Promise<LoginInfo | null> {
+    const savedLogin = await this._storage.getUserData();
+    if(savedLogin == null) return null;
+    return {
+      mnemonic: savedLogin.mnemonic,
+      identityId: savedLogin.identityId,
+      dpnsNames:  [savedLogin.dpnsName, ...savedLogin.extraDpnsNames],
+      displayName: savedLogin.displayName
+    };
+  }
+
+  /**
+   * get a list of the ways the mnemonic could log in
+   * by checking its identities and associated dpns names and whatsdapp profiles.
+   *  - only mnemonic (to create new identity + new dpns + new profile)
+   *  - mnemonic + identity for each identity (create new dpns + profile)
+   *  - mnemonic + identity + all dpns for each identity that has dpns
+   *  - mnemonic + identity + all dpns + displayname for each identity that has a profile
+   */
+  static async listLoginInfos(mnemonic: string) : Promise<Array<LoginInfo>> {
+    const ret: Array<LoginInfo> = [{mnemonic, identityId: null, dpnsNames: [], displayName: null, }];
+    const client = makeClient(mnemonic);
+    const account = await client.getWalletAccount();
+    // @ts-ignore TODO: this must be fixed in the type declarations of wallet-lib
+    const identityIds = await account.identities.getIdentityIds();
+    console.log("identities:", identityIds);
+    for(let i = 0; i < identityIds.length; i++) {
+      const identityId = identityIds[i];
+      ret.push({mnemonic, identityId, dpnsNames: [], displayName: null});
+      // check for dpns name of identity
+      const dpnsNames = await dapi.getDpnsNames(client.platform, identityId);
+      console.log("names:", dpnsNames);
+      if(dpnsNames.length === 0) continue;
+      ret.push({mnemonic, identityId, dpnsNames, displayName: null});
+
+      // check if identity has registered a whatsdapp profile
+      const profile = await dapi.getProfile({
+        identity: null,
+        platform: client.platform,
+        ownerId: null
+      }, identityId);
+      if(profile == null) continue;
+      ret.push({mnemonic, identityId, dpnsNames, displayName: profile.data.displayname});
+    }
+    await client.disconnect();
+    return ret;
+  }
+
+  async deleteProfile(profile: LoginInfo) : Promise<void> {
+    const {mnemonic, identityId, displayName} = profile;
+    if(identityId == null || displayName == null) return;
+    const client = makeClient(mnemonic);
+    const retrievedIdentity = await dapi.getIdentity({platform: client.platform, identity: null, ownerId: identityId}, identityId);
+    await dapi.deleteProfile({platform: client.platform, identity: retrievedIdentity, ownerId: identityId});
+  }
+  /**
+   * @param opts {ConnectOptions}
+   * @returns {Promise<WhatsDappUserData>}
+   */
+  async connect(opts: ConnectOptions): Promise<Result<WhatsDappUserData, WhatsDappError>> {
+    const {lastTimestamp, displayName, dpnsName, mnemonic} = opts;
+    let {identityId} = opts;
+
+    // prepare signal info
+    let preKeyBundle;
+    const hasPrivateData = await this._storage.hasPrivateData();
+    if (!hasPrivateData) {
+      const keys = await this._signal.generateSignalKeys();
+      await this._storage.setPrivateData(keys.private);
+      console.log("saved new priv data");
+      preKeyBundle = keys.preKeyBundle;
+    }
+    const sessionIds = await this._storage.getSessions();
+    this._sessions = sessionIds.map(si => ({profile_name: si, identity_receiver: ""}));
     this._lastPollTime = lastTimestamp + 1;
     this._client = makeClient(mnemonic);
     this._connection.platform = this._client.platform;
-    this._sessions = sessions;
-    if (identity == null) {
-      const id = await dapi.createIdentity(this._connection);
-      if (id === null) console.log('created identity is null!');
-      identity = id?.getId().toJSON();
-      console.log(identity);
+    if (identityId == null) {
+      const newIdentity = await dapi.createIdentity(this._connection);
+      const id = newIdentity?.getId().toJSON();
+      if (typeof id !== 'string') return Promise.resolve(new IdentityCreateError('created identity is null!'));
+      identityId = id;
+      console.log(identityId);
     }
 
-    this._connection.identity = await this._connection.platform.identities.get(identity);
+    this._connection.identity = await this._connection.platform.identities.get(identityId);
 
     let dpnsResult: string | null = null;
-    if (createDpnsName) {
-      dpnsResult = (!(await dapi.createDpnsName(this._connection, (createDpnsName + ".dash"))) ? null : createDpnsName);
+    if (dpnsName) {
+      dpnsResult = (!(await dapi.createDpnsName(this._connection, (dpnsName + ".dash"))) ? null : dpnsName);
     }
+    if(typeof dpnsResult !== 'string') throw "unsuccessful dpns name";
 
-    let profile = await dapi.getProfile(this._connection, identity);
+    let profile = await dapi.getProfile(this._connection, identityId);
 
     if (profile == null) {
       console.log("creating new profile!");
-      const content = preKeyBundle;
-      content.displayname = displayname;
+      const content = preKeyBundle || {};
+      // @ts-ignore
+      content.displayname = displayName;
+      // @ts-ignore
       content.prekeys = [];
       console.log(content);
+      // @ts-ignore
       await dapi.createProfile(this._connection, content);
-      profile = await dapi.getProfile(this._connection, identity);
+      profile = await dapi.getProfile(this._connection, identityId);
     }
 
     this._profile = new WhatsDappProfile(profile);
+    const userData : WhatsDappUserData = {
+      mnemonic,
+      displayName,
+      identityId,
+      dpnsName,
+      extraDpnsNames: []
+    };
 
-    // deferred initialization
-    this.initialized = Promise.resolve()
-      .then(() => this._pollTimeout = setTimeout(() => this._poll(), 0)) // first poll is immediate
-      .catch(e => console.log("error", e))
-      .then(() => this._storage.setMarker(displayname))
-      .then(() => ({displayName: displayname, identity: identity, createDpnsName: dpnsResult}));
-
-    return this.initialized;
+    this._pollTimeout = setTimeout(() => this._poll(), 0);
+    await this._storage.setUserData(userData);
+    this.initialized = Promise.resolve(userData);
+    return userData;
   }
 
   /** _poll is async, if we used an interval we might start a new poll before
@@ -234,7 +321,6 @@ export class WhatsDapp extends EventEmitter {
     return session;
   }
 
-  emit(ev: WhatsDappEvent.Initialized, displayName: string | null) : boolean;
   emit(ev: WhatsDappEvent.NewMessage, message: WhatsDappMessage, session: WhatsDappSession): boolean;
   emit(ev: WhatsDappEvent.NewSession, session: WhatsDappSession, bundle: RawPreKeyBundle): boolean;
   emit(ev: WhatsDappEvent.NewMessageSent, wMessage: WhatsDappMessage, session: { profile_name: any, identity_receiver: any }): boolean;
@@ -242,7 +328,6 @@ export class WhatsDapp extends EventEmitter {
     return super.emit(ev, ...Array.from(args));
   }
 
-  on(ev: WhatsDappEvent.Initialized, listener: (displayName: string | null) => void): this;
   on(ev: WhatsDappEvent.NewMessage, listener: (msg: WhatsDappMessage, session: WhatsDappSession) => void): this;
   on(ev: WhatsDappEvent.NewSession, listener: (session: WhatsDappSession, bundle: RawPreKeyBundle) => void): this;
   on(ev: WhatsDappEvent.NewMessageSent, listener: (wMessage: WhatsDappMessage, session: { profile_name: any, identity_receiver: any }) => void): this;
@@ -250,7 +335,6 @@ export class WhatsDapp extends EventEmitter {
     return super.on(ev, listener);
   }
 
-  removeListener(ev: WhatsDappEvent.Initialized, listener: (displayName: string | null) => void): this;
   removeListener(ev: WhatsDappEvent.NewMessage, listener: (msg: WhatsDappMessage, session: WhatsDappSession) => void): this;
   removeListener(ev: WhatsDappEvent.NewSession, listener: (session: WhatsDappSession, bundle: RawPreKeyBundle) => void): this;
   removeListener(ev: WhatsDappEvent.NewMessageSent, listener: (wMessage: WhatsDappMessage, session: { profile_name: any, identity_receiver: any }) => void): this;

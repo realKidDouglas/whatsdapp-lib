@@ -4,9 +4,11 @@ import {
 } from './Wallet_DAO';
 import {
   createIdentity as _createIdentity,
+  getIdentity as _getIdentity,
   topUpIdentity as _topUpIdentity,
   getIdentityBalance as _getIdentityBalance,
   createDpnsName as _createDpnsName,
+  getDpnsNames as _getDpnsNames,
   findIdentityByName as _findIdentityByName,
 } from "./Identity_DAO";
 
@@ -32,8 +34,10 @@ export const getUnusedAddress = _getUnusedAddress;
 
 // Identity
 export const createIdentity = _createIdentity;
+export const getIdentity = _getIdentity;
 export const topUpIdentity = _topUpIdentity;
 export const createDpnsName = _createDpnsName;
+export const getDpnsNames = _getDpnsNames;
 export const findIdentityByName = _findIdentityByName;
 export const getIdentityBalance = _getIdentityBalance;
 
