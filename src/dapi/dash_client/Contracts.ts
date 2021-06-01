@@ -112,7 +112,7 @@ const messageContractFormat = {
       },
       {
         properties: [
-          {receiverid: "asc"},
+          {receiverId: "asc"},
         ]
       },
       {
@@ -122,7 +122,7 @@ const messageContractFormat = {
       }
     ],
     properties: {
-      receiverid: {
+      receiverId: {
         type: "string",
         maxLength: 500
       },
@@ -130,18 +130,18 @@ const messageContractFormat = {
         type: "string",
       }
     },
-    required: ["receiverid", "content", "$createdAt", "$updatedAt"],
+    required: ["receiverId", "content", "$createdAt", "$updatedAt"],
     additionalProperties: false
   }
 };
 
 const contracts : Record<string, PlatformContract> = {
   "profile_contract":{
-    contractId: "27fohYeZkj3sbQF36Dhszw9TJrDfiz5no4TgeZwMpdnc",
+    contractId: "Cn2mW1C2gjU6VnwrbswRkXR6N9ny3i8x8DqKCgaRYB4P",
     contractFormat: userProfileContractFormat
   },
   "message_contract": {
-    contractId: "9NLGTyc8GMoqAbLbcpsFgevqP36evdQGmjEMVkSwDPf9",
+    contractId: "Be9TUTcj7gJWHhfXkijK3pS6mdT7v6nSKNqG2tX7wX2v",
     contractFormat: messageContractFormat
   }
 };

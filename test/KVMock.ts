@@ -1,4 +1,4 @@
-import {KVStore} from "../../src/storage/StructuredStorage";
+import {KVStore} from "../src/storage/StructuredStorage";
 
 
 export class KVMock implements KVStore {

@@ -21,21 +21,12 @@ const clientOpts = {
 };
 const client = new Dash.Client(clientOpts);
 
-const registerName = async () => {
+const getName = async () => {
   const { platform } = client;
-
-  const identity = await platform.identities.get('HK4WrC2eMRKVDWJbvRjt4nswFSkmhGfCcgDKDhFeAZKw');
-  console.log('got identity');
-  const nameRegistration = await platform.names.register(
-    'allicewd.dash',
-    { dashUniqueIdentityId: identity.getId() },
-    identity,
-  );
-
-  return nameRegistration;
+  return await platform.names.resolve('allicewdooo.dash');
 };
 
-registerName()
-.then((d) => console.log('Name registered:\n', d.toJSON()))
-  .catch((e) => console.error('Something went wrong:\n', e))
+getName()
+.then((d) => console.log('Name got:\n', d))
+  .catch((e) => console.error('Something went wrong:\n', e.message))
   .finally(() => client.disconnect());

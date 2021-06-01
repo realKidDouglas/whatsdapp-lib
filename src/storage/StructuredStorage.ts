@@ -11,7 +11,7 @@ import {
   getTargetChunkIndex,
   insertMessageToChunk,
   isChunk,
-  isWhatsDappPrivateData,
+  isSignalKeyBundle,
   isWhatsDappUserData,
   makeChunkKey,
   makeMetadataKey,
@@ -20,6 +20,7 @@ import {
   uint8ArrayToObject
 } from "./StructuredStorageUtils";
 import {SignalKeyPair, SignalPreKey, SignalSignedPreKey} from "libsignal";
+import {WhatsDappSignalKeyBundle} from "../signal/SignalWrapper";
 
 export type KVStore = {
   get(key: string): Promise<Uint8Array | null>,
@@ -66,7 +67,7 @@ export type WhatsDappPrivateData = {
 export class StructuredStorage {
   _metadata: { [key: string]: SessionMetaData } | null;
   _userData: WhatsDappUserData | null;
-  _privateData: WhatsDappPrivateData | null;
+  _privateData: WhatsDappSignalKeyBundle | null;
   _store: KVStore;
 
   /**
@@ -270,12 +271,12 @@ export class StructuredStorage {
   // privateData persistence
   //
 
-  async setPrivateData(data: WhatsDappPrivateData): Promise<void> {
+  async setSignalData(data: WhatsDappSignalKeyBundle): Promise<void> {
     this._privateData = data;
     return this._savePrivateData();
   }
 
-  async getPrivateData(): Promise<WhatsDappPrivateData | null> {
+  async getSignalData(): Promise<WhatsDappSignalKeyBundle | null> {
     if (this._privateData == null) {
       this._privateData = await this._loadPrivateData();
     }
@@ -283,8 +284,8 @@ export class StructuredStorage {
   }
 
   async hasPrivateData(): Promise<boolean> {
-    const pd = await this.getPrivateData();
-    return isWhatsDappPrivateData(pd);
+    const pd = await this.getSignalData();
+    return isSignalKeyBundle(pd);
   }
 
   /**
@@ -293,16 +294,16 @@ export class StructuredStorage {
    */
   private async _savePrivateData(): Promise<void> {
     console.log("save private data");
-    const pd = await this.getPrivateData();
+    const pd = await this.getSignalData();
     return this._store.set(PRIVATE_FILE_NAME, objectToUint8Array(pd));
   }
 
-  private async _loadPrivateData(): Promise<WhatsDappPrivateData | null> {
+  private async _loadPrivateData(): Promise<WhatsDappSignalKeyBundle | null> {
     console.log("getting private data!");
     const loadedPrivateData = await this._store.get(PRIVATE_FILE_NAME);
     if (loadedPrivateData == null) return null;
     const pdObj = uint8ArrayToObject(loadedPrivateData);
-    return restoreBuffers(pdObj) as WhatsDappPrivateData;
+    return restoreBuffers(pdObj) as WhatsDappSignalKeyBundle;
   }
 
   //

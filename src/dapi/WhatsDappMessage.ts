@@ -14,6 +14,4 @@ export class WhatsDappMessage {
     this.id = rawMessage.id.toString();
     this.ownerId = rawMessage.ownerId.toString();
   }
-
-
 }

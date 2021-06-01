@@ -5,11 +5,10 @@ const env = require('../env');
 const client = new Dash.Client();
 
 const retrieveIdentity = async () => {
-  // return client.platform.identities.get(env.TESTNET_DEPLOY_WALLET.identity);
-  return client.platform.identities.get('HK4WrC2eMRKVDWJbvRjt4nswFSkmhGfCcgDKDhFeAZKw');
+  return client.platform.identities.get('CRzGj9J4aw1MunxnMNmAV6FWH3rch9TA5A87NMwP6yjD');
 };
 
 retrieveIdentity()
-  .then((d) => console.log('Identity retrieved:\n', d.toJSON()))
+  .then((d) => console.log('Identity retrieved:\n', d))
   .catch((e) => console.error('Something went wrong:\n', e))
   .finally(() => client.disconnect());

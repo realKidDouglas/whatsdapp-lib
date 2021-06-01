@@ -14,6 +14,8 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@dashevo/dashcore-lib": "0.19.23",
+    "@dashevo/wallet-lib": "7.19.1",
     "@types/node": "^14.14.10",
     "@types/ospec": "^4.0.2",
     "@typescript-eslint/eslint-plugin": "^4.9.0",
@@ -29,7 +31,8 @@
   },
   "dependencies": {
     "base-58": "0.0.1",
-    "dash": "3.19.1",
-    "libsignal": "^2.0.1"
+    "dash": "3.19.4",
+    "libsignal": "^2.0.1",
+    "neverthrow": "4.2.1"
   }
 }

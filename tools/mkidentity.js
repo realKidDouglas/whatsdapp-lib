@@ -22,7 +22,7 @@ const clientOpts = {
 const client = new Dash.Client(clientOpts);
 
 const createIdentity = async () => {
-  return client.platform.identities.register(10000);
+  return client.platform.identities.register(10);
 };
 
 createIdentity()

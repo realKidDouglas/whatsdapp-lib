@@ -1,5 +1,6 @@
 import {METADATA_FILE_NAME} from "./StructuredStorageConstants";
-import {WhatsDappPrivateData, WhatsDappUserData} from "./StructuredStorage";
+import {WhatsDappUserData} from "./StructuredStorage";
+import {WhatsDappSignalKeyBundle} from "../signal/SignalWrapper";
 
 export function objectToUint8Array(obj: unknown): Uint8Array {
   const json = JSON.stringify(obj);
@@ -47,12 +48,15 @@ export function isSerializedBuffer(obj: Record<string, unknown>): obj is { type:
   return Object.keys(obj).length === 2 && obj['type'] === 'Buffer' && Array.isArray(obj.data);
 }
 
-export function isWhatsDappPrivateData(obj: Record<string, unknown> | null): obj is WhatsDappPrivateData {
-  return obj != null && [
-    typeof obj.identityKeyPair !== 'undefined',
-    typeof obj.registrationId !== 'undefined',
-    typeof obj.preKey !== 'undefined',
-    typeof obj.signedPreKey !== 'undefined',
+export function isSignalKeyBundle(obj: Record<string, unknown> | null): obj is WhatsDappSignalKeyBundle {
+  if(obj == null) return false;
+  if(typeof obj.private === 'undefined') return false;
+  const privateData = obj.private as Record<string, unknown>;
+  return [
+    typeof privateData.identityKeyPair !== 'undefined',
+    typeof privateData.registrationId !== 'undefined',
+    typeof privateData.preKey !== 'undefined',
+    typeof privateData.signedPreKey !== 'undefined',
   ].every(Boolean);
 }
 
@@ -65,7 +69,7 @@ export function isWhatsDappUserData(obj: Record<string, unknown> | null): obj is
   ].every(Boolean);
 }
 
-export function isChunk(obj: any): obj is Array<string> {
+export function isChunk(obj: unknown): obj is Array<string> {
   return Array.isArray(obj) && obj.every(v => typeof v === 'string');
 }
 
