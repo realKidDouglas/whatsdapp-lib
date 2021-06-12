@@ -316,14 +316,14 @@ ___
 
 ### emit
 
-▸ **emit**(`ev`: [*NewMessage*](../enums/whatsdapp.whatsdappevent.md#newmessage), `message`: [*WhatsDappMessage*](dapi_whatsdappmessage.whatsdappmessage.md), `session`: [*WhatsDappSession*](../modules/whatsdapp.md#whatsdappsession)): *boolean*
+▸ **emit**(`ev`: [*NewMessage*](../enums/whatsdapp.whatsdappevent.md#newmessage), `message`: [*WhatsDappCipherMessage*](dapi_whatsdappmessage.whatsdappmessage.md), `session`: [*WhatsDappSession*](../modules/whatsdapp.md#whatsdappsession)): *boolean*
 
 #### Parameters:
 
 Name | Type |
 ------ | ------ |
 `ev` | [*NewMessage*](../enums/whatsdapp.whatsdappevent.md#newmessage) |
-`message` | [*WhatsDappMessage*](dapi_whatsdappmessage.whatsdappmessage.md) |
+`message` | [*WhatsDappCipherMessage*](dapi_whatsdappmessage.whatsdappmessage.md) |
 `session` | [*WhatsDappSession*](../modules/whatsdapp.md#whatsdappsession) |
 
 **Returns:** *boolean*
@@ -344,14 +344,14 @@ Name | Type |
 
 Defined in: [src/WhatsDapp.ts:246](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/WhatsDapp.ts#L246)
 
-▸ **emit**(`ev`: [*NewMessageSent*](../enums/whatsdapp.whatsdappevent.md#newmessagesent), `wMessage`: [*WhatsDappMessage*](dapi_whatsdappmessage.whatsdappmessage.md), `session`: { `identity_receiver`: *any* ; `profile_name`: *any*  }): *boolean*
+▸ **emit**(`ev`: [*NewMessageSent*](../enums/whatsdapp.whatsdappevent.md#newmessagesent), `wMessage`: [*WhatsDappCipherMessage*](dapi_whatsdappmessage.whatsdappmessage.md), `session`: { `identity_receiver`: *any* ; `profile_name`: *any*  }): *boolean*
 
 #### Parameters:
 
 Name | Type |
 ------ | ------ |
 `ev` | [*NewMessageSent*](../enums/whatsdapp.whatsdappevent.md#newmessagesent) |
-`wMessage` | [*WhatsDappMessage*](dapi_whatsdappmessage.whatsdappmessage.md) |
+`wMessage` | [*WhatsDappCipherMessage*](dapi_whatsdappmessage.whatsdappmessage.md) |
 `session` | { `identity_receiver`: *any* ; `profile_name`: *any*  } |
 
 **Returns:** *boolean*
@@ -498,14 +498,14 @@ ___
 
 ### on
 
-▸ **on**(`ev`: [*NewMessage*](../enums/whatsdapp.whatsdappevent.md#newmessage), `listener`: (`msg`: [*WhatsDappMessage*](dapi_whatsdappmessage.whatsdappmessage.md), `session`: [*WhatsDappSession*](../modules/whatsdapp.md#whatsdappsession)) => *void*): [*WhatsDapp*](whatsdapp.whatsdapp-1.md)
+▸ **on**(`ev`: [*NewMessage*](../enums/whatsdapp.whatsdappevent.md#newmessage), `listener`: (`msg`: [*WhatsDappCipherMessage*](dapi_whatsdappmessage.whatsdappmessage.md), `session`: [*WhatsDappSession*](../modules/whatsdapp.md#whatsdappsession)) => *void*): [*WhatsDapp*](whatsdapp.whatsdapp-1.md)
 
 #### Parameters:
 
 Name | Type |
 ------ | ------ |
 `ev` | [*NewMessage*](../enums/whatsdapp.whatsdappevent.md#newmessage) |
-`listener` | (`msg`: [*WhatsDappMessage*](dapi_whatsdappmessage.whatsdappmessage.md), `session`: [*WhatsDappSession*](../modules/whatsdapp.md#whatsdappsession)) => *void* |
+`listener` | (`msg`: [*WhatsDappCipherMessage*](dapi_whatsdappmessage.whatsdappmessage.md), `session`: [*WhatsDappSession*](../modules/whatsdapp.md#whatsdappsession)) => *void* |
 
 **Returns:** [*WhatsDapp*](whatsdapp.whatsdapp-1.md)
 
@@ -524,14 +524,14 @@ Name | Type |
 
 Defined in: [src/WhatsDapp.ts:256](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/WhatsDapp.ts#L256)
 
-▸ **on**(`ev`: [*NewMessageSent*](../enums/whatsdapp.whatsdappevent.md#newmessagesent), `listener`: (`wMessage`: [*WhatsDappMessage*](dapi_whatsdappmessage.whatsdappmessage.md), `session`: { `identity_receiver`: *any* ; `profile_name`: *any*  }) => *void*): [*WhatsDapp*](whatsdapp.whatsdapp-1.md)
+▸ **on**(`ev`: [*NewMessageSent*](../enums/whatsdapp.whatsdappevent.md#newmessagesent), `listener`: (`wMessage`: [*WhatsDappCipherMessage*](dapi_whatsdappmessage.whatsdappmessage.md), `session`: { `identity_receiver`: *any* ; `profile_name`: *any*  }) => *void*): [*WhatsDapp*](whatsdapp.whatsdapp-1.md)
 
 #### Parameters:
 
 Name | Type |
 ------ | ------ |
 `ev` | [*NewMessageSent*](../enums/whatsdapp.whatsdappevent.md#newmessagesent) |
-`listener` | (`wMessage`: [*WhatsDappMessage*](dapi_whatsdappmessage.whatsdappmessage.md), `session`: { `identity_receiver`: *any* ; `profile_name`: *any*  }) => *void* |
+`listener` | (`wMessage`: [*WhatsDappCipherMessage*](dapi_whatsdappmessage.whatsdappmessage.md), `session`: { `identity_receiver`: *any* ; `profile_name`: *any*  }) => *void* |
 
 **Returns:** [*WhatsDapp*](whatsdapp.whatsdapp-1.md)
 
@@ -663,14 +663,14 @@ ___
 
 ### removeListener
 
-▸ **removeListener**(`ev`: [*NewMessage*](../enums/whatsdapp.whatsdappevent.md#newmessage), `listener`: (`msg`: [*WhatsDappMessage*](dapi_whatsdappmessage.whatsdappmessage.md), `session`: [*WhatsDappSession*](../modules/whatsdapp.md#whatsdappsession)) => *void*): [*WhatsDapp*](whatsdapp.whatsdapp-1.md)
+▸ **removeListener**(`ev`: [*NewMessage*](../enums/whatsdapp.whatsdappevent.md#newmessage), `listener`: (`msg`: [*WhatsDappCipherMessage*](dapi_whatsdappmessage.whatsdappmessage.md), `session`: [*WhatsDappSession*](../modules/whatsdapp.md#whatsdappsession)) => *void*): [*WhatsDapp*](whatsdapp.whatsdapp-1.md)
 
 #### Parameters:
 
 Name | Type |
 ------ | ------ |
 `ev` | [*NewMessage*](../enums/whatsdapp.whatsdappevent.md#newmessage) |
-`listener` | (`msg`: [*WhatsDappMessage*](dapi_whatsdappmessage.whatsdappmessage.md), `session`: [*WhatsDappSession*](../modules/whatsdapp.md#whatsdappsession)) => *void* |
+`listener` | (`msg`: [*WhatsDappCipherMessage*](dapi_whatsdappmessage.whatsdappmessage.md), `session`: [*WhatsDappSession*](../modules/whatsdapp.md#whatsdappsession)) => *void* |
 
 **Returns:** [*WhatsDapp*](whatsdapp.whatsdapp-1.md)
 
@@ -689,14 +689,14 @@ Name | Type |
 
 Defined in: [src/WhatsDapp.ts:266](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/WhatsDapp.ts#L266)
 
-▸ **removeListener**(`ev`: [*NewMessageSent*](../enums/whatsdapp.whatsdappevent.md#newmessagesent), `listener`: (`wMessage`: [*WhatsDappMessage*](dapi_whatsdappmessage.whatsdappmessage.md), `session`: { `identity_receiver`: *any* ; `profile_name`: *any*  }) => *void*): [*WhatsDapp*](whatsdapp.whatsdapp-1.md)
+▸ **removeListener**(`ev`: [*NewMessageSent*](../enums/whatsdapp.whatsdappevent.md#newmessagesent), `listener`: (`wMessage`: [*WhatsDappCipherMessage*](dapi_whatsdappmessage.whatsdappmessage.md), `session`: { `identity_receiver`: *any* ; `profile_name`: *any*  }) => *void*): [*WhatsDapp*](whatsdapp.whatsdapp-1.md)
 
 #### Parameters:
 
 Name | Type |
 ------ | ------ |
 `ev` | [*NewMessageSent*](../enums/whatsdapp.whatsdappevent.md#newmessagesent) |
-`listener` | (`wMessage`: [*WhatsDappMessage*](dapi_whatsdappmessage.whatsdappmessage.md), `session`: { `identity_receiver`: *any* ; `profile_name`: *any*  }) => *void* |
+`listener` | (`wMessage`: [*WhatsDappCipherMessage*](dapi_whatsdappmessage.whatsdappmessage.md), `session`: { `identity_receiver`: *any* ; `profile_name`: *any*  }) => *void* |
 
 **Returns:** [*WhatsDapp*](whatsdapp.whatsdapp-1.md)
 

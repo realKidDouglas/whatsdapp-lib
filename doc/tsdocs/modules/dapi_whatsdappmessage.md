@@ -1,9 +1,9 @@
-[whatsdapp](../README.md) / [Exports](../modules.md) / dapi/WhatsDappMessage
+[whatsdapp](../README.md) / [Exports](../modules.md) / dapi/WhatsDappCipherMessage
 
-# Module: dapi/WhatsDappMessage
+# Module: dapi/WhatsDappCipherMessage
 
 ## Index
 
 ### Classes
 
-* [WhatsDappMessage](../classes/dapi_whatsdappmessage.whatsdappmessage.md)
+* [WhatsDappCipherMessage](../classes/dapi_whatsdappmessage.whatsdappmessage.md)

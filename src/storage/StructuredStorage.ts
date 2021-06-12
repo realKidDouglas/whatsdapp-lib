@@ -1,5 +1,5 @@
 import type {WhatsDappPrivateData, WhatsDappUserData} from "../WhatsDapp";
-import type {WhatsDappMessage} from "../dapi/WhatsDappMessage";
+import type {WhatsDappPlainMessage} from "../dapi/WhatsDappPlainMessage";
 import {
   USER_FILE_NAME,
   PRIVATE_FILE_NAME,
@@ -101,7 +101,7 @@ export class StructuredStorage {
     return this._saveMetaData(identityId);
   }
 
-  async addMessageToSession(identityId: string, message: WhatsDappMessage): Promise<void> {
+  async addMessageToSession(identityId: string, message: WhatsDappPlainMessage): Promise<void> {
     if (this._metadata == null) {
       this._metadata = await this._loadMetaData();
     }
@@ -332,7 +332,7 @@ export class StructuredStorage {
    *
    * @type {function(identityId: string, timestamp: ?number, limit: ?number):Array<Promise<?{timestamp: number, message: string}>>}
    */
-  getPreviousMessages(identityId: string, timestamp = Infinity, limit: number = DEFAULT_MSG_COUNT): Promise<Array<WhatsDappMessage>> {
+  getPreviousMessages(identityId: string, timestamp = Infinity, limit: number = DEFAULT_MSG_COUNT): Promise<Array<WhatsDappPlainMessage>> {
     return this._getMessageByTimestamp(identityId, timestamp, limit, true);
   }
 
@@ -347,11 +347,11 @@ export class StructuredStorage {
    *
    * @type {function(identityId: string, timestamp: ?number, limit: ?number):Array<Promise<?{timestamp: number, message: string}>>}
    */
-  getNextMessages(identityId: string, timestamp = 0, limit: number = DEFAULT_MSG_COUNT): Promise<Array<WhatsDappMessage>> {
+  getNextMessages(identityId: string, timestamp = 0, limit: number = DEFAULT_MSG_COUNT): Promise<Array<WhatsDappPlainMessage>> {
     return this._getMessageByTimestamp(identityId, timestamp, limit, false);
   }
 
-  private async _getMessageByTimestamp(identityId: string, timestamp: number, limit: number, older: boolean): Promise<Array<WhatsDappMessage>> {
+  private async _getMessageByTimestamp(identityId: string, timestamp: number, limit: number, older: boolean): Promise<Array<WhatsDappPlainMessage>> {
     if (this._metadata == null) {
       this._metadata = await this._loadMetaData();
     }
@@ -365,7 +365,7 @@ export class StructuredStorage {
       : (mt, qt) => mt < qt;
 
     // if we want older than timestamp, we need to inspect the newest message in chunk first.
-    const reverser: (arr: Array<WhatsDappMessage>) => Array<WhatsDappMessage> = older
+    const reverser: (arr: Array<WhatsDappPlainMessage>) => Array<WhatsDappPlainMessage> = older
       ? arr => arr.reverse()
       : arr => arr;
 
@@ -375,7 +375,7 @@ export class StructuredStorage {
       : 1;
 
     console.log("retrieve msg for", identityId);
-    const ret: Array<WhatsDappMessage> = [];
+    const ret: Array<WhatsDappPlainMessage> = [];
     if (limit <= 0 || timestamp < 0) return ret;
     const chunks = md.chunks;
     const targetChunkIndex = getTargetChunkIndex(timestamp, chunks);
@@ -400,7 +400,7 @@ export class StructuredStorage {
         console.log("history is corrupt, chunk is not a chunk!");
         break;
       }
-      const decChunk = chunk.map(s => JSON.parse(s) as WhatsDappMessage);
+      const decChunk = chunk.map(s => JSON.parse(s) as WhatsDappPlainMessage);
       reverser(decChunk).forEach(message => {
         if (ret.length === limit) return;
         if (comparer(message.timestamp, timestamp)) {

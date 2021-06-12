@@ -11,7 +11,7 @@
 * [dapi/Message\_DAO](modules/dapi_message_dao.md)
 * [dapi/Profile\_DAO](modules/dapi_profile_dao.md)
 * [dapi/Wallet\_DAO](modules/dapi_wallet_dao.md)
-* [dapi/WhatsDappMessage](modules/dapi_whatsdappmessage.md)
+* [dapi/WhatsDappCipherMessage](modules/dapi_whatsdappmessage.md)
 * [dapi/WhatsDappProfile](modules/dapi_whatsdappprofile.md)
 * [dapi/conversion](modules/dapi_conversion.md)
 * [dapi/dapi](modules/dapi_dapi.md)

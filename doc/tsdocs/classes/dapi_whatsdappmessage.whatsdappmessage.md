@@ -1,10 +1,10 @@
-[whatsdapp](../README.md) / [Exports](../modules.md) / [dapi/WhatsDappMessage](../modules/dapi_whatsdappmessage.md) / WhatsDappMessage
+[whatsdapp](../README.md) / [Exports](../modules.md) / [dapi/WhatsDappCipherMessage](../modules/dapi_whatsdappmessage.md) / WhatsDappCipherMessage
 
-# Class: WhatsDappMessage
+# Class: WhatsDappCipherMessage
 
 ## Hierarchy
 
-* **WhatsDappMessage**
+* **WhatsDappCipherMessage**
 
 ## Index
 
@@ -24,7 +24,7 @@
 
 ### constructor
 
-\+ **new WhatsDappMessage**(`rawMessage`: [*RawMessage*](../modules/whatsdapp.md#rawmessage)): [*WhatsDappMessage*](dapi_whatsdappmessage.whatsdappmessage.md)
+\+ **new WhatsDappCipherMessage**(`rawMessage`: [*RawMessage*](../modules/whatsdapp.md#rawmessage)): [*WhatsDappCipherMessage*](dapi_whatsdappmessage.whatsdappmessage.md)
 
 #### Parameters:
 
@@ -32,9 +32,9 @@ Name | Type |
 ------ | ------ |
 `rawMessage` | [*RawMessage*](../modules/whatsdapp.md#rawmessage) |
 
-**Returns:** [*WhatsDappMessage*](dapi_whatsdappmessage.whatsdappmessage.md)
+**Returns:** [*WhatsDappCipherMessage*](dapi_whatsdappmessage.whatsdappmessage.md)
 
-Defined in: [src/dapi/WhatsDappMessage.ts:8](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/WhatsDappMessage.ts#L8)
+Defined in: [src/dapi/WhatsDappCipherMessage.ts:8](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/WhatsDappMessage.ts#L8)
 
 ## Properties
 
@@ -42,7 +42,7 @@ Defined in: [src/dapi/WhatsDappMessage.ts:8](https://github.com/realKidDouglas/w
 
 • **content**: *string*
 
-Defined in: [src/dapi/WhatsDappMessage.ts:6](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/WhatsDappMessage.ts#L6)
+Defined in: [src/dapi/WhatsDappCipherMessage.ts:6](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/WhatsDappMessage.ts#L6)
 
 ___
 
@@ -50,7 +50,7 @@ ___
 
 • **id**: *string*
 
-Defined in: [src/dapi/WhatsDappMessage.ts:7](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/WhatsDappMessage.ts#L7)
+Defined in: [src/dapi/WhatsDappCipherMessage.ts:7](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/WhatsDappMessage.ts#L7)
 
 ___
 
@@ -58,7 +58,7 @@ ___
 
 • **ownerId**: *string*
 
-Defined in: [src/dapi/WhatsDappMessage.ts:8](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/WhatsDappMessage.ts#L8)
+Defined in: [src/dapi/WhatsDappCipherMessage.ts:8](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/WhatsDappMessage.ts#L8)
 
 ___
 
@@ -66,7 +66,7 @@ ___
 
 • **senderHandle**: *string*
 
-Defined in: [src/dapi/WhatsDappMessage.ts:4](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/WhatsDappMessage.ts#L4)
+Defined in: [src/dapi/WhatsDappCipherMessage.ts:4](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/WhatsDappMessage.ts#L4)
 
 ___
 
@@ -74,4 +74,4 @@ ___
 
 • **timestamp**: *number*
 
-Defined in: [src/dapi/WhatsDappMessage.ts:5](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/WhatsDappMessage.ts#L5)
+Defined in: [src/dapi/WhatsDappCipherMessage.ts:5](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/dapi/WhatsDappMessage.ts#L5)

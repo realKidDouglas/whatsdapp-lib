@@ -114,7 +114,7 @@ Defined in: [src/storage/StructuredStorage.ts:48](https://github.com/realKidDoug
 
 ### \_getMessageByTimestamp
 
-▸ `Private`**_getMessageByTimestamp**(`identityId`: *string*, `timestamp`: *number*, `limit`: *number*, `older`: *boolean*): *Promise*<[*WhatsDappMessage*](dapi_whatsdappmessage.whatsdappmessage.md)[]\>
+▸ `Private`**_getMessageByTimestamp**(`identityId`: *string*, `timestamp`: *number*, `limit`: *number*, `older`: *boolean*): *Promise*<[*WhatsDappCipherMessage*](dapi_whatsdappmessage.whatsdappmessage.md)[]\>
 
 #### Parameters:
 
@@ -125,7 +125,7 @@ Name | Type |
 `limit` | *number* |
 `older` | *boolean* |
 
-**Returns:** *Promise*<[*WhatsDappMessage*](dapi_whatsdappmessage.whatsdappmessage.md)[]\>
+**Returns:** *Promise*<[*WhatsDappCipherMessage*](dapi_whatsdappmessage.whatsdappmessage.md)[]\>
 
 Defined in: [src/storage/StructuredStorage.ts:354](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/storage/StructuredStorage.ts#L354)
 
@@ -235,14 +235,14 @@ ___
 
 ### addMessageToSession
 
-▸ **addMessageToSession**(`identityId`: *string*, `message`: [*WhatsDappMessage*](dapi_whatsdappmessage.whatsdappmessage.md)): *Promise*<*void*\>
+▸ **addMessageToSession**(`identityId`: *string*, `message`: [*WhatsDappCipherMessage*](dapi_whatsdappmessage.whatsdappmessage.md)): *Promise*<*void*\>
 
 #### Parameters:
 
 Name | Type |
 ------ | ------ |
 `identityId` | *string* |
-`message` | [*WhatsDappMessage*](dapi_whatsdappmessage.whatsdappmessage.md) |
+`message` | [*WhatsDappCipherMessage*](dapi_whatsdappmessage.whatsdappmessage.md) |
 
 **Returns:** *Promise*<*void*\>
 
@@ -296,7 +296,7 @@ ___
 
 ### getNextMessages
 
-▸ **getNextMessages**(`identityId`: *string*, `timestamp?`: *number*, `limit?`: *number*): *Promise*<[*WhatsDappMessage*](dapi_whatsdappmessage.whatsdappmessage.md)[]\>
+▸ **getNextMessages**(`identityId`: *string*, `timestamp?`: *number*, `limit?`: *number*): *Promise*<[*WhatsDappCipherMessage*](dapi_whatsdappmessage.whatsdappmessage.md)[]\>
 
 return a list of promises of messages, starting at a timestamp.
 will not return a message that was sent exactly at timestamp.
@@ -314,7 +314,7 @@ Name | Type | Default value |
 `timestamp` | *number* | 0 |
 `limit` | *number* | ... |
 
-**Returns:** *Promise*<[*WhatsDappMessage*](dapi_whatsdappmessage.whatsdappmessage.md)[]\>
+**Returns:** *Promise*<[*WhatsDappCipherMessage*](dapi_whatsdappmessage.whatsdappmessage.md)[]\>
 
 Defined in: [src/storage/StructuredStorage.ts:350](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/storage/StructuredStorage.ts#L350)
 
@@ -322,7 +322,7 @@ ___
 
 ### getPreviousMessages
 
-▸ **getPreviousMessages**(`identityId`: *string*, `timestamp?`: *number*, `limit?`: *number*): *Promise*<[*WhatsDappMessage*](dapi_whatsdappmessage.whatsdappmessage.md)[]\>
+▸ **getPreviousMessages**(`identityId`: *string*, `timestamp?`: *number*, `limit?`: *number*): *Promise*<[*WhatsDappCipherMessage*](dapi_whatsdappmessage.whatsdappmessage.md)[]\>
 
 return a list of promises of messages, starting at a timestamp.
 will not return a message that was sent exactly at timestamp.
@@ -340,7 +340,7 @@ Name | Type | Default value |
 `timestamp` | *number* | ... |
 `limit` | *number* | ... |
 
-**Returns:** *Promise*<[*WhatsDappMessage*](dapi_whatsdappmessage.whatsdappmessage.md)[]\>
+**Returns:** *Promise*<[*WhatsDappCipherMessage*](dapi_whatsdappmessage.whatsdappmessage.md)[]\>
 
 Defined in: [src/storage/StructuredStorage.ts:335](https://github.com/realKidDouglas/whatsdapp-lib/blob/73a2f4d/src/storage/StructuredStorage.ts#L335)
 
