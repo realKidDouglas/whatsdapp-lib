@@ -254,7 +254,7 @@ export class WhatsDapp extends EventEmitter {
 
   emit(ev: WhatsDappEvent.NewMessage, message: WhatsDappPlainMessage, session: WhatsDappSession): boolean;
   emit(ev: WhatsDappEvent.NewSession, session: WhatsDappSession, bundle: RawPreKeyBundle): boolean;
-  emit(ev: WhatsDappEvent.NewMessageSent, wMessage: WhatsDappCipherMessage, session: { profile_name: any, identity_receiver: any }): boolean;
+  emit(ev: WhatsDappEvent.NewMessageSent, wMessage: WhatsDappCipherMessage, session: WhatsDappSession): boolean;
   emit(ev: WhatsDappEvent.StorageRead, storageKey: string, ret: (val: Uint8Array | null) => void): boolean;
   emit(ev: WhatsDappEvent.StorageWrite, storageKey: string, storageValue: Uint8Array): boolean;
   emit(ev: WhatsDappEvent.StorageDelete, storageKey: string): boolean;
@@ -264,7 +264,7 @@ export class WhatsDapp extends EventEmitter {
 
   on(ev: WhatsDappEvent.NewMessage, listener: (msg: WhatsDappCipherMessage, session: WhatsDappSession) => void): this;
   on(ev: WhatsDappEvent.NewSession, listener: (session: WhatsDappSession, bundle: RawPreKeyBundle) => void): this;
-  on(ev: WhatsDappEvent.NewMessageSent, listener: (wMessage: WhatsDappCipherMessage, session: { profile_name: any, identity_receiver: any }) => void): this;
+  on(ev: WhatsDappEvent.NewMessageSent, listener: (wMessage: WhatsDappCipherMessage, session: WhatsDappSession) => void): this;
   on(ev: WhatsDappEvent.StorageRead, listener: (storageKey: string, ret: (val: Uint8Array | null) => void) => void): this;
   on(ev: WhatsDappEvent.StorageWrite, listener: (storageKey: string, storageValue: Uint8Array) => void): this;
   on(ev: WhatsDappEvent.StorageDelete, listener: (storageKey: string, storageValue: Uint8Array) => void): this;
@@ -274,7 +274,7 @@ export class WhatsDapp extends EventEmitter {
 
   removeListener(ev: WhatsDappEvent.NewMessage, listener: (msg: WhatsDappCipherMessage, session: WhatsDappSession) => void): this;
   removeListener(ev: WhatsDappEvent.NewSession, listener: (session: WhatsDappSession, bundle: RawPreKeyBundle) => void): this;
-  removeListener(ev: WhatsDappEvent.NewMessageSent, listener: (wMessage: WhatsDappCipherMessage, session: { profile_name: any, identity_receiver: any }) => void): this;
+  removeListener(ev: WhatsDappEvent.NewMessageSent, listener: (wMessage: WhatsDappCipherMessage, session: WhatsDappSession) => void): this;
   removeListener(ev: WhatsDappEvent.StorageRead, listener: (storageKey: string, ret: (val: Uint8Array | null) => void) => void): this;
   removeListener(ev: WhatsDappEvent.StorageWrite, listener: (storageKey: string, storageValue: Uint8Array) => void): this;
   removeListener(ev: WhatsDappEvent.StorageDelete, listener: (storageKey: string) => void): this;
