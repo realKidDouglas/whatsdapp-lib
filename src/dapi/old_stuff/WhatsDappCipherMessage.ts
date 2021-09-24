@@ -1,6 +1,6 @@
-import {RawMessage} from "../WhatsDapp";
+import {RawMessage} from "../../WhatsDapp";
 
-export class WhatsDappCipherMessage {
+export class WhatsDappCipherMessageOut {
   public senderHandle: string;
   public timestamp: number;
   public content: string;

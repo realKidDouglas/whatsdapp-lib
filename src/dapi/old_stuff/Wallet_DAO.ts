@@ -1,7 +1,8 @@
-import {DashClient} from "../types/DashTypes";
+import {DashClient} from "../../types/DashTypes";
 
 export async function createWallet(client: DashClient): Promise<any> {
   try {
+    //returns a mnemonic string
     if (client.wallet) return client.wallet.exportWallet();
   } catch (e) {
     console.log('Something went wrong:', e);
@@ -13,6 +14,7 @@ export async function getUnusedAddress(client: DashClient): Promise<any> {
     const account = await client.getWalletAccount();
     const address = account.getUnusedAddress();
 
+    //returns AddressObj
     return address;
   } catch (e) {
     console.log('Something went wrong:', e);

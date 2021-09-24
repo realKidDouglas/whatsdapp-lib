@@ -1,6 +1,6 @@
-import libsignal, {SignalKeyPair, SignalPreKey, SignalSignedPreKey} from "libsignal";
-import {arrayBufferToString} from "./utils";
-import {SignalProtocolStore} from "./SignalProtocolStoreWrapper";
+import libsignal, { SignalKeyPair, SignalPreKey, SignalSignedPreKey } from "libsignal";
+import { arrayBufferToString } from "./utils";
+import { SignalProtocolStore } from "./SignalProtocolStoreWrapper";
 
 type CipherTextType = number// should probably be an enum or 1 | 2 | 3
 
@@ -43,7 +43,15 @@ export type WhatsDappSignalKeyBundle = {
   preKeyBundle: WhatsDappSignalPrekeyBundle,
 }
 
-export class SignalWrapper {
+export interface ISignalLib {
+  generateSignalKeys(): Promise<WhatsDappSignalKeyBundle>;
+  //  encryptMessage(whatsDappStore: any, receiverId: string, plaintext: string): Promise<string>;
+  encryptMessage(whatsDappStore: any, receiverId: string, plaintext: string): Promise<ArrayBuffer>;
+  decryptMessage(whatsDappStore: any, senderId: string, base64: string): Promise<string>;
+  buildAndPersistSession(whatsDappStore: any, identifier: string, preKeyBundle: WhatsDappSignalPrekeyBundle): Promise<void>;
+}
+
+export class SignalWrapper implements ISignalLib {
   //this.createSignalProtocolStoreWrapper('./methods/createSignalProtocolStoreWrapper.js')
 
   /**
@@ -58,7 +66,7 @@ export class SignalWrapper {
     const preKey = this._generatePreKey();
     const signedPreKey = await this._generateSignedPreKey(identityKeyPair);
     return {
-      private: {identityKeyPair, registrationId, preKey, signedPreKey},
+      private: { identityKeyPair, registrationId, preKey, signedPreKey },
       preKeyBundle: {
         identityKey: identityKeyPair.pubKey,
         registrationId: registrationId,
@@ -82,14 +90,16 @@ export class SignalWrapper {
    * @param plaintext
    * @returns {Promise<string>}: The CipherText object converted into JSON and encoded as Base64
    */
-  async encryptMessage(whatsDappStore: any, receiverId: string, plaintext: string): Promise<string> {
+  //   async encryptMessage(whatsDappStore: any, receiverId: string, plaintext: string): Promise<string> {
+  async encryptMessage(whatsDappStore: any, receiverId: string, plaintext: string): Promise<ArrayBuffer> {
     const deviceId = 1; // TODO: This shouldn't be hardcoded
     const store = new SignalProtocolStore(whatsDappStore, receiverId);
     const address = new libsignal.ProtocolAddress(receiverId, deviceId);
     const sessionCipher = new libsignal.SessionCipher(store, address);
     const plaintextBuffer = Buffer.from(plaintext);
     const cipherText = await sessionCipher.encrypt(plaintextBuffer);
-    return Buffer.from(JSON.stringify(cipherText)).toString("base64");
+    //    return Buffer.from(JSON.stringify(cipherText)).toString("base64");
+    return cipherText;
   }
 
   /**

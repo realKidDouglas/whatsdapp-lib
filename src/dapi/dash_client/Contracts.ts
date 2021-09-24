@@ -21,7 +21,11 @@ export type PlatformContract = {
 */
 
 const userProfileContractFormat = {
+  
+  //TODO: update prekeys
+
   profile: {
+    type: "object",
     indices: [
       {
         properties: [
@@ -104,6 +108,7 @@ const userProfileContractFormat = {
 
 const messageContractFormat = {
   message: {
+    type: "object",
     indices: [
       {
         properties: [
@@ -117,7 +122,7 @@ const messageContractFormat = {
       },
       {
         properties: [
-          {$createdAt: "asc"}
+          {$createdAt: "desc"}
         ]
       }
     ],
@@ -137,6 +142,10 @@ const messageContractFormat = {
 
 const contracts : Record<string, PlatformContract>= {
   "profile_contract":{
+
+    //TODO: script for updating contracts
+
+    //TODO: new contracts
     contractId: "DjMSzc5bRDij3UN1W8E5dKsbxki9vYQ67ChNKKTTUHwm",
     contractFormat: userProfileContractFormat
   },

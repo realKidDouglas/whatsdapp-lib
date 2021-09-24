@@ -1,12 +1,12 @@
 import o from 'ospec';
 import contracts from "./Contracts";
-import {makeClient} from "./DashClient";
+import {getWhatsDappDashClient} from "./WhatsDappDashClient";
 import {Platform} from "dash/dist/src/SDK/Client/Platform";
 
 o.spec("Contracts", async function () {
   o.specTimeout(25000);
   o("Contracts are deployed and match format", function () {
-    const client = makeClient(null);
+    const client = getWhatsDappDashClient(null);
     const retrieveContract = async (id: string, platform: Platform) =>  platform.contracts.get(id);
     let threw : unknown = false;
     return Promise.all(Object.entries(contracts)

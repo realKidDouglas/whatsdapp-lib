@@ -1,6 +1,6 @@
-import {WhatsDappCipherMessage} from "../dapi/WhatsDappCipherMessage";
+import {WhatsDappCipherMessage} from "./WhatsDappCipherMessage";
 
-export class WhatsDappPlainMessage {
+export class WhatsDappPlainMessageOut {
   public senderHandle: string;
   public timestamp: number;
   public content: {

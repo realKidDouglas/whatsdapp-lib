@@ -1,5 +1,5 @@
 import type {WhatsDappPrivateData, WhatsDappUserData} from "../WhatsDapp";
-import type {WhatsDappPlainMessage} from "../dapi/WhatsDappPlainMessage";
+
 import {
   USER_FILE_NAME,
   PRIVATE_FILE_NAME,

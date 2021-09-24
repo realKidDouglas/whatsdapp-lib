@@ -2,7 +2,7 @@
  * @author Panzerknacker, Mr. P
  */
 
-import type {RawProfile, WhatsDappConnection, WhatsDappProfileContent} from "../WhatsDapp";
+import type {RawProfile, WhatsDappProfileContent} from "../../WhatsDapp";
 
 /**
  * Create a profile

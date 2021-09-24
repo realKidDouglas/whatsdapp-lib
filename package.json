@@ -1,17 +1,37 @@
 {
   "name": "whatsdapp",
-  "version": "0.1.0",
-  "description": "",
+  "version": "0.1.1",
+  "description": "WhatsDapp messaging-library applies the signal-protocol to the Dash Drive blockchain.",
+  "homepage": "https://github.com/realKidDouglas/whatsdapp-lib",
+
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "private": false,
+  
+  "engines": {
+    "node": ">=6.0.0"
+  },
+
+  "dependencies": {
+    "@grpc/grpc-js": "^1.2.2",
+    "base-58": "0.0.1",
+    "dash": "3.19.1",
+    "libsignal": "^2.0.1"
+  },
+
   "main": "dist/index.js",
   "scripts": {
     "lint": "eslint . --fix --ext .ts",
     "dist": "npm run lint && tsc",
     "test": "node ./test/run.js",
-    "doc": "npx typedoc --plugin typedoc-plugin-markdown --out doc/tsdocs src/"
+    "doc": "npx typedoc --plugin typedoc-plugin-markdown --out doc/tsdocs src/",
+
+    "prepub": "cp package.json dist && cp USAGE.md dist/README.md",
+    "pub": "cd dist && npm publish",
+    "postpub": "cd dist && rm package.json && rm README.md"
+
   },
-  "keywords": [],
-  "author": "",
-  "license": "MIT",
   "devDependencies": {
     "@types/node": "^14.14.10",
     "@types/ospec": "^4.0.2",
@@ -24,12 +44,5 @@
     "typedoc": "^0.20.5",
     "typedoc-plugin-markdown": "^3.2.1",
     "typescript": "^4.1.2"
-  },
-  "dependencies": {
-    "@grpc/grpc-js": "^1.2.2",
-    "base-58": "0.0.1",
-    "dash": "3.19.1",
-    "grpc": "^1.24.10",
-    "libsignal": "^2.0.1"
   }
 }

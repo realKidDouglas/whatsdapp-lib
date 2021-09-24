@@ -2,7 +2,7 @@
  * @author: Panzerknacker, Mr. P
  */
 
-import type {RawMessage, WhatsDappConnection} from "../WhatsDapp";
+import type {RawMessage, WhatsDappConnection} from "../../WhatsDapp";
 
 /**
  * Create a message in form of the message contract and broadcast it to the platform

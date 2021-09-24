@@ -6,7 +6,10 @@ import DashSDK from "dash";
  * create a properly configured dash client
  * @param mnemonic
  */
-export function makeClient(mnemonic: string | null): DashClient {
+
+//TODO: what happens if it's null?
+export function getWhatsDappDashClient(mnemonic: string | null): DashClient {
+  //init client with contracts, so we can use the dot-notation to retrieve contracts
   const apps = Object.fromEntries(Object.entries(contracts)
     .map(([key, {contractId}]) => [key, {contractId}]));
   const clientOpts = {
@@ -14,7 +17,7 @@ export function makeClient(mnemonic: string | null): DashClient {
     wallet: {
       mnemonic,
       unsafeOptions: {
-        skipSynchronizationBeforeHeight: 415000, // only sync from start of 2021
+        skipSynchronizationBeforeHeight: 500000, // only sync from mid of 2021
       },
     },
     apps
