@@ -72,7 +72,7 @@ export type WhatsDappProfileContent = {
   displayname: string //content.displayname
 }
 
-type ConnectOptions = {
+export type ConnectOptions = {
   mnemonic: string,
   sessions: Array<WhatsDappSession>,
   identity: any,
@@ -82,12 +82,12 @@ type ConnectOptions = {
   preKeyBundle: any
 }
 
-type WhatsDappMessageContent = {
+export type WhatsDappMessageContent = {
   message: string,
   deleteTime: number
 }
 
-type ConnectResult = {
+export type ConnectResult = {
   displayName: string,
   createDpnsName: string | null,
   identity: DashIdentity
