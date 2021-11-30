@@ -49,10 +49,13 @@ export type WhatsDappMessage = {
 //   deleteTime: number
 // }
 
-export type WhatsDappSession = {
-  identity_receiver: string,
-  profile_name: string
+export type Interlocutor={
+  identityString: string;
 }
+// export type WhatsDappSession = {
+//   identity_receiver: string,
+//   profile_name: string
+// }
 
 export enum WhatsDappEvent {
   NewMessage = 'new-message',
@@ -164,8 +167,9 @@ export class WhatsDapp extends EventEmitter {
   _lastPollTime = 0;
 
   _profile: WhatsDappProfile | null = null;
-  _sessions: Array<WhatsDappSession> = [];
-  private initialized: Promise<ConnectResult> | null = null;
+  _sessions: Array<Interlocutor> = [];
+  //private initialized: Promise<ConnectResult> | null = null;
+  private initialized: boolean=false;
 
 
   static async createWhatsDapp(mnemonic: string, identityString: string | null, storeObj?: KVStore, signalLib?: ISignalLib) {
@@ -247,6 +251,8 @@ export class WhatsDapp extends EventEmitter {
       profile=await this.createNewRawProfile()
     }
     this._profile = profile;
+
+    this.initialized=true;
   }
 
   async createDpnsName(desiredDpnsNameWithoutPostfix: string): Promise<boolean> {
@@ -369,7 +375,7 @@ export class WhatsDapp extends EventEmitter {
     console.log("MSG");
     console.log(plainMessage.content);
     this.emit(WhatsDappEvent.NewMessage, plainMessage, session);
-    await this.storage.addMessageToSession(session.profile_name, plainMessage);
+    await this.storage.addMessageToSession(session.identityString, plainMessage);
     // TODO: await this.storage.addMessageToSession(session.profile_name, cipherMessage);
     this._lastPollTime = Math.max(this._lastPollTime, plainMessage.updatedAt + 1);
   }
@@ -381,10 +387,10 @@ export class WhatsDapp extends EventEmitter {
   }
 
 
-  async _getOrCreateSession(ownerId: any, senderHandle: string): Promise<WhatsDappSession> {
-    let session: WhatsDappSession = this._sessions[ownerId] as WhatsDappSession;
+  async _getOrCreateSession(ownerId: any, senderHandle: string): Promise<Interlocutor> {
+    let session: Interlocutor = this._sessions[ownerId] as Interlocutor;
     if (session == null) {
-      session = { profile_name: senderHandle, identity_receiver: ownerId };
+      session = { identityString: ownerId };
       const preKeyBundle = (await this.dAPICommunicator.getProfile(ownerId)).signalKeyBundle;
       this._sessions[ownerId] = session;
       /* TODO: This is only necessary when a new session is established by searching a contact.
@@ -393,15 +399,15 @@ export class WhatsDapp extends EventEmitter {
       outgoing session. Incoming sessions are created by the signal lib and don't require explicit
       session establishment by us. */
       // TODO: Fix types. WhatsDappSignalPrekeyBundle and RawPreKeyBundle could be one type
-      await this.signal.buildAndPersistSession(this.storage, session.profile_name, preKeyBundle as unknown as WhatsDappSignalPrekeyBundle);
+      await this.signal.buildAndPersistSession(this.storage, session.identityString, preKeyBundle as unknown as WhatsDappSignalPrekeyBundle);
       this.emit(WhatsDappEvent.NewSession, session, preKeyBundle);
     }
     return session;
   }
 
-  emit(ev: WhatsDappEvent.NewMessage, message: WhatsDappMessage, session: WhatsDappSession): boolean;
-  emit(ev: WhatsDappEvent.NewSession, session: WhatsDappSession, bundle: RawPreKeyBundle): boolean;
-  emit(ev: WhatsDappEvent.NewMessageSent, wMessage: WhatsDappMessage, session: WhatsDappSession): boolean;
+  emit(ev: WhatsDappEvent.NewMessage, message: WhatsDappMessage, session: Interlocutor): boolean;
+  emit(ev: WhatsDappEvent.NewSession, session: Interlocutor, bundle: WhatsDappSignalPrekeyBundle): boolean;
+  emit(ev: WhatsDappEvent.NewMessageSent, wMessage: WhatsDappMessage, session: Interlocutor): boolean;
   emit(ev: WhatsDappEvent.StorageRead, storageKey: string, ret: (val: Uint8Array | null) => void): boolean;
   emit(ev: WhatsDappEvent.StorageWrite, storageKey: string, storageValue: Uint8Array): boolean;
   emit(ev: WhatsDappEvent.StorageDelete, storageKey: string): boolean;
@@ -409,9 +415,9 @@ export class WhatsDapp extends EventEmitter {
     return super.emit(ev, ...Array.from(args));
   }
 
-  on(ev: WhatsDappEvent.NewMessage, listener: (msg: WhatsDappMessage, session: WhatsDappSession) => void): this;
-  on(ev: WhatsDappEvent.NewSession, listener: (session: WhatsDappSession, bundle: RawPreKeyBundle) => void): this;
-  on(ev: WhatsDappEvent.NewMessageSent, listener: (wMessage: WhatsDappMessage, session: WhatsDappSession) => void): this;
+  on(ev: WhatsDappEvent.NewMessage, listener: (msg: WhatsDappMessage, session: Interlocutor) => void): this;
+  on(ev: WhatsDappEvent.NewSession, listener: (session: Interlocutor, bundle: WhatsDappSignalPrekeyBundle) => void): this;
+  on(ev: WhatsDappEvent.NewMessageSent, listener: (wMessage: WhatsDappMessage, session: Interlocutor) => void): this;
   on(ev: WhatsDappEvent.StorageRead, listener: (storageKey: string, ret: (val: Uint8Array | null) => void) => void): this;
   on(ev: WhatsDappEvent.StorageWrite, listener: (storageKey: string, storageValue: Uint8Array) => void): this;
   on(ev: WhatsDappEvent.StorageDelete, listener: (storageKey: string, storageValue: Uint8Array) => void): this;
@@ -419,9 +425,9 @@ export class WhatsDapp extends EventEmitter {
     return super.on(ev, listener);
   }
 
-  removeListener(ev: WhatsDappEvent.NewMessage, listener: (msg: WhatsDappMessage, session: WhatsDappSession) => void): this;
-  removeListener(ev: WhatsDappEvent.NewSession, listener: (session: WhatsDappSession, bundle: RawPreKeyBundle) => void): this;
-  removeListener(ev: WhatsDappEvent.NewMessageSent, listener: (wMessage: WhatsDappMessage, session: WhatsDappSession) => void): this;
+  removeListener(ev: WhatsDappEvent.NewMessage, listener: (msg: WhatsDappMessage, session: Interlocutor) => void): this;
+  removeListener(ev: WhatsDappEvent.NewSession, listener: (session: Interlocutor, bundle: WhatsDappSignalPrekeyBundle) => void): this;
+  removeListener(ev: WhatsDappEvent.NewMessageSent, listener: (wMessage: WhatsDappMessage, session: Interlocutor) => void): this;
   removeListener(ev: WhatsDappEvent.StorageRead, listener: (storageKey: string, ret: (val: Uint8Array | null) => void) => void): this;
   removeListener(ev: WhatsDappEvent.StorageWrite, listener: (storageKey: string, storageValue: Uint8Array) => void): this;
   removeListener(ev: WhatsDappEvent.StorageDelete, listener: (storageKey: string) => void): this;
@@ -450,7 +456,10 @@ export class WhatsDapp extends EventEmitter {
     console.log("start init sending");
     //TODO: set timeout
     //return false if init fails
-    await this.initialized;
+    //await this.initialized;
+    if(!this.initialized){
+      return false;
+    }
     console.log("end init sending");
 
     /*const batch = */
@@ -516,7 +525,7 @@ export class WhatsDapp extends EventEmitter {
   }
 
 
-  async getProfileByName(name: string): Promise<WhatsDappSession | null> {
+  async getProfileByName(name: string): Promise<Interlocutor | null> {
     // Resolve DPNS-Name to Identity
     const dpnsName: string = name + ".dash";
     const identity: DashIdentity | null = await this.dAPICommunicator.findIdentityByName(dpnsName);
