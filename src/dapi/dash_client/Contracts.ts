@@ -12,98 +12,107 @@ export type PlatformContract = {
 
 /*
 * Attributes:
-* - ownerID: dash identity of the profile you can query (not a public key).
-* - identityKey: X3DH
-* - registrationId: X3DH
-* - signedPreKey: X3DH
-* - preKey: X3DH
-* - PreKeys: X3DH, should be used only once.
+* TODO: docs
 */
 
-const userProfileContractFormat = {
-  
+const profileContractFormat = {
   //TODO: update prekeys
-
   profile: {
     type: "object",
     indices: [
       {
         properties: [
-          {$ownerId: "asc"},
+          { $ownerId: "asc" },
         ],
         unique: true
-      }
+      },
     ],
     properties: {
-      identityKey: {
-        "type": "array",
-        "byteArray": true,
-        "minItems": 30,
-        "maxItems": 40
-      },
-      registrationId:{
-        type: "number",
-        maxLength: 500,
-      },
-      preKey: {
+      signalKeyBundle: {
         type: "object",
         properties: {
-          keyId: {
-            type: "number",
-            maxLength: 500
+          preKey: {
+            type: "object",
+            properties: {
+              keyId: {
+                type: "number",
+              },
+              publicKey: {
+                type: "array",
+                byteArray: true,
+                minItems: 30,
+                maxItems: 40
+              }
+            },
+            required: [
+              "keyId",
+              "publicKey",
+            ],
+            additionalProperties: false
           },
-          publicKey: {
-            "type": "array",
-            "byteArray": true,
-            "minItems": 30,
-            "maxItems": 40
-          }
+          identityKey: {
+            type: "array",
+            byteArray: true,
+            minItems: 30,
+            maxItems: 40
+          },
+          registrationId: {
+            type: "number",
+          },
+          signedPreKey: {
+            type: "object",
+            properties: {
+              keyId: {
+                type: "number",
+              },
+              publicKey: {
+                type: "array",
+                byteArray: true,
+                minItems: 30,
+                maxItems: 40
+              },
+              signature: {
+                type: "array",
+                byteArray: true,
+                minItems: 30,
+                maxItems: 70
+              },
+            },
+            required: [
+              "keyId",
+              "publicKey",
+              "signature",
+            ],
+            additionalProperties: false
+          },
         },
+        required: [
+          "preKey",
+          "identityKey",
+          "registrationId",
+          "signedPreKey",
+        ],
         additionalProperties: false
       },
-      signedPreKey: {
-        type: "object",
-        properties: {
-          keyId: {
-            type: "number",
-            maxLength: 500
-          },
-          publicKey: {
-            "type": "array",
-            "byteArray": true,
-            "minItems": 30,
-            "maxItems": 40
-          },
-          signature: {
-            "type": "array",
-            "byteArray": true,
-            "minItems": 30,
-            "maxItems": 70
-          }
-        },
-        additionalProperties: false
-      },
-      prekeys: {
-        type: "array",
-        items: {
-          type: "string",
-          maxLength: 500
-        }
-      },
-      displayname: {
+      //optional
+      nickname: {
         type: "string",
         maxLength: 50
-      }
+      },
     },
-    required: ["identityKey", "registrationId", "preKey", "signedPreKey", "$createdAt", "$updatedAt"],
+    required: [
+      "signalKeyBundle",
+      "$id",
+      "$createdAt",
+      "$updatedAt"
+    ],
     additionalProperties: false
   }
 };
 
 /*
 * Attributes:
-* - receiver: ID of receiver in base58Check
-* - messages: encrypted messages with timestamp and sender id.
+* TODO: docs
 */
 
 const messageContractFormat = {
@@ -111,13 +120,15 @@ const messageContractFormat = {
     type: "object",
     indices: [
       {
+
+        //TODO: combine those indices ;)
         properties: [
           {$ownerId: "asc"},
         ]
       },
       {
         properties: [
-          {receiverid: "asc"},
+          {recipientId: "asc"},
         ]
       },
       {
@@ -127,30 +138,31 @@ const messageContractFormat = {
       }
     ],
     properties: {
-      receiverid: {
+      recipientId: {
         type: "string",
         maxLength: 500
       },
-      content: {
-        type: "string",
+      payload: {
+        type: "array",
+        byteArray: true,
       }
     },
-    required: ["receiverid", "content", "$createdAt", "$updatedAt"],
+    required: [
+      "recipientId", 
+      "payload", 
+      "$createdAt", 
+      "$updatedAt"],
     additionalProperties: false
   }
 };
 
 const contracts : Record<string, PlatformContract>= {
   "profile_contract":{
-
-    //TODO: script for updating contracts
-
-    //TODO: new contracts
-    contractId: "DjMSzc5bRDij3UN1W8E5dKsbxki9vYQ67ChNKKTTUHwm",
-    contractFormat: userProfileContractFormat
+    contractId: "brGVMsrJRYghfHMCD3ku5oQXHodvoPJEdt2nLkykpc3",
+    contractFormat: profileContractFormat
   },
   "message_contract": {
-    contractId: "FKY4fxmSzbDKewQRKsytxZ8HMBNgM2oTbzSKVEbtr2eP",
+    contractId: "7hLcovwmpbyFHVN5Xorw7Tqv4i2X9jBi2Guy1mvPijyR",
     contractFormat: messageContractFormat
   }
 };
