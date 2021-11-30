@@ -1,7 +1,7 @@
 import { Platform } from "dash/dist/src/SDK/Client/Platform";
 import { DashIdentity } from "../types/DashTypes";
 
-import type { RawMessage, RawProfile, WhatsDappProfileContent } from "../WhatsDapp";
+import type { DriveMessage, WhatsDappProfile } from "../WhatsDapp";
 
 export class DAPICommunicator {
 
@@ -57,7 +57,7 @@ export class DAPICommunicator {
    * @param senderid {string} ID of the owner encoded in HEX and the identifier flag
    * @returns all messages of a specified user
    */
-  async getMessagesFrom(senderid: string): Promise<Array<RawMessage>> {
+  async getMessagesFrom(senderid: string): Promise<Array<DriveMessage>> {
     console.log(senderid);
     try {
       return await this.platform.documents.get(
@@ -81,7 +81,7 @@ export class DAPICommunicator {
    * @param connection {WhatsDappConnection}
    * @returns all messages of the user
    */
-  async getMessages(): Promise<Array<RawMessage>> {
+  async getMessages(): Promise<Array<DriveMessage>> {
     try {
       return await this.platform.documents.get(
         'message_contract.message',
@@ -106,7 +106,7 @@ export class DAPICommunicator {
    * @param time {number} Time in milliseconds
    * @returns the messages since time
    */
-  async getMessagesByTime(time: number): Promise<Array<RawMessage>> {
+  async getMessagesByTime(time: number): Promise<Array<DriveMessage>> {
     try {
       return await this.platform.documents.get(
         'message_contract.message',
@@ -178,7 +178,7 @@ export class DAPICommunicator {
    * @param senderid {string}
    * @returns {Promise<*>}
    */
-  async getMessageFromByTime(time: number, senderid: string): Promise<Array<RawMessage>> {
+  async getMessageFromByTime(time: number, senderid: string): Promise<Array<DriveMessage>> {
     //TODO: make sure time remote is the same as local
     //eg. lastPollTime retrieved from last get()
     try {
@@ -300,17 +300,11 @@ export class DAPICommunicator {
    * @param content {WhatsDappProfileContent}
    * @returns {Promise<*>}
    */
-  async createProfile(content: WhatsDappProfileContent): Promise<any> {
+  async createProfile(content: WhatsDappProfile): Promise<any> {
     console.log("Start create_profile");
 
-    const doc_properties = {
-      identityKey: content.identityKey,
-      registrationId: content.registrationId,
-      signedPreKey: content.signedPreKey,
-      preKey: content.preKey,
-      prekeys: content.prekeys,
-      displayname: content.displayname
-    };
+    
+    const doc_properties = content;
 
     // Create the note document
     try {
@@ -339,7 +333,7 @@ export class DAPICommunicator {
    * @returns Returns a document, that the profile was created
    * TODO: Maybe its better to use the DashIdentity Type instead of the ownerid as a string
    */
-  async getProfile(ownerid: string): Promise<RawProfile> {
+  async getProfile(ownerid: string): Promise<WhatsDappProfile> {
     try {
       // Retrieve the existing document
       const documents = await this.platform.documents.get(
@@ -360,7 +354,7 @@ export class DAPICommunicator {
    * @param content {WhatsDappProfileContent}
    * @returns Returns a document, that the profile was updated
    */
-  async updateProfile(content: WhatsDappProfileContent): Promise<any> {
+  async updateProfile(content: WhatsDappProfile): Promise<any> {
     try {
       // Retrieve the existing document
       const [document] = await this.platform.documents.get(
@@ -369,11 +363,9 @@ export class DAPICommunicator {
       );
 
       // Update document
-      document.set('identityKey', content.identityKey);
-      document.set('registrationId', content.registrationId);
-      document.set('signedPreKey', content.signedPreKey);
-      document.set('preKey', content.preKey);
-      document.set('prekeys', content.prekeys);
+      document.set('signalKeyBundle', content.signalKeyBundle);
+      document.set('nickname', content.nickname);
+
       // Sign and submit the document replace transition
       return this.platform.documents.broadcast({ replace: [document] }, this.identity);
     } catch (e) {

@@ -1,6 +1,5 @@
 import { EventEmitter } from 'events';
 import { DashClient, DashIdentity } from "./types/DashTypes";
-import { WhatsDappProfile } from "./dapi/WhatsDappProfile";
 import { SignalKeyPair, SignalPreKey, SignalSignedPreKey } from "libsignal";
 import { KVStore, StructuredStorage } from "./storage/StructuredStorage";
 import { getWhatsDappDashClient } from "./dapi/dash_client/WhatsDappDashClient";
@@ -9,7 +8,6 @@ import { ISignalLib, SignalWrapper, WhatsDappSignalKeyBundle, WhatsDappSignalPre
 
 import { Platform } from 'dash/dist/src/SDK/Client/Platform';
 import { DAPICommunicator } from './dapi/DAPICommunicator';
-import { arrayBufferToString } from './signal/utils';
 
 /**
  *  
@@ -46,14 +44,12 @@ export type WhatsDappMessage = {
   read?: boolean;
   newMessage?: boolean;
 }
-export type WhatsDappMessageContent = {
-  message: string,
-  deleteTime: number
-}
-
+// export type WhatsDappMessageContent = {
+//   message: string,
+//   deleteTime: number
+// }
 
 export type WhatsDappSession = {
-  //signal: any,
   identity_receiver: string,
   profile_name: string
 }
@@ -67,84 +63,71 @@ export enum WhatsDappEvent {
   StorageDelete = 'storage-delete'
 }
 
-export type RawPreKeyBundle = {
-  identityKey: Array<string>,
-  registrationId: number,
-  signedPreKey: SignedPreKey,
-  preKey: PreKey,
-  prekeys: Array<string>,
-  displayname: string,
-}
-
-// TODO: get type from contract
-export type RawProfile = {
-  createdAt: Date,
-  updatedAt: Date,
-  data: RawPreKeyBundle
-}
-
-export type SignedPreKey = {
-  keyId: number,
-  publicKey: Array<string>
-}
-
-export type PreKey = {
-  keyId: number,
-  publicKey: Array<string>,
-  signature: Array<string>
-}
-
-export type RawMessage = {
-  ownerId: Array<string>,
-  createdAt: Date,
-  data: {
-    receiverId: string,
-    content: string
-  },
-  id: Array<string>
-};
-//TODO: Better instead of RawMessage (copy of contract)
 export type DriveMessage = {
-  ownerId: Array<string>,
-  receiverId: string,
+  id: string,
+  //aka: senderId
+  ownerId: string,
+  recipientId: string,
   createdAt: Date,
   updatedAt: Date,
   //TODO: whatsDapp protocol version ;)
-  kindOfInternalVersion: number;
+  kindOfInternalVersion?: number;
   //payload: base64 string containing encrypted WhatsDappMessage
-  payload: string,
+  payload: ArrayBuffer,
   // data: {
   //   receiverId: string,
   //   content: string
   // },
-  id: Array<string>
 };
 
-export type WhatsDappProfileContent = {
-  identityKey: string // content.identityKey,
-  registrationId: string // content.registrationId,
-  signedPreKey: string // content.signedPreKey,
-  preKey: string // content.preKey,
-  prekeys: Array<string>// content.prekeys,
-  displayname: string //content.displayname
+export type WhatsDappProfile = {
+  signalKeyBundle: WhatsDappSignalPrekeyBundle,
+  // signalKeyBundle: {
+  //   preKey: {
+  //     keyId: number,
+  //     publicKey: ArrayBuffer,
+  //   },
+  //   identityKey: ArrayBuffer,
+  //   registrationId: number,
+  //   signedPreKey: {
+  //     keyId: number,
+  //     publicKey: ArrayBuffer,
+  //     signature: ArrayBuffer,
+  //   },
+  // },
+  //optional
+  nickname?: string,
+  // identityKey: string // content.identityKey,
+  // registrationId: string // content.registrationId,
+  // signedPreKey: string // content.signedPreKey,
+  // preKey: string // content.preKey,
+  // prekeys: Array<string>// content.prekeys,
+  // displayname: string //content.displayname
 }
+// export type WhatsDappProfileContent = {
+//   identityKey: string // content.identityKey,
+//   registrationId: string // content.registrationId,
+//   signedPreKey: string // content.signedPreKey,
+//   preKey: string // content.preKey,
+//   prekeys: Array<string>// content.prekeys,
+//   displayname: string //content.displayname
+// }
 
-export type ConnectOptions = {
-  mnemonic: string,
-  sessions: Array<WhatsDappSession>,
-  identity: any,
-  displayname: string,
-  createDpnsName: string | null,
-  lastTimestamp: number,
-  preKeyBundle: any
-}
+// export type ConnectOptions = {
+//   mnemonic: string,
+//   sessions: Array<WhatsDappSession>,
+//   identity: any,
+//   displayname: string,
+//   createDpnsName: string | null,
+//   lastTimestamp: number,
+//   preKeyBundle: any
+// }
 
-
-export type ConnectResult = {
-  displayName: string,
-  createDpnsName: string | null,
-  identity: DashIdentity
-}
+// export type ConnectResult = {
+//   displayName: string,
+//   createDpnsName: string | null,
+//   identity: DashIdentity
+// }
 
 export type WhatsDappUserData = {
   mnemonic: string,
@@ -256,14 +239,14 @@ export class WhatsDapp extends EventEmitter {
     //TODO: flag for init is done (boolean or something)
 
     //TODO: clean dapi
-    let profile: RawProfile = await this.dAPICommunicator.getProfile(this.identity.getId().toJSON());
+    let profile: WhatsDappProfile = await this.dAPICommunicator.getProfile(this.identity.getId().toJSON());
 
     if (profile == null) {
       //TODO: maybe something else went wrong?
       console.log("No profile for identity was found. Do you have one?")
-      await this.createNewRawProfile()
+      profile=await this.createNewRawProfile()
     }
-    this._profile = new WhatsDappProfile(profile);
+    this._profile = profile;
   }
 
   async createDpnsName(desiredDpnsNameWithoutPostfix: string): Promise<boolean> {
@@ -272,10 +255,10 @@ export class WhatsDapp extends EventEmitter {
   }
 
   async getProfile() {
-    let profile: RawProfile = await this.dAPICommunicator.getProfile(this.identity!.getId().toJSON());
+    let profile: WhatsDappProfile = await this.dAPICommunicator.getProfile(this.identity!.getId().toJSON());
     return profile;
   }
-  async createNewRawProfile(profile: RawProfile) {
+  async createNewRawProfile(/*profile: WhatsDappProfile*/):Promise<WhatsDappProfile>{
     //let profile = await this.dAPICommunicator.getProfile(this.identity!.getId().toJSON());
 
     //TODO ;)
@@ -286,29 +269,23 @@ export class WhatsDapp extends EventEmitter {
     const keysBundle: WhatsDappSignalKeyBundle = await this.createKeys()
     const preKeyBundle: WhatsDappSignalPrekeyBundle = keysBundle.preKeyBundle;
 
-
-    const xy: WhatsDappProfileContent = {
-      identityKey: arrayBufferToString(preKeyBundle.identityKey, 'binary'),
-      registrationId: arrayBufferToString(preKeyBundle.registrationId, 'binary'),
-      signedPreKey: preKeyBundle.signedPreKey,
-      preKey: arrayBufferToString(preKeyBundle.preKey, 'binary'),
-      prekeys: [],
-      displayname: "null"
+    const profileDoc:WhatsDappProfile={
+      signalKeyBundle: preKeyBundle,
     }
+
     // const content = profile.data.preKeyBundle;
-    const content: RawPreKeyBundle = (await this.createKeys()).preKeyBundle;
+    //const content: RawPreKeyBundle = (await this.createKeys()).preKeyBundle;
 
-    content.displayname = profile.data.displayname;
+    //content.displayname = profile.data.displayname;
 
-    content.prekeys = [];
-    console.log(content);
+    //content.prekeys = [];
+    //console.log(content);
 
-    await this.dAPICommunicator.createProfile(content);
+    await this.dAPICommunicator.createProfile(profileDoc);
 
-    profile = await this.dAPICommunicator.getProfile(this.identity!.getId().toJSON());
-    // }
-    this._profile = new WhatsDappProfile(profile);
-
+    let profile = await this.dAPICommunicator.getProfile(this.identity!.getId().toJSON());
+    
+    return profile;
   }
 
   async createNewIdentity(): Promise<DashIdentity> {
@@ -359,9 +336,9 @@ export class WhatsDapp extends EventEmitter {
 
     // TODO: it should be possible to do this per session / chat partner.
     //const messages: Array<RawMessage> = await dapi.getMessagesByTime(this._connection, pollTime);
-    const messages: Array<RawMessage> = await this.dAPICommunicator!.getMessagesByTime(pollTime);
+    const messages: Array<DriveMessage> = await this.dAPICommunicator!.getMessagesByTime(pollTime);
 
-    const messagePromises = messages.map((m: RawMessage) => this._broadcastNewMessage(m).catch(e => console.log('broadcast failed!', e)));
+    const messagePromises = messages.map((m: DriveMessage) => this._broadcastNewMessage(m).catch(e => console.log('broadcast failed!', e)));
     console.log('got', messagePromises.length, 'new messages.');
     if (messages.length > 0) {
       const polledMessage = messages[messages.length - 1];
@@ -374,20 +351,27 @@ export class WhatsDapp extends EventEmitter {
     this.pollTimeout = setTimeout(() => this._poll(), this.pollInterval);
   }
 
-  async _broadcastNewMessage(rawMessage: RawMessage): Promise<void> {
-    const cipherMessage: WhatsDappCipherMessage = new WhatsDappCipherMessage(rawMessage);
-    const session = await this._getOrCreateSession(rawMessage.ownerId, cipherMessage.senderHandle);
+  async _broadcastNewMessage(rawMessage: DriveMessage): Promise<void> {
+
+
+    //const cipherMessage: WhatsDappCipherMessage = new WhatsDappCipherMessage(rawMessage);
+    //TODO: Here's something wrng with the session
+    //TODO: why it's not a WhatsDappSession
+    const session = await this._getOrCreateSession(rawMessage.ownerId, rawMessage.recipientId);
     await new Promise(r => setTimeout(r, 2000)); // TODO: Solve race condition
-    cipherMessage.content = await this.signal.decryptMessage(this.storage, cipherMessage.ownerId, cipherMessage.content);
-    const plainMessage: WhatsDappPlainMessage = new WhatsDappPlainMessage(cipherMessage);
-    console.log("receiverid");
-    console.log(plainMessage.senderHandle);
+
+    
+    const plainMessage:WhatsDappMessage = JSON.parse(await this.signal.decryptMessage(this.storage, rawMessage.ownerId, rawMessage.payload));
+
+
+    console.log("recipientId");
+    console.log(plainMessage.recipientId);
     console.log("MSG");
-    console.log(plainMessage);
+    console.log(plainMessage.content);
     this.emit(WhatsDappEvent.NewMessage, plainMessage, session);
     await this.storage.addMessageToSession(session.profile_name, plainMessage);
     // TODO: await this.storage.addMessageToSession(session.profile_name, cipherMessage);
-    this._lastPollTime = Math.max(this._lastPollTime, plainMessage.timestamp + 1);
+    this._lastPollTime = Math.max(this._lastPollTime, plainMessage.updatedAt + 1);
   }
 
 
@@ -401,7 +385,7 @@ export class WhatsDapp extends EventEmitter {
     let session: WhatsDappSession = this._sessions[ownerId] as WhatsDappSession;
     if (session == null) {
       session = { profile_name: senderHandle, identity_receiver: ownerId };
-      const preKeyBundle = (await this.dAPICommunicator.getProfile(ownerId)).data;
+      const preKeyBundle = (await this.dAPICommunicator.getProfile(ownerId)).signalKeyBundle;
       this._sessions[ownerId] = session;
       /* TODO: This is only necessary when a new session is established by searching a contact.
       If a session is established by a new incoming message, this is a waste of time, since the
@@ -415,9 +399,9 @@ export class WhatsDapp extends EventEmitter {
     return session;
   }
 
-  emit(ev: WhatsDappEvent.NewMessage, message: WhatsDappPlainMessage, session: WhatsDappSession): boolean;
+  emit(ev: WhatsDappEvent.NewMessage, message: WhatsDappMessage, session: WhatsDappSession): boolean;
   emit(ev: WhatsDappEvent.NewSession, session: WhatsDappSession, bundle: RawPreKeyBundle): boolean;
-  emit(ev: WhatsDappEvent.NewMessageSent, wMessage: WhatsDappCipherMessage, session: WhatsDappSession): boolean;
+  emit(ev: WhatsDappEvent.NewMessageSent, wMessage: WhatsDappMessage, session: WhatsDappSession): boolean;
   emit(ev: WhatsDappEvent.StorageRead, storageKey: string, ret: (val: Uint8Array | null) => void): boolean;
   emit(ev: WhatsDappEvent.StorageWrite, storageKey: string, storageValue: Uint8Array): boolean;
   emit(ev: WhatsDappEvent.StorageDelete, storageKey: string): boolean;
@@ -425,9 +409,9 @@ export class WhatsDapp extends EventEmitter {
     return super.emit(ev, ...Array.from(args));
   }
 
-  on(ev: WhatsDappEvent.NewMessage, listener: (msg: WhatsDappCipherMessage, session: WhatsDappSession) => void): this;
+  on(ev: WhatsDappEvent.NewMessage, listener: (msg: WhatsDappMessage, session: WhatsDappSession) => void): this;
   on(ev: WhatsDappEvent.NewSession, listener: (session: WhatsDappSession, bundle: RawPreKeyBundle) => void): this;
-  on(ev: WhatsDappEvent.NewMessageSent, listener: (wMessage: WhatsDappCipherMessage, session: WhatsDappSession) => void): this;
+  on(ev: WhatsDappEvent.NewMessageSent, listener: (wMessage: WhatsDappMessage, session: WhatsDappSession) => void): this;
   on(ev: WhatsDappEvent.StorageRead, listener: (storageKey: string, ret: (val: Uint8Array | null) => void) => void): this;
   on(ev: WhatsDappEvent.StorageWrite, listener: (storageKey: string, storageValue: Uint8Array) => void): this;
   on(ev: WhatsDappEvent.StorageDelete, listener: (storageKey: string, storageValue: Uint8Array) => void): this;
@@ -435,9 +419,9 @@ export class WhatsDapp extends EventEmitter {
     return super.on(ev, listener);
   }
 
-  removeListener(ev: WhatsDappEvent.NewMessage, listener: (msg: WhatsDappCipherMessage, session: WhatsDappSession) => void): this;
+  removeListener(ev: WhatsDappEvent.NewMessage, listener: (msg: WhatsDappMessage, session: WhatsDappSession) => void): this;
   removeListener(ev: WhatsDappEvent.NewSession, listener: (session: WhatsDappSession, bundle: RawPreKeyBundle) => void): this;
-  removeListener(ev: WhatsDappEvent.NewMessageSent, listener: (wMessage: WhatsDappCipherMessage, session: WhatsDappSession) => void): this;
+  removeListener(ev: WhatsDappEvent.NewMessageSent, listener: (wMessage: WhatsDappMessage, session: WhatsDappSession) => void): this;
   removeListener(ev: WhatsDappEvent.StorageRead, listener: (storageKey: string, ret: (val: Uint8Array | null) => void) => void): this;
   removeListener(ev: WhatsDappEvent.StorageWrite, listener: (storageKey: string, storageValue: Uint8Array) => void): this;
   removeListener(ev: WhatsDappEvent.StorageDelete, listener: (storageKey: string) => void): this;
@@ -461,6 +445,8 @@ export class WhatsDapp extends EventEmitter {
    * @returns {Promise<boolean>}
    */
   async sendMessage(receiver: string, plaintext: string): Promise<boolean> {
+    //TODO: get wd-message as parameter
+
     console.log("start init sending");
     //TODO: set timeout
     //return false if init fails
@@ -475,44 +461,40 @@ export class WhatsDapp extends EventEmitter {
     const sentMessage: any = await this.dAPICommunicator.createMessage(receiver, ciphertext);
 
 
+    //TODO: return a wd-message, that I can parse ;)
 
     console.log("sentmessage");
     console.log(sentMessage);
 
     const rIdentity = await this.platform!.identities.get(receiver);
 
-    const rMessage: RawMessage = {
-      ownerId: sentMessage.ownerId,
-      createdAt: sentMessage.transitions[0].createdAt,
-      data: {
-        receiverId: receiver,
-        content: plaintext
-      },
-      id: sentMessage.transitions[0].id
-    };
+    // const rMessage: DriveMessage = {
+    //   ownerId: sentMessage.ownerId,
+    //   createdAt: sentMessage.transitions[0].createdAt,
+    //   updatedAt: sentMessage.transitions[0].updatedAt,
+    //   recipientId: receiver,
+    //   payload: plaintext,
+    //   id: sentMessage.transitions[0].id
+    // };
 
-    console.log(rMessage);
-    //TODO: Geht schöner
-    const wMessage: WhatsDappCipherMessage = new WhatsDappCipherMessage(rMessage);
-    const pMessage: WhatsDappPlainMessage = new WhatsDappPlainMessage(wMessage);
-    //await dapi.createMessage(this._connection, receiver, ciphertext);
+    // console.log(rMessage);
+    // //TODO: Geht schöner
+    // const wMessage: WhatsDappCipherMessage = new WhatsDappCipherMessage(rMessage);
+    // const pMessage: WhatsDappPlainMessage = new WhatsDappPlainMessage(wMessage);
+    // //await dapi.createMessage(this._connection, receiver, ciphertext);
     //const message = transitionToMessage(batch.transitions[0], this._connection.identity)
 
     // GUI listens to this, can then remove send-progressbar or w/e
     // storage also listens and will save the message.
     console.log({ profile_name: receiver, identity_receiver: rIdentity.getId() });
-    this.emit(WhatsDappEvent.NewMessageSent, wMessage, { profile_name: receiver, identity_receiver: rIdentity.getId() });
-    await this.storage.addMessageToSession(receiver, pMessage);
+
+    //TODO: emit event!
+    // this.emit(WhatsDappEvent.NewMessageSent, wMessage, { profile_name: receiver, identity_receiver: rIdentity.getId() });
+    await this.storage.addMessageToSession(receiver, plaintext);
     console.log("sent");
 
     //if eveything went well
     return true;
-  }
-
-  createInputMessage(plaintext: string): string {
-    const inputMessage: WhatsDappMessageContent = { message: plaintext, deleteTime: new Date().getTime() };
-    const inputMessageJson = JSON.stringify(inputMessage);
-    return inputMessageJson;
   }
 
   async createKeys(): Promise<WhatsDappSignalKeyBundle> {

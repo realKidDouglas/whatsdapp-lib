@@ -47,7 +47,7 @@ export interface ISignalLib {
   generateSignalKeys(): Promise<WhatsDappSignalKeyBundle>;
   //  encryptMessage(whatsDappStore: any, receiverId: string, plaintext: string): Promise<string>;
   encryptMessage(whatsDappStore: any, receiverId: string, plaintext: string): Promise<ArrayBuffer>;
-  decryptMessage(whatsDappStore: any, senderId: string, base64: string): Promise<string>;
+  decryptMessage(whatsDappStore: any, senderId: string, cipherText: ArrayBuffer): Promise<string>;
   buildAndPersistSession(whatsDappStore: any, identifier: string, preKeyBundle: WhatsDappSignalPrekeyBundle): Promise<void>;
 }
 
@@ -109,20 +109,25 @@ export class SignalWrapper implements ISignalLib {
    * @param base64: The CipherText object converted into JSON and encoded as Base64
    * @returns {Promise<string>}: The original plaintext
    */
-  async decryptMessage(whatsDappStore: any, senderId: string, base64: string): Promise<string> {
-    const cipherText = SignalWrapper._b64toCipherText(base64);
+  async decryptMessage(whatsDappStore: any, senderId: string, cipherText: ArrayBuffer): Promise<string> {
+    // const cipherText = SignalWrapper._b64toCipherText(base64);
+
+    // const cipherText = SignalWrapper._b64toCipherText(base64);
+
     const deviceId = 1; // TODO: This shouldn't be hardcoded
     const store = new SignalProtocolStore(whatsDappStore, senderId);
     const address = new libsignal.ProtocolAddress(senderId, deviceId);
     const sessionCipher = new libsignal.SessionCipher(store, address);
 
-    const messageHasEmbeddedPreKeyBundle = cipherText.type == 3;
+    const messageHasEmbeddedPreKeyBundle = true;//cipherText.type == 3;
 
     let plaintext;
     if (messageHasEmbeddedPreKeyBundle) {
-      plaintext = await sessionCipher.decryptPreKeyWhisperMessage(Buffer.from(cipherText.body.data), 'binary');
+      //plaintext = await sessionCipher.decryptPreKeyWhisperMessage(Buffer.from(cipherText.body.data), 'binary');
+      plaintext = await sessionCipher.decryptPreKeyWhisperMessage(Buffer.from(cipherText), 'binary');
     } else {
-      plaintext = await sessionCipher.decryptWhisperMessage(Buffer.from(cipherText.body.data), 'binary');
+      //plaintext = await sessionCipher.decryptWhisperMessage(Buffer.from(cipherText.body.data), 'binary');
+      plaintext = await sessionCipher.decryptPreKeyWhisperMessage(Buffer.from(cipherText), 'binary');
     }
     return arrayBufferToString(plaintext, 'utf8');
   }
