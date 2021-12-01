@@ -1,6 +1,7 @@
 import libsignal, { SignalKeyPair, SignalPreKey, SignalSignedPreKey } from "libsignal";
 import { arrayBufferToString } from "./utils";
 import { SignalProtocolStore } from "./SignalProtocolStoreWrapper";
+import { StructuredStorage } from "../storage/StructuredStorage";
 
 type CipherTextType = number// should probably be an enum or 1 | 2 | 3
 
@@ -119,6 +120,7 @@ export class SignalWrapper implements ISignalLib {
     const address = new libsignal.ProtocolAddress(senderId, deviceId);
     const sessionCipher = new libsignal.SessionCipher(store, address);
 
+    //TODO: there is no other payload anymore :/
     const messageHasEmbeddedPreKeyBundle = true;//cipherText.type == 3;
 
     let plaintext;
@@ -126,8 +128,9 @@ export class SignalWrapper implements ISignalLib {
       //plaintext = await sessionCipher.decryptPreKeyWhisperMessage(Buffer.from(cipherText.body.data), 'binary');
       plaintext = await sessionCipher.decryptPreKeyWhisperMessage(Buffer.from(cipherText), 'binary');
     } else {
+      plaintext = await sessionCipher.decryptWhisperMessage(Buffer.from(cipherText), 'binary');
       //plaintext = await sessionCipher.decryptWhisperMessage(Buffer.from(cipherText.body.data), 'binary');
-      plaintext = await sessionCipher.decryptPreKeyWhisperMessage(Buffer.from(cipherText), 'binary');
+      //plaintext = await sessionCipher.decryptPreKeyWhisperMessage(Buffer.from(cipherText), 'binary');
     }
     return arrayBufferToString(plaintext, 'utf8');
   }
@@ -139,7 +142,7 @@ export class SignalWrapper implements ISignalLib {
    * @param identifier: Identifier of the communication partner
    * @param preKeyBundle: preKeyBundle of the communication partner
    */
-  async buildAndPersistSession(whatsDappStore: any, identifier: string, preKeyBundle: WhatsDappSignalPrekeyBundle): Promise<void> {
+  async buildAndPersistSession(whatsDappStore: StructuredStorage, identifier: string, preKeyBundle: WhatsDappSignalPrekeyBundle): Promise<void> {
     const deviceId = 1; // TODO: This shouldn't be hardcoded
     const store = new SignalProtocolStore(whatsDappStore, identifier);
     const address = new libsignal.ProtocolAddress(identifier, deviceId);

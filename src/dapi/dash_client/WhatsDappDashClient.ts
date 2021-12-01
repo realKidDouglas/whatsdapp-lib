@@ -15,7 +15,7 @@ export function getWhatsDappDashClient(mnemonic: string | null): DashClient {
   const clientOpts = {
     network: 'testnet',
     wallet: {
-      mnemonic,
+      mnemonic: mnemonic,
       unsafeOptions: {
         skipSynchronizationBeforeHeight: 500000, // only sync from mid of 2021
       },

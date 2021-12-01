@@ -1,4 +1,4 @@
-import type {WhatsDappPrivateData, WhatsDappUserData} from "../WhatsDapp";
+import type {WhatsDappPrivateData, WhatsDappUserData, WhatsDappMessage} from "../WhatsDapp";
 
 import {
   USER_FILE_NAME,
@@ -101,7 +101,7 @@ export class StructuredStorage {
     return this._saveMetaData(identityId);
   }
 
-  async addMessageToSession(identityId: string, message: WhatsDappPlainMessage): Promise<void> {
+  async addMessageToSession(identityId: string, message: WhatsDappMessage): Promise<void> {
     if (this._metadata == null) {
       this._metadata = await this._loadMetaData();
     }
@@ -111,7 +111,7 @@ export class StructuredStorage {
       return;
     }
 
-    const timestamp = message.timestamp;
+    const timestamp = message.updatedAt;
     const newEntryStr = JSON.stringify(message);
     const newEntryLength = newEntryStr.length * 2;
     // sorted list of the first message time stamp in each hist file for this session
@@ -191,7 +191,7 @@ export class StructuredStorage {
       // get the newest message that has a timestamp smaller than infinity
       const lastMessage = (await this.getPreviousMessages(identityId, Infinity, 1))[0];
       if (lastMessage == null) continue;
-      max = Math.max(max, lastMessage.timestamp);
+      max = Math.max(max, lastMessage.updatedAt);
     }
     return max;
   }
@@ -270,6 +270,7 @@ export class StructuredStorage {
   private async _savePrivateData(): Promise<void> {
     console.log("save private data");
     const pd = await this.getPrivateData();
+    //console.log(pd,PRIVATE_FILE_NAME);
     return this._store.set(PRIVATE_FILE_NAME, objectToUint8Array(pd));
   }
 
@@ -332,7 +333,7 @@ export class StructuredStorage {
    *
    * @type {function(identityId: string, timestamp: ?number, limit: ?number):Array<Promise<?{timestamp: number, message: string}>>}
    */
-  getPreviousMessages(identityId: string, timestamp = Infinity, limit: number = DEFAULT_MSG_COUNT): Promise<Array<WhatsDappPlainMessage>> {
+  getPreviousMessages(identityId: string, timestamp = Infinity, limit: number = DEFAULT_MSG_COUNT): Promise<Array<WhatsDappMessage>> {
     return this._getMessageByTimestamp(identityId, timestamp, limit, true);
   }
 
@@ -347,11 +348,11 @@ export class StructuredStorage {
    *
    * @type {function(identityId: string, timestamp: ?number, limit: ?number):Array<Promise<?{timestamp: number, message: string}>>}
    */
-  getNextMessages(identityId: string, timestamp = 0, limit: number = DEFAULT_MSG_COUNT): Promise<Array<WhatsDappPlainMessage>> {
+  getNextMessages(identityId: string, timestamp = 0, limit: number = DEFAULT_MSG_COUNT): Promise<Array<WhatsDappMessage>> {
     return this._getMessageByTimestamp(identityId, timestamp, limit, false);
   }
 
-  private async _getMessageByTimestamp(identityId: string, timestamp: number, limit: number, older: boolean): Promise<Array<WhatsDappPlainMessage>> {
+  private async _getMessageByTimestamp(identityId: string, timestamp: number, limit: number, older: boolean): Promise<Array<WhatsDappMessage>> {
     if (this._metadata == null) {
       this._metadata = await this._loadMetaData();
     }
@@ -365,7 +366,7 @@ export class StructuredStorage {
       : (mt, qt) => mt < qt;
 
     // if we want older than timestamp, we need to inspect the newest message in chunk first.
-    const reverser: (arr: Array<WhatsDappPlainMessage>) => Array<WhatsDappPlainMessage> = older
+    const reverser: (arr: Array<WhatsDappMessage>) => Array<WhatsDappMessage> = older
       ? arr => arr.reverse()
       : arr => arr;
 
@@ -375,7 +376,7 @@ export class StructuredStorage {
       : 1;
 
     console.log("retrieve msg for", identityId);
-    const ret: Array<WhatsDappPlainMessage> = [];
+    const ret: Array<WhatsDappMessage> = [];
     if (limit <= 0 || timestamp < 0) return ret;
     const chunks = md.chunks;
     const targetChunkIndex = getTargetChunkIndex(timestamp, chunks);
@@ -400,10 +401,10 @@ export class StructuredStorage {
         console.log("history is corrupt, chunk is not a chunk!");
         break;
       }
-      const decChunk = chunk.map(s => JSON.parse(s) as WhatsDappPlainMessage);
+      const decChunk = chunk.map(s => JSON.parse(s) as WhatsDappMessage);
       reverser(decChunk).forEach(message => {
         if (ret.length === limit) return;
-        if (comparer(message.timestamp, timestamp)) {
+        if (comparer(message.updatedAt, timestamp)) {
           console.log('message in wrong time slice');
           return;
         }

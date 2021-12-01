@@ -33,21 +33,43 @@ export class DAPICommunicator {
    * @returns The check, that the message is published
    */
   //async createMessage(receiverid: string, content: string): Promise<any> {
-  async createMessage(receiverid: string, content: ArrayBuffer): Promise<any> {
-    const doc_properties = { receiverid, content };
+  async createMessage(recipientId: string, content: ArrayBuffer): Promise<DriveMessage|null> {
+    // const doc_properties = { receiverid, content };
+    console.log("-create msg", content, ",(typeof content", typeof content,")");
+    const doc_properties = {
+      recipientId: recipientId,
+      payload: content
+    };
+
     // Create the message document
-    const message_document = await this.platform.documents.create(
+    const raw_message_document = await this.platform.documents.create(
       'message_contract.message',
       this.identity,
       doc_properties,
     );
 
     const document_batch = {
-      create: [message_document],
+      create: [raw_message_document],
     };
     console.log("Sending: ");
     console.log(document_batch);
-    return this.platform.documents.broadcast(document_batch, this.identity);
+    console.log("-broadcast msg");
+    
+    const sentmessage=this.platform.documents.broadcast(document_batch, this.identity);
+    if(sentmessage==null){
+      return null;
+    }
+    const driveMessage:DriveMessage={
+      id: sentmessage.transitions[0].id,
+      ownerId: sentmessage.ownerId,
+      createdAt: sentmessage.transitions[0].createdAt,
+      updatedAt: sentmessage.transitions[0].updatedAt,
+
+      recipientId: sentmessage.transitions[0].data.recipientId,
+      payload: sentmessage.transitions[0].data.payload
+    }
+
+    return driveMessage;
   }
 
   /**
@@ -65,7 +87,7 @@ export class DAPICommunicator {
         {
           where: [
             ['$ownerId', "==", senderid],
-            ['receiverid', "==", this.identity.getId().toJSON()]
+            ['recipientId', "==", this.identity.getId().toJSON()]
 
           ],
         },
@@ -87,7 +109,7 @@ export class DAPICommunicator {
         'message_contract.message',
         {
           where: [
-            ['receiverid', "==", this.identity.getId().toJSON()]
+            ['recipientId', "==", this.identity.getId().toJSON()]
           ],
         },
       );
@@ -108,15 +130,33 @@ export class DAPICommunicator {
    */
   async getMessagesByTime(time: number): Promise<Array<DriveMessage>> {
     try {
-      return await this.platform.documents.get(
+      const rawMessages= await this.platform.documents.get(
         'message_contract.message',
         {
           where: [
-            ['receiverid', "==", this.identity.getId().toJSON()],
+            ['recipientId', "==", this.identity.getId().toJSON()],
             ['$createdAt', ">=", time]
           ],
         },
       );
+
+      const driveMessages:Array<DriveMessage>=[];
+      rawMessages.forEach((rawMessage:any) => {
+        const driveMessage:DriveMessage={
+          id: rawMessage.id.toString(),
+          ownerId: rawMessage.ownerId.toString(),
+          recipientId: rawMessage.data.recipientId.toString(),
+          createdAt: Date.parse(rawMessage.createdAt),
+          updatedAt: Date.parse(rawMessage.updatedAt),
+          payload: rawMessage.data.payload
+        };
+        driveMessages.push(driveMessage);
+      });
+
+      // console.log("RAW MSGS:", rawMessages);
+      // return rawMessages;
+      // console.log("DRIVE MSGS:", driveMessages);
+      return driveMessages;
 
     } catch (e) {
       console.error('Something went wrong:', e);
@@ -303,7 +343,7 @@ export class DAPICommunicator {
   async createProfile(content: WhatsDappProfile): Promise<any> {
     console.log("Start create_profile");
 
-    
+
     const doc_properties = content;
 
     // Create the note document
@@ -319,7 +359,7 @@ export class DAPICommunicator {
         create: [message_document],
       };
 
-      console.log("End create_profile");
+      console.log("-upload profile");
       return this.platform.documents.broadcast(document_batch, this.identity);
     } catch (e) {
       console.log(e);
@@ -333,7 +373,7 @@ export class DAPICommunicator {
    * @returns Returns a document, that the profile was created
    * TODO: Maybe its better to use the DashIdentity Type instead of the ownerid as a string
    */
-  async getProfile(ownerid: string): Promise<WhatsDappProfile> {
+  async getProfile(ownerid: string): Promise<WhatsDappProfile| null> {
     try {
       // Retrieve the existing document
       const documents = await this.platform.documents.get(
@@ -341,7 +381,34 @@ export class DAPICommunicator {
         { where: [['$ownerId', '==', ownerid]] }
       );
       // Sign and submit the document replace transition
-      return documents[0];
+
+      const firstProfile = documents[0];
+      //console.log("profile document:", firstProfile);
+      //console.log("profile document DATA:", firstProfile.getData());
+
+      if(!firstProfile){
+        return null;
+      }
+      
+      
+      //TODO: Test for undefined
+
+
+      return firstProfile.getData();
+      //TOD=: further info (createdAt etc.) must be putted here
+
+
+      // const profile:WhatsDappProfile = firstProfile.getData();
+      // // const profile:WhatsDappProfile = {
+      // //   signalKeyBundle: firstProfile.data.signalKeyBundle,
+      // // };
+      // console.log("getData()",profile);
+      // //profile.signalKeyBundle.identityKey=profile.signalKeyBundle.identityKey;
+      // console.log("identityKey",profile.signalKeyBundle.identityKey, "typeof",typeof profile.signalKeyBundle.identityKey);
+      // // if(firstProfile.data.nickname){
+      // //   profile.nickname=firstProfile.data.nickname;
+      // // }
+      // return profile;
     } catch (e) {
       console.log('Something went wrong:', e);
       throw e;
