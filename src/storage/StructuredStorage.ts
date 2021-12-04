@@ -1,4 +1,5 @@
-import type {WhatsDappPrivateData, WhatsDappUserData, WhatsDappMessage} from "../WhatsDapp";
+import { WhatsDappSignalPrivateKeys } from "../signal/SignalWrapper";
+import type { WhatsDappUserData, WhatsDappMessage} from "../WhatsDapp";
 
 import {
   USER_FILE_NAME,
@@ -46,7 +47,7 @@ export type SessionMetaData = {
 export class StructuredStorage {
   _metadata: { [key: string]: SessionMetaData } | null;
   _userData: WhatsDappUserData | null;
-  _privateData: WhatsDappPrivateData | null;
+  _privateData: WhatsDappSignalPrivateKeys | null;
   _store: KVStore;
 
   /**
@@ -250,12 +251,12 @@ export class StructuredStorage {
   // privateData persistence
   //
 
-  async setPrivateData(data: WhatsDappPrivateData): Promise<void> {
+  async setPrivateData(data: WhatsDappSignalPrivateKeys): Promise<void> {
     this._privateData = data;
     return this._savePrivateData();
   }
 
-  async getPrivateData(): Promise<WhatsDappPrivateData | null> {
+  async getPrivateData(): Promise<WhatsDappSignalPrivateKeys | null> {
     if (this._privateData == null) {
       this._privateData = await this._loadPrivateData();
     }
@@ -274,12 +275,12 @@ export class StructuredStorage {
     return this._store.set(PRIVATE_FILE_NAME, objectToUint8Array(pd));
   }
 
-  private async _loadPrivateData(): Promise<WhatsDappPrivateData | null> {
+  private async _loadPrivateData(): Promise<WhatsDappSignalPrivateKeys | null> {
     console.log("getting private data!");
     const loadedPrivateData = await this._store.get(PRIVATE_FILE_NAME);
     if (loadedPrivateData == null) return null;
     const pdObj = uint8ArrayToObject(loadedPrivateData);
-    return restoreBuffers(pdObj) as WhatsDappPrivateData;
+    return restoreBuffers(pdObj) as WhatsDappSignalPrivateKeys;
   }
 
   //

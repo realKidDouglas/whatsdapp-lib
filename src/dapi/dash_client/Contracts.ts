@@ -132,6 +132,7 @@ const messageContractFormat = {
         ]
       },
       {
+        //TODO: updatedAt
         properties: [
           {$createdAt: "desc"}
         ]

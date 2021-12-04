@@ -2,22 +2,21 @@ import { Platform } from "dash/dist/src/SDK/Client/Platform";
 import { DashIdentity } from "../types/DashTypes";
 
 import type { DriveMessage, WhatsDappProfile } from "../WhatsDapp";
+import { IdentityManager } from "./IdentityManager";
+import { MessagesManager } from "./MessagesManager";
+import { ProfileManager } from "./ProfileManager";
+import { retryFunctionXTimes } from "./utils";
 
 export class DAPICommunicator {
-
-  // protected readyObject:DAPICommunicator;
-
-  private platform: Platform;
-  private identity: DashIdentity;
-
-  // private identityManager:IdentityManager;
-  // private profileManager:ProfileManager;
+  private identityManager: IdentityManager;
+  private profileManager: ProfileManager;
+  private messagesManager: MessagesManager;
   // private walletManager:WalletManager;
-  // private messagesManager:MessagesManager;
 
   constructor(platform: Platform, identity: DashIdentity) {
-    this.platform = platform;
-    this.identity = identity;
+    this.identityManager = new IdentityManager(platform, identity);
+    this.profileManager = new ProfileManager(platform, identity);
+    this.messagesManager = new MessagesManager(platform, identity);
   }
 
 
@@ -26,219 +25,26 @@ export class DAPICommunicator {
   //**********************
 
   /**
-   * Create a message in form of the message contract and broadcast it to the platform
-   * @param connection {WhatsDappConnection}
-   * @param receiverid {string} ID in Base58Check of the receiver
-   * @param content {string} The content of the message
-   * @returns The check, that the message is published
+   * Creates a document in form of the message contract and broadcast it to the platform
+   * @param recipientId {string} ID in Base58Check of the receiver
+   * @param payload {ArrayBuffer} The encrypted WhatsDappInternalMessage
+   * @returns a DriveMessage object containing the transition info or null
    */
-  //async createMessage(receiverid: string, content: string): Promise<any> {
-  async createMessage(recipientId: string, content: ArrayBuffer): Promise<DriveMessage|null> {
-    // const doc_properties = { receiverid, content };
-    console.log("-create msg", content, ",(typeof content", typeof content,")");
-    const doc_properties = {
-      recipientId: recipientId,
-      payload: content
-    };
-
-    // Create the message document
-    const raw_message_document = await this.platform.documents.create(
-      'message_contract.message',
-      this.identity,
-      doc_properties,
-    );
-
-    const document_batch = {
-      create: [raw_message_document],
-    };
-    console.log("Sending: ");
-    console.log(document_batch);
-    console.log("-broadcast msg");
-    
-    const sentmessage=this.platform.documents.broadcast(document_batch, this.identity);
-    if(sentmessage==null){
-      return null;
-    }
-    const driveMessage:DriveMessage={
-      id: sentmessage.transitions[0].id,
-      ownerId: sentmessage.ownerId,
-      createdAt: sentmessage.transitions[0].createdAt,
-      updatedAt: sentmessage.transitions[0].updatedAt,
-
-      recipientId: sentmessage.transitions[0].data.recipientId,
-      payload: sentmessage.transitions[0].data.payload
-    }
-
-    return driveMessage;
+  async createAndBroadcastMessage(recipientId: string, payload: ArrayBuffer): Promise<DriveMessage | null> {
+    //retry 3 times
+    return retryFunctionXTimes(() => {
+      return this.messagesManager.createAndBroadcastMessage(recipientId, payload);
+    }, 3)();
   }
 
   /**
-   * Here we receive a message from a specified user. We check the ownerId of the document with the senderId. E.g. Alice
-   * wants to check, if Bob writes her a message. SenderId = Bobs ID in HEX.
-   * @param connection {WhatsDappConnection}
-   * @param senderid {string} ID of the owner encoded in HEX and the identifier flag
-   * @returns all messages of a specified user
-   */
-  async getMessagesFrom(senderid: string): Promise<Array<DriveMessage>> {
-    console.log(senderid);
-    try {
-      return await this.platform.documents.get(
-        'message_contract.message',
-        {
-          where: [
-            ['$ownerId', "==", senderid],
-            ['recipientId', "==", this.identity.getId().toJSON()]
-
-          ],
-        },
-      );
-    } catch (e) {
-      console.error('Something went wrong:', e);
-      throw e;
-    }
-  }
-
-  /**
-   * Receive all messages of the user
-   * @param connection {WhatsDappConnection}
-   * @returns all messages of the user
-   */
-  async getMessages(): Promise<Array<DriveMessage>> {
-    try {
-      return await this.platform.documents.get(
-        'message_contract.message',
-        {
-          where: [
-            ['recipientId', "==", this.identity.getId().toJSON()]
-          ],
-        },
-      );
-
-    } catch (e) {
-      console.error('Something went wrong:', e);
-      throw e;
-    }
-  }
-
-  /**
-   * Receive all messages after a specific time. To parse a timestring (Json-Timestring) into a integer (milliseconds)
-   * use the following function:
-   * <document>.createdAt.getTime()
-   * @param connection {WhatsDappConnection}
-   * @param time {number} Time in milliseconds
-   * @returns the messages since time
+   * Receives all messages after a specific timestamp.
+   * @param time Unix timestamp, choose 0 for all messages
+   * @returns list of DriveMessages containing encrypted messages since timestamp
+   * @throws {Error} 
    */
   async getMessagesByTime(time: number): Promise<Array<DriveMessage>> {
-    try {
-      const rawMessages= await this.platform.documents.get(
-        'message_contract.message',
-        {
-          where: [
-            ['recipientId', "==", this.identity.getId().toJSON()],
-            ['$createdAt', ">=", time]
-          ],
-        },
-      );
-
-      const driveMessages:Array<DriveMessage>=[];
-      rawMessages.forEach((rawMessage:any) => {
-        const driveMessage:DriveMessage={
-          id: rawMessage.id.toString(),
-          ownerId: rawMessage.ownerId.toString(),
-          recipientId: rawMessage.data.recipientId.toString(),
-          createdAt: Date.parse(rawMessage.createdAt),
-          updatedAt: Date.parse(rawMessage.updatedAt),
-          payload: rawMessage.data.payload
-        };
-        driveMessages.push(driveMessage);
-      });
-
-      // console.log("RAW MSGS:", rawMessages);
-      // return rawMessages;
-      // console.log("DRIVE MSGS:", driveMessages);
-      return driveMessages;
-
-    } catch (e) {
-      console.error('Something went wrong:', e);
-      throw e;
-    }
-  }
-
-  /**
-   * Delete a message by id
-   * @param time: {number}
-   * @returns {Promise<*>}
-   */
-  async deleteMessage(time: number, senderid: string): Promise<boolean> {
-    console.log("vergleichswerte:");
-    console.log(this.identity.getId());
-    console.log(senderid);
-    console.log(time);
-    try {// Retrieve the existing document
-      console.log("vergleichswerte:");
-      console.log(this.identity.getId());
-      console.log(senderid);
-      console.log(time);
-      let document = [];
-      do {
-        [document] = await this.platform.documents.get(
-          'message_contract.message',
-          {
-            where: [
-              ['$ownerId', "==", this.identity.getId()],
-              ['receiverid', "==", senderid],
-              ['$createdAt', "<=", time]
-            ]
-          }
-        );
-
-        // Sign and submit the document delete transition
-        console.log("Delete Messages:");
-        console.log(document);
-        if (document != undefined) {
-          const document_batch = {
-            delete: [document],
-          };
-          console.log("Sending: ");
-          console.log(document_batch);
-          console.log(this.platform.documents.broadcast(document_batch, this.identity));
-        }
-      } while (document != undefined);
-      return true;
-    } catch (e) {
-      console.log('Something went wrong:', e);
-      throw e;
-    }
-  }
-
-  /**
-   *
-   * @param connection {WhatsDappConnection}
-   * @param time {number}
-   * @param senderid {string}
-   * @returns {Promise<*>}
-   */
-  async getMessageFromByTime(time: number, senderid: string): Promise<Array<DriveMessage>> {
-    //TODO: make sure time remote is the same as local
-    //eg. lastPollTime retrieved from last get()
-    try {
-      const documents = await this.platform.documents.get(
-        'message_contract.message',
-        {
-          where: [
-            ['$ownerId', "==", senderid],
-            ['receiverid', "==", this.identity.getId().toJSON()],
-            ['$createdAt', ">=", time],
-          ],
-        },
-      );
-
-
-      return documents;
-    } catch (e) {
-      console.log('Something went wrong:', e);
-      throw e;
-    }
+    return this.messagesManager.getMessagesByTime(time);
   }
 
   //**********************
@@ -246,36 +52,34 @@ export class DAPICommunicator {
   //**********************
 
   /**
-   * Create a new identity
-   * @param connection :{
-   *     identity: resolved identity by id -- Can be undefined
-   *     platform: Dash Platform object
-   * }
-   * @returns the resolved identity
+   * Creates a new identity
+   * @returns the resolved identity or null on error
    */
-  async createIdentity(): Promise<DashIdentity | null> {
-    try {
-      return await this.platform.identities.register();
-    } catch (e) {
-      console.log('Failed identity registration:', e);
-    }
-
-    return null;
+  async createNewIdentity(): Promise<DashIdentity | null> {
+    //retry 3 times
+    return retryFunctionXTimes(() => {
+      return this.identityManager.createNewIdentity();
+    }, 3)();
   }
 
   /**
-   * Top up the given identity in the connection with extra credits
-   * @param connection: {WhatsDappConnection}
-   * @param topUpAmount {number} in credits
-   * @returns check if everything is fine
+   * 
+   * @param identityString 
+   * @param topUpAmountInDuffs 
+   * @returns 
    */
-  async topUpIdentity(topUpAmount: number): Promise<boolean> {
-    try {
-      return await this.platform.identities.topUp(this.identity.getId().toJSON(), topUpAmount);
-    } catch (e) {
-      console.log('Failed identity topup:', e);
-    }
-    return false;
+  async topUpIdentity(identityString: string, topUpAmountInDuffs = 1000): Promise<boolean> {
+    //retry 5 times
+    return retryFunctionXTimes(() => {
+      return this.identityManager.topUpIdentity(identityString, topUpAmountInDuffs);
+    }, 5)();
+  }
+
+  async getIdentityById(indentityString: string): Promise<DashIdentity> {
+    //retry 3 times
+    return retryFunctionXTimes(() => {
+      return this.identityManager.getIdentityById(indentityString);
+    }, 3)();
   }
 
   /**
@@ -285,17 +89,7 @@ export class DAPICommunicator {
    * @returns check if everything is fine
    */
   async createDpnsName(name: string): Promise<boolean> {
-    try {
-      return await this.platform.names.register(
-        name,
-        { dashUniqueIdentityId: this.identity.getId() },
-        this.identity,
-      );
-
-    } catch (e) {
-      console.log('Failed creation DPNS name:', e);
-    }
-    return false;
+    return this.identityManager.createDpnsName(name);
   }
 
   /**
@@ -304,15 +98,8 @@ export class DAPICommunicator {
    * @param name: The dpns name (name+.dash)
    * @returns The identity which belongs to the name
    */
-  async findIdentityByName(name: string): Promise<DashIdentity | null> {
-    try {
-      const dpnsContract = await this.platform.names.resolve(name);
-
-      return this.platform.identities.get(dpnsContract.ownerId.toString());
-    } catch (e) {
-      console.log('Failed search for identity:', e);
-    }
-    return null;
+  async findIdentityByDPNS(name: string): Promise<DashIdentity | null> {
+    return this.identityManager.findIdentityByDPNS(name);
   }
 
   /**
@@ -321,12 +108,7 @@ export class DAPICommunicator {
    * @returns Credits
    */
   async getIdentityBalance(): Promise<number> {
-    try {
-      return this.identity.getBalance();
-    } catch (e) {
-      console.log('Failed identity balance check:', e);
-      throw e;
-    }
+    return this.identityManager.getIdentityBalance();
   }
 
 
@@ -335,131 +117,48 @@ export class DAPICommunicator {
   //**********************
 
   /**
-   * Create a profile
-   * @param connection {WhatsDappConnection}
-   * @param content {WhatsDappProfileContent}
+   * Creates the given profile on drive and broadcasts is
+   * @param content {WhatsDappProfile}
    * @returns {Promise<*>}
+   * @throws {Error}
    */
-  async createProfile(content: WhatsDappProfile): Promise<any> {
-    console.log("Start create_profile");
-
-
-    const doc_properties = content;
-
-    // Create the note document
-    try {
-      const message_document = await this.platform.documents.create(
-        'profile_contract.profile',
-        this.identity,
-        doc_properties,
-      );
-      console.log("After message_document");
-
-      const document_batch = {
-        create: [message_document],
-      };
-
-      console.log("-upload profile");
-      return this.platform.documents.broadcast(document_batch, this.identity);
-    } catch (e) {
-      console.log(e);
-    }
+  async createProfile(profile: WhatsDappProfile): Promise<any> {
+    //retry 3 times
+    return retryFunctionXTimes(() => {
+      return this.profileManager.createProfile(profile);
+    }, 3)();
   }
 
   /**
-   * Create a WhatsDapp profile
-   * @param connection {WhatsDappConnection}
-   * @param ownerid {string} The ownerId in HEX
-   * @returns Returns a document, that the profile was created
-   * TODO: Maybe its better to use the DashIdentity Type instead of the ownerid as a string
+   * Retrieves a WhatsDappProfile to a given identity
+   * @param identityString {string} 
+   * @returns the belonging WhatsDappProfile or null if no profile was found for that identity
+   * @throws {Error}
    */
-  async getProfile(ownerid: string): Promise<WhatsDappProfile| null> {
-    try {
-      // Retrieve the existing document
-      const documents = await this.platform.documents.get(
-        'profile_contract.profile',
-        { where: [['$ownerId', '==', ownerid]] }
-      );
-      // Sign and submit the document replace transition
-
-      const firstProfile = documents[0];
-      //console.log("profile document:", firstProfile);
-      //console.log("profile document DATA:", firstProfile.getData());
-
-      if(!firstProfile){
-        return null;
-      }
-      
-      
-      //TODO: Test for undefined
-
-
-      return firstProfile.getData();
-      //TOD=: further info (createdAt etc.) must be putted here
-
-
-      // const profile:WhatsDappProfile = firstProfile.getData();
-      // // const profile:WhatsDappProfile = {
-      // //   signalKeyBundle: firstProfile.data.signalKeyBundle,
-      // // };
-      // console.log("getData()",profile);
-      // //profile.signalKeyBundle.identityKey=profile.signalKeyBundle.identityKey;
-      // console.log("identityKey",profile.signalKeyBundle.identityKey, "typeof",typeof profile.signalKeyBundle.identityKey);
-      // // if(firstProfile.data.nickname){
-      // //   profile.nickname=firstProfile.data.nickname;
-      // // }
-      // return profile;
-    } catch (e) {
-      console.log('Something went wrong:', e);
-      throw e;
-    }
+  async getProfile(ownerid: string): Promise<WhatsDappProfile | null> {
+    return this.profileManager.getProfile(ownerid);
   }
 
   /**
-   *
-   * @param connection {WhatsDappConnection}
-   * @param content {WhatsDappProfileContent}
-   * @returns Returns a document, that the profile was updated
+   * Updates a profile on drive
+   * @param profile {WhatsDappProfile}
+   * @returns 
+   * @throws {Error}
    */
-  async updateProfile(content: WhatsDappProfile): Promise<any> {
-    try {
-      // Retrieve the existing document
-      const [document] = await this.platform.documents.get(
-        'profile_contract.profile',
-        { where: [['$ownerId', '==', this.identity.getId().toJSON()]] }
-      );
-
-      // Update document
-      document.set('signalKeyBundle', content.signalKeyBundle);
-      document.set('nickname', content.nickname);
-
-      // Sign and submit the document replace transition
-      return this.platform.documents.broadcast({ replace: [document] }, this.identity);
-    } catch (e) {
-      console.error('Something went wrong:', e);
-      throw e;
-    }
+  async updateProfile(profile: WhatsDappProfile): Promise<any> {
+    //retry 3 times
+    return retryFunctionXTimes(() => {
+      return this.profileManager.updateProfile(profile);
+    }, 3)();
   }
 
   /**
    * Delte the WhatsDapp profile so noone can create a signal message.
-   * @param connection {WhatsDappConnection}
    * @returns Returns a document, that the profile was updated
    */
   async deleteProfile(): Promise<any> {
-    try {
-      // Retrieve the existing document
-      const [document] = await this.platform.documents.get(
-        'profile_contract.profile',
-        { where: [['$ownerId', '==', this.identity.getId().toJSON()]] }
-      );
-
-      // Sign and submit the document delete transition
-      return this.platform.documents.broadcast({ delete: [document] }, this.identity);
-    } catch (e) {
-      console.error('Something went wrong:', e);
-      throw e;
-    }
+    return this.profileManager.deleteProfile();
   }
 
 }
+

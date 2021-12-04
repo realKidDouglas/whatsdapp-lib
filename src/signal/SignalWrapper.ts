@@ -46,10 +46,9 @@ export type WhatsDappSignalKeyBundle = {
 
 export interface ISignalLib {
   generateSignalKeys(): Promise<WhatsDappSignalKeyBundle>;
-  //  encryptMessage(whatsDappStore: any, receiverId: string, plaintext: string): Promise<string>;
-  encryptMessage(whatsDappStore: any, receiverId: string, plaintext: string): Promise<ArrayBuffer>;
-  decryptMessage(whatsDappStore: any, senderId: string, cipherText: ArrayBuffer): Promise<string>;
-  buildAndPersistSession(whatsDappStore: any, identifier: string, preKeyBundle: WhatsDappSignalPrekeyBundle): Promise<void>;
+  encryptMessage(whatsDappStore: StructuredStorage, receiverId: string, plaintext: string): Promise<ArrayBuffer>;
+  decryptMessage(whatsDappStore: StructuredStorage, senderId: string, cipherText: ArrayBuffer): Promise<string>;
+  buildAndPersistSession(whatsDappStore: StructuredStorage, identifier: string, preKeyBundle: WhatsDappSignalPrekeyBundle): Promise<void>;
 }
 
 export class SignalWrapper implements ISignalLib {
@@ -92,7 +91,7 @@ export class SignalWrapper implements ISignalLib {
    * @returns {Promise<string>}: The CipherText object converted into JSON and encoded as Base64
    */
   //   async encryptMessage(whatsDappStore: any, receiverId: string, plaintext: string): Promise<string> {
-  async encryptMessage(whatsDappStore: any, receiverId: string, plaintext: string): Promise<ArrayBuffer> {
+  async encryptMessage(whatsDappStore: StructuredStorage, receiverId: string, plaintext: string): Promise<ArrayBuffer> {
     const deviceId = 1; // TODO: This shouldn't be hardcoded
     const store = new SignalProtocolStore(whatsDappStore, receiverId);
     const address = new libsignal.ProtocolAddress(receiverId, deviceId);
@@ -110,7 +109,7 @@ export class SignalWrapper implements ISignalLib {
    * @param base64: The CipherText object converted into JSON and encoded as Base64
    * @returns {Promise<string>}: The original plaintext
    */
-  async decryptMessage(whatsDappStore: any, senderId: string, cipherText: ArrayBuffer): Promise<string> {
+  async decryptMessage(whatsDappStore: StructuredStorage, senderId: string, cipherText: ArrayBuffer): Promise<string> {
     // const cipherText = SignalWrapper._b64toCipherText(base64);
 
     // const cipherText = SignalWrapper._b64toCipherText(base64);

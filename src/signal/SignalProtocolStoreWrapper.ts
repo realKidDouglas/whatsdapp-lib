@@ -1,5 +1,6 @@
 import {arrayBufferToString} from "./utils";
 import libsignal, {ProtocolStore, SignalKeyPair, SessionRecord, SignalSignedPreKey} from 'libsignal';
+import { StructuredStorage } from "../storage/StructuredStorage";
 
 export class SignalProtocolStore implements ProtocolStore {
 
@@ -8,11 +9,11 @@ export class SignalProtocolStore implements ProtocolStore {
     RECEIVING: 2,
   }
 
-  store: any;
+  store: StructuredStorage;
   remoteIdentity: string;
   _keyPairs: { [key: string]: SignalKeyPair }
 
-  constructor(store: any, remoteIdentity: string) {
+  constructor(store: StructuredStorage, remoteIdentity: string) {
     this.store = store;
     this.remoteIdentity = remoteIdentity;
     this._keyPairs = {};
@@ -24,7 +25,7 @@ export class SignalProtocolStore implements ProtocolStore {
    */
   async getOurIdentity(): Promise<SignalKeyPair> {
     const privateData = await this.store.getPrivateData();
-    return privateData['identityKeyPair'];
+    return privateData!['identityKeyPair'];
   }
 
   /**
@@ -33,7 +34,7 @@ export class SignalProtocolStore implements ProtocolStore {
    */
   async getOurRegistrationId(): Promise<number> {
     const privateData = await this.store.getPrivateData();
-    return privateData['registrationId'];
+    return privateData!['registrationId'];
   }
 
   /**
@@ -91,7 +92,7 @@ export class SignalProtocolStore implements ProtocolStore {
     else
       sessionKeys = existing;
     sessionKeys['identityKey'] = identityKey; // TODO: Multi device support
-    this.store.updateSessionKeys(address.id, sessionKeys);
+    this.store.updateSessionKeys(address.id, sessionKeys, null);
 
     // TODO: What's the actual type of the keys?
     if (existing && arrayBufferToString(identityKey, 'binary') !== arrayBufferToString(existing['identityKey'] as ArrayBuffer, 'binary')) {
@@ -109,7 +110,7 @@ export class SignalProtocolStore implements ProtocolStore {
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async loadPreKey(_keyId: number): Promise<SignalKeyPair> {
-    const res = (await this.store.getPrivateData()).preKey.keyPair;
+    const res = (await this.store.getPrivateData())!.preKey.keyPair;
     return Promise.resolve(res);
   }
 
@@ -144,7 +145,7 @@ export class SignalProtocolStore implements ProtocolStore {
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async loadSignedPreKey(_keyId: number): Promise<SignalKeyPair> {
-    const res = (await this.store.getPrivateData()).signedPreKey.keyPair;
+    const res = (await this.store.getPrivateData())!.signedPreKey.keyPair;
     return Promise.resolve(res);
   }
 

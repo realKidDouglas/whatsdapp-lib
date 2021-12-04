@@ -1,5 +1,6 @@
 import {METADATA_FILE_NAME} from "./StructuredStorageConstants";
-import {WhatsDappPrivateData, WhatsDappUserData} from "../WhatsDapp";
+import { WhatsDappUserData} from "../WhatsDapp";
+import { WhatsDappSignalPrivateKeys } from "../signal/SignalWrapper";
 
 export function objectToUint8Array(obj: unknown): Uint8Array {
   const json = JSON.stringify(obj);
@@ -47,7 +48,7 @@ export function isSerializedBuffer(obj: Record<string, unknown>): obj is { type:
   return Object.keys(obj).length === 2 && obj['type'] === 'Buffer' && Array.isArray(obj.data);
 }
 
-export function isWhatsDappPrivateData(obj: Record<string, unknown> | null): obj is WhatsDappPrivateData {
+export function isWhatsDappPrivateData(obj: Record<string, unknown> | null): obj is WhatsDappSignalPrivateKeys {
   return obj != null && [
     typeof obj.identityKeyPair !== 'undefined',
     typeof obj.registrationId !== 'undefined',
@@ -59,9 +60,9 @@ export function isWhatsDappPrivateData(obj: Record<string, unknown> | null): obj
 export function isWhatsDappUserData(obj: Record<string, unknown> | null): obj is WhatsDappUserData {
   return obj != null && [
     typeof obj.mnemonic !== 'undefined',
-    typeof obj.identityAddr !== 'undefined',
+    typeof obj.identityString !== 'undefined',
     typeof obj.dpnsName !== 'undefined',
-    typeof obj.displayName !== 'undefined'
+    typeof obj.profile !== 'undefined'
   ].every(Boolean);
 }
 
