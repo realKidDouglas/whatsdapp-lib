@@ -108,13 +108,15 @@ export class WhatsDapp extends EventEmitter {
   private signal: ISignalLib;
 
   private pollTimeout: TimerHandle | null = null;
-  private pollInterval:number = 5000;
-  private lastPollTime:number = 0;
+  private pollInterval = 5000;
+  private lastPollTime = 0;
+  //TODO: Better with an ID per message and still the same timestamp :/
+  private pollTimeOffsetDueToMongoDbInprecision=1000;
 
   //contains all identityStrings of interlocutors
-  private sessions: Array<string> = [];
+  private sessions: Set<string>=new Set();
 
-  private initialized:boolean = false;
+  private initialized = false;
 
   //factory function
   static async createWhatsDapp(mnemonic: string, identityString: string | null, storeObj: KVStore, signalLib?: ISignalLib): Promise<WhatsDapp> {
@@ -150,11 +152,11 @@ export class WhatsDapp extends EventEmitter {
     //get last poll timestamp
     let lastPollTime = await storage.getLastTimestamp();
     if (isNaN(lastPollTime)) lastPollTime = 0;
-    whatsDapp.lastPollTime = lastPollTime+1;
+    whatsDapp.lastPollTime = lastPollTime + whatsDapp.pollTimeOffsetDueToMongoDbInprecision;
 
     //TODO: Define somewhere what these "sessions" are and what they are used for
     const sessions = await storage.getSessions();
-    whatsDapp.sessions = sessions;
+    whatsDapp.sessions = new Set(sessions);
 
     //asnychronous stuff here
     await whatsDapp.init(mnemonic, identityString);
@@ -306,12 +308,13 @@ export class WhatsDapp extends EventEmitter {
       messages = await this.dAPICommunicator.getMessagesByTime(pollTime);
     } catch (e) {
       console.error('Error retrieving message documents:', e);
+      //console.dir(e, {depth:15});
       return;
     }
 
     const messagePromises = messages.map((m: DriveMessage) => {
       this._incomingNewMessage(m)
-      //TODO catch
+        //TODO catch
         .catch(e => console.log('retrieving message failed!', e));
     });
     console.log('got', messagePromises.length, 'new messages.');
@@ -330,6 +333,7 @@ export class WhatsDapp extends EventEmitter {
 
   //TODO
   async _incomingNewMessage(driveMessage: DriveMessage): Promise<void> {
+    console.log("lastPollTime:",this.lastPollTime,"driveMessage.updatedAt:",driveMessage.updatedAt);
 
     let interlocutor: string = driveMessage.ownerId;
     //interlocutor=interlocutor.substr(3)+"KD";
@@ -341,15 +345,15 @@ export class WhatsDapp extends EventEmitter {
 
     //TODO: catch MessageCounterError('Key used already or never filled'); //session_cipher.js l.234
     let plainInternalMessage: WhatsDappInternalMessage;
-    try{
-    const plainJson: string = await this.signal.decryptMessage(this.storage, interlocutor, driveMessage.payload);
-    console.log("decrypted: ", plainJson);
-    plainInternalMessage = JSON.parse(plainJson);
-    console.log("-done decrypt message");
-    }catch(e){
+    try {
+      const plainJson: string = await this.signal.decryptMessage(this.storage, interlocutor, driveMessage.payload);
+      console.log("decrypted: ", plainJson);
+      plainInternalMessage = JSON.parse(plainJson);
+      console.log("-done decrypt message");
+    } catch (e) {
       //TODO
-      console.log(e)
-      throw e;  
+      console.log(e);
+      throw e;
     }
 
 
@@ -374,7 +378,7 @@ export class WhatsDapp extends EventEmitter {
     this.emit(WhatsDappEvent.NewMessage, plainMessage, interlocutor);
     await this.storage.addMessageToSession(interlocutor, plainMessage);
 
-    this.lastPollTime = Math.max(this.lastPollTime, plainMessage.updatedAt + 1);
+    this.lastPollTime = Math.max(this.lastPollTime, plainMessage.updatedAt + this.pollTimeOffsetDueToMongoDbInprecision);
     console.error("TIEM INCOMING", this.lastPollTime);
 
   }
@@ -415,16 +419,16 @@ export class WhatsDapp extends EventEmitter {
     };
     if (referenceToMessageId) whatsDappInternalMessage.referenceToMessageId = referenceToMessageId;
 
-    //return type is not really an ArrayBuffer. It is a JSON containing ArrayBuffer in property body
-    const encryptedMsg: any = await this.signal.encryptMessage(this.storage, recipientId, JSON.stringify(whatsDappInternalMessage));
+    //TODO: done: return type is not really an ArrayBuffer. It is a JSON containing ArrayBuffer in property body
+    const ciphertext: ArrayBuffer = await this.signal.encryptMessage(this.storage, recipientId, JSON.stringify(whatsDappInternalMessage));
 
-    let ciphertext: ArrayBuffer;
-    if (encryptedMsg.body) ciphertext = Buffer.from(encryptedMsg.body);
-    else if (encryptedMsg instanceof ArrayBuffer) ciphertext = encryptedMsg;
-    else {
-      console.error("Could not handle type of ciphertext given by signal");
-      return false;
-    }
+    // let ciphertext: ArrayBuffer;
+    // if (encryptedMsg.body) ciphertext = Buffer.from(encryptedMsg.body);
+    // else if (encryptedMsg instanceof ArrayBuffer) ciphertext = encryptedMsg;
+    // else {
+    //   console.error("Could not handle type of ciphertext given by signal");
+    //   return false;
+    // }
 
     let sentMessage: DriveMessage | null;
     try {
@@ -464,6 +468,21 @@ export class WhatsDapp extends EventEmitter {
   //   //dapi.deleteMessage(this._connection, deleteTime, senderid);
   // }
 
+  //TODO: now I need ond for updating the profile and we can reset an identity for use of whatsDapp
+  //case of "burned identites"
+  async deleteAllSentMessages(): Promise<void> {
+    console.log("Delete all messages on drive of identity:", this.identityString);
+    try {
+      const deleted: boolean = await this.dAPICommunicator.deleteAllSentMessages();
+      if (!deleted) {
+        throw new Error("Error deleting messages.");
+      }
+    } catch (e) {
+      console.error("Error deleting messages:", e);
+    }
+    //TODO: delete messages locally, too
+  }
+
 
   //**********************
   // IDENTITY
@@ -479,8 +498,8 @@ export class WhatsDapp extends EventEmitter {
     let newIdentity: DashIdentity | null;
     try {
       //TODO: can we make thisstep with the dapicommunicator? If not we dont need that funtions there
-      const platform=this.client!.platform;
-      const fn=async function(): Promise<DashIdentity | null> {
+      const platform = this.client!.platform;
+      const fn = async function (): Promise<DashIdentity | null> {
         //retry 3 times
         return retryFunctionXTimes(() => {
           return platform.identities.register();
@@ -505,14 +524,14 @@ export class WhatsDapp extends EventEmitter {
   async topUpIdentity(identityString: string, topUpAmountInDuffs = 1000): Promise<boolean> {
     try {
       //TODO: keep this in DAPICommunicator... Maybe static?
-      const platform=this.client!.platform;
-      const fn=async function(): Promise<boolean> {
+      const platform = this.client!.platform;
+      const fn = async function (): Promise<boolean> {
         //retry 5 times
         return retryFunctionXTimes(() => {
           return platform.identities.topUp(identityString, topUpAmountInDuffs); //returns true or false
         }, 5)();
       };
-      const toppedUp =  await fn();
+      const toppedUp = await fn();
 
       //const toppedUp = this.dAPICommunicator.topUpIdentity(identityString, topUpAmountInDuffs);
       if (!toppedUp) throw new Error("Identity could not topped up");
@@ -572,6 +591,23 @@ export class WhatsDapp extends EventEmitter {
     this.profile = profile;
   }
 
+  /**
+   * @throws {Error}
+   */
+  async deleteProfileFromDrive(): Promise<void> {
+    console.log("Delete profile on drive of identity:", this.identityString);
+    try {
+      const deleted: boolean = await this.dAPICommunicator.deleteProfile();
+      if (!deleted) {
+        throw new Error("Error deleting profile.");
+      }
+    } catch (e) {
+      console.error("Error deleting profile:", e);
+    }
+    //TODO: delete profile locally, too
+
+  }
+
   async createAndUploadNewProfile(): Promise<WhatsDappProfile> {
     console.log("Create new profile (will take a while)");
 
@@ -605,15 +641,20 @@ export class WhatsDapp extends EventEmitter {
   //**********************
 
   async addToSessions(interlocutor: string): Promise<void> {
-    this.sessions.push(interlocutor);
+    //this.sessions.push(interlocutor);
+    this.sessions.add(interlocutor);
     //TODO:
     //this.storage.addSession();
   }
+  async isNewSession(interlocutor: string): Promise<boolean>{
+    // return this.sessions.includes(interlocutor);
+    return !this.sessions.has(interlocutor);
+  } 
 
   async _getOrCreateSession(interlocutor: string/*, senderHandle: string*/): Promise<string> {
     //let session: Interlocutor = this.sessions[interlocutor] as Interlocutor;
     //if (session == null || session == undefined) {
-    if (!this.sessions.includes(interlocutor)) {
+    if (await this.isNewSession(interlocutor)) {
       console.log("create session");
       // session = { identityString: interlocutor };
 
@@ -627,8 +668,6 @@ export class WhatsDapp extends EventEmitter {
       const preKeyBundle: WhatsDappSignalPrekeyBundle = profile!.signalKeyBundle;
       //this.sessions[interlocutor] = session;
 
-      await this.addToSessions(interlocutor);
-
 
       console.log("sessions: ", this.sessions);
 
@@ -639,6 +678,7 @@ export class WhatsDapp extends EventEmitter {
       session establishment by us. */
       //await this.signal.buildAndPersistSession(this.storage, session.identityString, preKeyBundle);
       await this.signal.buildAndPersistSession(this.storage, interlocutor, preKeyBundle);
+      await this.addToSessions(interlocutor);
       this.emit(WhatsDappEvent.NewSession, interlocutor, preKeyBundle);
     }
     return interlocutor;

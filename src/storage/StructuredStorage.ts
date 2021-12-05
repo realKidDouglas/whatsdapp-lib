@@ -230,7 +230,7 @@ export class StructuredStorage {
   }
 
   private async _saveMetaData(identityId: string): Promise<void> {
-    console.log("save metadata");
+    //console.log("save metadata");
     if (this._metadata == null) {
       this._metadata = await this._loadMetaData();
       return;

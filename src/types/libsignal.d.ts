@@ -77,7 +77,7 @@ declare module 'libsignal' {
 
   export class SessionCipher {
     constructor(store: SignalProtocolStore, address: ProtocolAddress)
-    encrypt(plaintextBuffer: Buffer): ArrayBuffer
+    async encrypt(plaintextBuffer: Buffer): Promise<ArrayBuffer>
     async decryptPreKeyWhisperMessage(buf: Buffer, encoding: string): Promise<ArrayBuffer>
     async decryptWhisperMessage(buf: Buffer, encoding: string): Promise<ArrayBuffer>
   }

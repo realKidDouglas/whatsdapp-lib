@@ -10,6 +10,8 @@ export type PlatformContract = {
   contractFormat: unknown
 }
 
+//Dash Index Constraints: https://dashplatform.readme.io/docs/platform-protocol-reference-data-contract#index-constraints
+
 /*
 * Attributes:
 * TODO: docs
@@ -120,21 +122,21 @@ const messageContractFormat = {
     type: "object",
     indices: [
       {
-
-        //TODO: combine those indices ;)
+        //for delete all messages
         properties: [
           {$ownerId: "asc"},
         ]
       },
       {
+        //for message after timestamp queries
         properties: [
           {recipientId: "asc"},
+          {$updatedAt: "desc"},
         ]
       },
       {
-        //TODO: updatedAt
         properties: [
-          {$createdAt: "desc"}
+          {$updatedAt: "desc"}
         ]
       }
     ],
@@ -157,15 +159,15 @@ const messageContractFormat = {
   }
 };
 
-const contracts : Record<string, PlatformContract>= {
+const whatsDappContracts : Record<string, PlatformContract>= {
   "profile_contract":{
     contractId: "brGVMsrJRYghfHMCD3ku5oQXHodvoPJEdt2nLkykpc3",
     contractFormat: profileContractFormat
   },
   "message_contract": {
-    contractId: "7hLcovwmpbyFHVN5Xorw7Tqv4i2X9jBi2Guy1mvPijyR",
+    contractId: "ERpJDghoZZvD8QFjZXxGjg3LhMBQrFMzKtDHkZrT8uAU",
     contractFormat: messageContractFormat
   }
 };
 
-export default contracts;
+export default whatsDappContracts;

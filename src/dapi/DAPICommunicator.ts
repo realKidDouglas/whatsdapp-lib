@@ -47,6 +47,10 @@ export class DAPICommunicator {
     return this.messagesManager.getMessagesByTime(time);
   }
 
+  async deleteAllSentMessages(): Promise<boolean> {
+    return this.messagesManager.deleteAllSentMessages();
+  }
+
   //**********************
   // IDENTITY
   //**********************
@@ -154,10 +158,14 @@ export class DAPICommunicator {
 
   /**
    * Delte the WhatsDapp profile so noone can create a signal message.
-   * @returns Returns a document, that the profile was updated
+   * @returns 
+   * @throws {Error}
    */
   async deleteProfile(): Promise<any> {
-    return this.profileManager.deleteProfile();
+    //retry 3 times
+    return retryFunctionXTimes(() => {
+      return this.profileManager.deleteProfile();
+    }, 3)();
   }
 
 }

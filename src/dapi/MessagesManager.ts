@@ -71,8 +71,9 @@ export class MessagesManager {
       {
         where: [
           ['recipientId', "==", this.identity.getId().toJSON()],
-          // ['$createdAt', ">=", time]
-          ['$createdAt', ">", time]
+          //note this crazy gt ;)
+          // ['$createdAt', "=>", time]
+          ['$updatedAt', ">=", time],
         ],
       },
     );
@@ -91,6 +92,42 @@ export class MessagesManager {
     return driveMessages;
   }
 
+  async deleteAllSentMessages(): Promise<boolean> {
+    const identityString: string = this.identity.getId().toJSON();
+    
+    const document = await this.platform.documents.get(
+      'message_contract.message',
+      {
+        where: [
+          ['$ownerId', "==", identityString],
+        ]
+      }
+    );
+    if (!document) {
+      console.log("Failed to get messages");
+      return false;
+    }
+
+    if (document.length == 0) {
+      console.log("No messages on drive for identity", identityString);
+      return true;
+    }
+
+    console.log("-found",document.length,"messages to delete");
+    const document_batch = {
+      //no square braces since it's already an array
+      delete: document,
+    };
+    console.log("-delete...");
+    const transsiton = await this.platform.documents.broadcast(document_batch, this.identity);
+    if (!transsiton) {
+      console.log("Failed to boradcast deletion");
+      return false;
+    }
+    console.log("-deleted");
+
+    return true;
+  }
 
   // /**
   //  * Delete a message by id
@@ -156,7 +193,7 @@ export class MessagesManager {
   //         where: [
   //           ['$ownerId', "==", senderid],
   //           ['receiverid', "==", this.identity.getId().toJSON()],
-  //           ['$createdAt', ">=", time],
+  //           ['$createdAt', "=>", time],
   //         ],
   //       },
   //     );

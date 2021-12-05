@@ -7,9 +7,11 @@ type CipherTextType = number// should probably be an enum or 1 | 2 | 3
 
 type WhatsDappSignalCipherText = {
   type: CipherTextType,
-  body: {
-    data: string
-  }
+  body: ArrayBuffer,
+  registrationId?: number
+  // body: {
+  //   data: string
+  // }
 }
 
 export type WhatsDappSignalPrivateKeys = {
@@ -48,6 +50,7 @@ export interface ISignalLib {
   generateSignalKeys(): Promise<WhatsDappSignalKeyBundle>;
   encryptMessage(whatsDappStore: StructuredStorage, receiverId: string, plaintext: string): Promise<ArrayBuffer>;
   decryptMessage(whatsDappStore: StructuredStorage, senderId: string, cipherText: ArrayBuffer): Promise<string>;
+  //TODO rename to outgoing session?
   buildAndPersistSession(whatsDappStore: StructuredStorage, identifier: string, preKeyBundle: WhatsDappSignalPrekeyBundle): Promise<void>;
 }
 
@@ -98,8 +101,10 @@ export class SignalWrapper implements ISignalLib {
     const sessionCipher = new libsignal.SessionCipher(store, address);
     const plaintextBuffer = Buffer.from(plaintext);
     const cipherText = await sessionCipher.encrypt(plaintextBuffer);
+    
+    const cipherTextBuffer=Buffer.from(JSON.stringify(cipherText));
     //    return Buffer.from(JSON.stringify(cipherText)).toString("base64");
-    return cipherText;
+    return cipherTextBuffer;
   }
 
   /**
@@ -109,10 +114,10 @@ export class SignalWrapper implements ISignalLib {
    * @param base64: The CipherText object converted into JSON and encoded as Base64
    * @returns {Promise<string>}: The original plaintext
    */
-  async decryptMessage(whatsDappStore: StructuredStorage, senderId: string, cipherText: ArrayBuffer): Promise<string> {
+  async decryptMessage(whatsDappStore: StructuredStorage, senderId: string, cipherTextBuffer: ArrayBuffer): Promise<string> {
     // const cipherText = SignalWrapper._b64toCipherText(base64);
 
-    // const cipherText = SignalWrapper._b64toCipherText(base64);
+    const cipherText:WhatsDappSignalCipherText=JSON.parse(new Buffer(cipherTextBuffer).toString('ascii'));
 
     const deviceId = 1; // TODO: This shouldn't be hardcoded
     const store = new SignalProtocolStore(whatsDappStore, senderId);
@@ -120,14 +125,17 @@ export class SignalWrapper implements ISignalLib {
     const sessionCipher = new libsignal.SessionCipher(store, address);
 
     //TODO: there is no other payload anymore :/
-    const messageHasEmbeddedPreKeyBundle = true;//cipherText.type == 3;
+    const messageHasEmbeddedPreKeyBundle = cipherText.type == 3;
 
     let plaintext;
     if (messageHasEmbeddedPreKeyBundle) {
       //plaintext = await sessionCipher.decryptPreKeyWhisperMessage(Buffer.from(cipherText.body.data), 'binary');
-      plaintext = await sessionCipher.decryptPreKeyWhisperMessage(Buffer.from(cipherText), 'binary');
+      plaintext = await sessionCipher.decryptPreKeyWhisperMessage(Buffer.from(cipherText.body), 'binary');
+      //TODO ;)
+      console.log("\n\nPRE\n\n");
     } else {
-      plaintext = await sessionCipher.decryptWhisperMessage(Buffer.from(cipherText), 'binary');
+      plaintext = await sessionCipher.decryptWhisperMessage(Buffer.from(cipherText.body), 'binary');
+      console.log("\n\nNO PRE\n\n");
       //plaintext = await sessionCipher.decryptWhisperMessage(Buffer.from(cipherText.body.data), 'binary');
       //plaintext = await sessionCipher.decryptPreKeyWhisperMessage(Buffer.from(cipherText), 'binary');
     }

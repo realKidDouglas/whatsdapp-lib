@@ -1,4 +1,4 @@
-import contracts from "./Contracts";
+import whatsDappContracts from "./Contracts";
 import {DashClient} from "../../types/DashTypes";
 import DashSDK from "dash";
 
@@ -10,7 +10,7 @@ import DashSDK from "dash";
 //TODO: what happens if it's null?
 export function getWhatsDappDashClient(mnemonic: string | null): DashClient {
   //init client with contracts, so we can use the dot-notation to retrieve contracts
-  const apps = Object.fromEntries(Object.entries(contracts)
+  const apps = Object.fromEntries(Object.entries(whatsDappContracts)
     .map(([key, {contractId}]) => [key, {contractId}]));
   const clientOpts = {
     network: 'testnet',

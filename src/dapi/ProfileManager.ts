@@ -56,20 +56,25 @@ export class ProfileManager {
    */
   async getProfile(identityString: string): Promise<WhatsDappProfile | null> {
     // Retrieve the existing document
-    const documents = await this.platform.documents.get(
+    //by contract there is only one profile per ownerId (unique property)
+    const [document] = await this.platform.documents.get(
+      //const documents = await this.platform.documents.get(
       'profile_contract.profile',
       {
         where: [['$ownerId', '==', identityString]]
       }
     );
     //by contract there is only one profile per ownerId (unique property)
-    const profileDoc = documents[0];
+    //const profileDoc = documents[0];
 
-    if (!profileDoc) {
+
+    if (!document) {
+      //if (!profileDoc) {
       return null;
     }
 
-    const profile: WhatsDappProfile = profileDoc.getData();
+    const profile: WhatsDappProfile = document.getData();
+    // const profile: WhatsDappProfile = profileDoc.getData();
     return profile;
   }
 
@@ -80,12 +85,11 @@ export class ProfileManager {
    * @throws {Error}
    */
   async updateProfile(profile: WhatsDappProfile): Promise<any> {
-    const identityString:string=this.identity.getId().toJSON();
-    console.log("Update profile");
+    const identityString: string = this.identity.getId().toJSON();
     // Retrieve the existing document
     const [document] = await this.platform.documents.get(
       'profile_contract.profile',
-      { 
+      {
         where: [['$ownerId', '==', identityString]]
       }
     );
@@ -102,27 +106,39 @@ export class ProfileManager {
   }
 
   /**
-   * Delte the WhatsDapp profile so noone can create a signal message.
+   * Delete the WhatsDapp profile so noone can create a signal message.
    * @param connection {WhatsDappConnection}
-   * @returns Returns a document, that the profile was updated
+   * @returns 
+   * @throws {Error}
    */
-  async deleteProfile(): Promise<any> {
+  async deleteProfile(): Promise<boolean> {
     const identityString = this.identity.getId().toJSON();
-    try {
-      // Retrieve the existing document
-      const [document] = await this.platform.documents.get(
-        'profile_contract.profile',
-        {
-          where: [['$ownerId', '==', identityString]]
-        }
-      );
 
-      // Sign and submit the document delete transition
-      return this.platform.documents.broadcast({ delete: [document] }, this.identity);
-    } catch (e) {
-      console.error('Something went wrong:', e);
-      throw e;
+    // Retrieve the existing document
+    const [document] = await this.platform.documents.get(
+      'profile_contract.profile',
+      {
+        where: [['$ownerId', '==', identityString]]
+      }
+    );
+
+    if (!document) {
+      console.log("Failed to get profile");
+      return false;
     }
-  }
 
+    const document_batch = {
+      delete: [document],
+    };
+    console.log("-delete profile");
+    // Sign and submit the document delete transition
+    const transsiton = await this.platform.documents.broadcast(document_batch, this.identity);
+    if (!transsiton) {
+      console.log("Failed to boradcast deletion");
+      return false;
+    }
+    console.log("-deleted profile");
+
+    return true;
+  }
 }

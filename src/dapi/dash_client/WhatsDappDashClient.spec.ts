@@ -1,5 +1,5 @@
 import o from 'ospec';
-import contracts from "./Contracts";
+import whatsDappContracts from "./Contracts";
 import {getWhatsDappDashClient} from "./WhatsDappDashClient";
 import {Platform} from "dash/dist/src/SDK/Client/Platform";
 
@@ -9,11 +9,11 @@ o.spec("Contracts", async function () {
     const client = getWhatsDappDashClient(null);
     const retrieveContract = async (id: string, platform: Platform) =>  platform.contracts.get(id);
     let threw : unknown = false;
-    return Promise.all(Object.entries(contracts)
+    return Promise.all(Object.entries(whatsDappContracts)
       .map(entry => {
         const [k, v] = entry;
-        const id = contracts[k]?.contractId;
-        const format = contracts[k]?.contractFormat;
+        const id = whatsDappContracts[k]?.contractId;
+        const format = whatsDappContracts[k]?.contractFormat;
         return client.platform == null || id == null
           ? Promise.reject("no platform")
           : retrieveContract(id, client.platform)
