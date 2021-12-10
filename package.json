@@ -1,11 +1,11 @@
 {
   "name": "whatsdapp",
-  "version": "0.1.1",
-  "description": "WhatsDapp messaging-library applies the signal-protocol to the Dash Drive blockchain.",
+  "version": "1.0.0",
+  "description": "WhatsDapp messaging-library applies the signal-protocol to the Dash Platform.",
   "homepage": "https://github.com/realKidDouglas/whatsdapp-lib",
 
   "keywords": [],
-  "author": "",
+  "author": "the WhatsDapper",
   "license": "MIT",
   "private": false,
   
@@ -15,7 +15,6 @@
 
   "dependencies": {
     "@grpc/grpc-js": "^1.2.2",
-    "base-58": "0.0.1",
     "dash": "3.21.5",
     "libsignal": "^2.0.1"
   },
