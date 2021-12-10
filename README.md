@@ -1,5 +1,5 @@
 <p align="center">
-  <img alt="WhatsDapp" src="./images/whatsDapp.png" width="100" height="100">  
+  <img alt="WhatsDapp" src="https://github.com/realKidDouglas/whatsdapp-lib/raw/master/images/whatsDapp.png" width="100" height="100">  
 </p>
 
 <p align="center">
