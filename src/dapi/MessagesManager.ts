@@ -94,7 +94,6 @@ export class MessagesManager {
 
   async deleteAllSentMessages(): Promise<boolean> {
     const identityString: string = this.identity.getId().toJSON();
-    
     const document = await this.platform.documents.get(
       'message_contract.message',
       {
@@ -113,7 +112,10 @@ export class MessagesManager {
       return true;
     }
 
-    console.log("-found",document.length,"messages to delete");
+    //TODO: max is 10 per transaction
+    //idea: https://stackoverflow.com/questions/8495687/split-array-into-chunks
+
+    console.log("-found", document.length, "messages to delete");
     const document_batch = {
       //no square braces since it's already an array
       delete: document,

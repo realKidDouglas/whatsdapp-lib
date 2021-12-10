@@ -33,30 +33,35 @@ const profileContractFormat = {
       signalKeyBundle: {
         type: "object",
         properties: {
-          preKey: {
-            type: "object",
-            properties: {
-              keyId: {
-                type: "number",
+          preKeys: {
+            type: "array",
+            minItems: 1,
+            maxItems: 100,
+            items: {
+              type: "object",
+              properties: {
+                keyId: {
+                  type: "number",
+                },
+                publicKey: {
+                  type: "array",
+                  byteArray: true,
+                  minItems: 33,
+                  maxItems: 33
+                }
               },
-              publicKey: {
-                type: "array",
-                byteArray: true,
-                minItems: 30,
-                maxItems: 40
-              }
+              required: [
+                "keyId",
+                "publicKey",
+              ],
+              additionalProperties: false
             },
-            required: [
-              "keyId",
-              "publicKey",
-            ],
-            additionalProperties: false
           },
           identityKey: {
             type: "array",
             byteArray: true,
-            minItems: 30,
-            maxItems: 40
+            minItems: 33,
+            maxItems: 33
           },
           registrationId: {
             type: "number",
@@ -70,14 +75,14 @@ const profileContractFormat = {
               publicKey: {
                 type: "array",
                 byteArray: true,
-                minItems: 30,
-                maxItems: 40
+                minItems: 33,
+                maxItems: 33
               },
               signature: {
                 type: "array",
                 byteArray: true,
-                minItems: 30,
-                maxItems: 70
+                minItems: 64,
+                maxItems: 64
               },
             },
             required: [
@@ -89,7 +94,7 @@ const profileContractFormat = {
           },
         },
         required: [
-          "preKey",
+          "preKeys",
           "identityKey",
           "registrationId",
           "signedPreKey",
@@ -99,7 +104,7 @@ const profileContractFormat = {
       //optional
       nickname: {
         type: "string",
-        maxLength: 50
+        maxLength: 100
       },
     },
     required: [
@@ -131,7 +136,7 @@ const messageContractFormat = {
         //for message after timestamp queries
         properties: [
           {recipientId: "asc"},
-          {$updatedAt: "desc"},
+          {$updatedAt: "asc"},
         ]
       },
       {
@@ -142,8 +147,12 @@ const messageContractFormat = {
     ],
     properties: {
       recipientId: {
+        // type: "array",
+        // byteArray: true,
+        // minItems: 33,
+        // maxItems: 33
         type: "string",
-        maxLength: 500
+        maxLength: 50
       },
       payload: {
         type: "array",
@@ -161,11 +170,14 @@ const messageContractFormat = {
 
 const whatsDappContracts : Record<string, PlatformContract>= {
   "profile_contract":{
-    contractId: "brGVMsrJRYghfHMCD3ku5oQXHodvoPJEdt2nLkykpc3",
+    // contractId: "brGVMsrJRYghfHMCD3ku5oQXHodvoPJEdt2nLkykpc3", //old with only one prekey
+    contractId: "CJV1nJduxpfRY9JdCayDzmXKEH6ALu1pev2enVAi4Sg8",
     contractFormat: profileContractFormat
   },
   "message_contract": {
-    contractId: "ERpJDghoZZvD8QFjZXxGjg3LhMBQrFMzKtDHkZrT8uAU",
+    // contractId: "ERpJDghoZZvD8QFjZXxGjg3LhMBQrFMzKtDHkZrT8uAU", //old with 500 id string
+    // contractId: "3yKm4jsnAykeYZrEzzoCUU4gHpzvD1M2JxR8cuW4Lzau", //old desc updatedAt
+    contractId: "78Bg23U83kUD4EereMWovWsB8idwMSbd5n4BRDpgEjuu",
     contractFormat: messageContractFormat
   }
 };

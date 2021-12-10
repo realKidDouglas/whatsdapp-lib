@@ -7,6 +7,7 @@ import { ISignalLib, SignalWrapper, WhatsDappSignalKeyBundle, WhatsDappSignalPre
 import { DAPICommunicator } from './dapi/DAPICommunicator';
 import { Platform } from 'dash/dist/src/SDK/Client/Platform';
 import { retryFunctionXTimes } from './dapi/utils';
+import { EncryptedStorageWrapper } from './storage/EncryptedStorageWrapper';
 
 
 /**
@@ -67,12 +68,12 @@ export type DriveMessage = {
 };
 
 export enum WhatsDappEvent {
-  NewMessage = 'new-message',
-  NewSession = 'new-session',
-  NewMessageSent = 'new-message-sent',
-  StorageRead = 'storage-read',
-  StorageWrite = 'storage-write',
-  StorageDelete = 'storage-delete'
+  NewIncomingMessage = 'new-incoming-message',
+  // NewSession = 'new-session',
+  MessageSent = 'message-sent',
+  // StorageRead = 'storage-read',
+  // StorageWrite = 'storage-write',
+  // StorageDelete = 'storage-delete'
 }
 
 
@@ -81,6 +82,7 @@ export enum WhatsDappEvent {
  */
 export type WhatsDappProfile = {
   signalKeyBundle: WhatsDappSignalPrekeyBundle,
+  //TODO: max 50 chars! (contract)
   nickname?: string,
 }
 
@@ -89,10 +91,11 @@ export type WhatsDappProfile = {
  */
 export type WhatsDappUserData = {
   mnemonic: string,
-  identityString: string,
-  dpnsName: string,
-  profile: WhatsDappProfile
+  identityString: string | null,
+  dpnsName: string | null,
+  profile: WhatsDappProfile | null
 }
+
 
 type TimerHandle = ReturnType<typeof setTimeout>;
 
@@ -104,84 +107,98 @@ export class WhatsDapp extends EventEmitter {
   private client: DashClient | undefined;
   private dAPICommunicator!: DAPICommunicator;
 
-  private storage: StructuredStorage;
+  private storage!: StructuredStorage;
   private signal: ISignalLib;
 
   private pollTimeout: TimerHandle | null = null;
   private pollInterval = 5000;
-  private lastPollTime = 0;
+  private newestRemoteTimestamp = 0;
   //TODO: Better with an ID per message and still the same timestamp :/
-  private pollTimeOffsetDueToMongoDbInprecision=1000;
+  private POLLTIME_OFFSET_DUE_TO_MONGODB_INPRECISION = 1000;
 
   //contains all identityStrings of interlocutors
-  private sessions: Set<string>=new Set();
+  private sessions: Set<string> = new Set();
 
   private initialized = false;
 
-  //factory function
-  static async createWhatsDapp(mnemonic: string, identityString: string | null, storeObj: KVStore, signalLib?: ISignalLib): Promise<WhatsDapp> {
-    console.log("create WhatsDapp client (the first time)");
-    //synchronous stuff here
-    const whatsDapp = new this(storeObj, signalLib);
-    //asnychronous stuff here
-    await whatsDapp.init(mnemonic, identityString);
-    return whatsDapp;
+  static async prepareEmptyStorage(mnemonic: string, identityString: string | null, storageObj: KVStore, storagePassword?: string): Promise<void> {
+    //TODO DPNS _OR_ IDENTITY
+    console.log("Prepare storage for first use with mnemonic.");
+    const whatsDapp: WhatsDapp=new this();
+    await whatsDapp.initStorage(storageObj,storagePassword);
+    const storage:StructuredStorage = whatsDapp.storage;
+
+    if (await storage.hasUserData()) throw new Error(`Userdata already available in this store. Use it by calling ${this.createWhatsDapp.name}(), delete it or give another store.`);
+
+    console.log("-save mnemonic");
+    const userData: WhatsDappUserData = {
+      mnemonic: mnemonic,
+      identityString: identityString,
+      dpnsName: null,
+      profile: null
+    };
+    await storage.setUserData(userData);
+
+    console.log("-done");
   }
-  static async createWhatsDappSecondTime(storeObj: KVStore, signalLib?: ISignalLib): Promise<WhatsDapp> {
-    console.log("create WhatsDapp client (not the first time)");
+  private async initStorage(storageObj: KVStore, storagePassword?: string):Promise<void>{
+    if (!storageObj) throw new Error("No storage was given");
+
+    if (storagePassword) {
+      console.log("-use encrypted store with password: ", storagePassword);
+      const encryptedStorage: KVStore = await EncryptedStorageWrapper.create(storageObj, storagePassword);
+      this.storage = new StructuredStorage(encryptedStorage);
+    } else {
+      console.warn("Disabled encryption feature for whatsDapp store. Make sure given store supports encryption!");
+      console.log("-use unencrypted store");
+      this.storage = new StructuredStorage(storageObj);
+    }
+  }
+  //factory function
+  static async createWhatsDapp(storageObj: KVStore, storagePassword?: string): Promise<WhatsDapp> {
+    console.log("Create WhatsDapp client");
     //synchronous stuff here
-    const whatsDapp = new this(storeObj, signalLib);
+    const whatsDapp = new this();
+    
+    await whatsDapp.initStorage(storageObj,storagePassword);
 
-    const storage = whatsDapp.storage;
-
-    console.log("retrieving storage data");
-    //get userdata
-    if (!await storage.hasUserData()) throw new Error("No userdata available in this store");
+    //asnychronous stuff here
+    const storage:StructuredStorage = whatsDapp.storage;
+    console.log("-retrieving storage data");
+    if (!await storage.hasUserData()) throw new Error("No userdata available in this store or wrong password. Prepare store first.");
     const userData: WhatsDappUserData | null = await storage.getUserData();
-    if (!userData) throw new Error("No userdata available in this store");
+    if (!userData) throw new Error("No userdata available in this store.");
 
     const mnemonic: string = userData.mnemonic;
-    const identityString: string = userData.identityString;
-    const profile: WhatsDappProfile = userData.profile;
-    if (!mnemonic || !identityString || !profile) throw new Error("Incomplete userdata in storage");
-    //TODO dpns?
-    //const dpnsName: string = userData.dpnsName;
+    if (!mnemonic) throw new Error("No mnemonic in storage");
+    // const identityString: string | null = userData.identityString;
+    // const profile: WhatsDappProfile | null = userData.profile;
+    // const dpnsName: string | null = userData.dpnsName
 
     //PrivateData is done by SignalProtocolStore ;)
 
     //get last poll timestamp
     let lastPollTime = await storage.getLastTimestamp();
     if (isNaN(lastPollTime)) lastPollTime = 0;
-    whatsDapp.lastPollTime = lastPollTime + whatsDapp.pollTimeOffsetDueToMongoDbInprecision;
+    whatsDapp.setNewestRemoteTimestamp(lastPollTime);
 
     //TODO: Define somewhere what these "sessions" are and what they are used for
     const sessions = await storage.getSessions();
     whatsDapp.sessions = new Set(sessions);
 
-    //asnychronous stuff here
-    await whatsDapp.init(mnemonic, identityString);
+    console.log("-init messenger");
+    await whatsDapp.init(userData);
 
+    //just to be sure
+    if (!whatsDapp.initialized) throw new Error("Unknown Error initiating whatsDapp :/");
     return whatsDapp;
   }
 
-  private constructor(storeObj: KVStore, signalLib?: ISignalLib) {
+  private constructor(signalLib?: ISignalLib) {
     super();
 
     //TODO: check for node or browser and choose libs accordingly
-
-    if (storeObj !== undefined) {
-      console.log("store object was given");//,storeObj);
-      this.storage = new StructuredStorage(storeObj);
-    } else {
-      //TODO: whatsDappStore? localstorage or IDK...
-      const store: KVStore = {
-        get: (key: string) => new Promise(r => this.emit(WhatsDappEvent.StorageRead, key, r)) as Promise<Uint8Array | null>,
-        set: (key: string, value: Uint8Array) => this.emit(WhatsDappEvent.StorageWrite, key, value),
-        del: (key: string) => this.emit(WhatsDappEvent.StorageDelete, key)
-      };
-      this.storage = new StructuredStorage(store);
-    }
-
+    //TODO: implement signal lib replacement ;)
     //if no signal implementation was given, choose default one
     if (signalLib !== undefined) {
       this.signal = signalLib;
@@ -196,48 +213,87 @@ export class WhatsDapp extends EventEmitter {
    * @param identityString 
    * @throws {Error}
    */
-  async init(mnemonic: string, identityString: string | null): Promise<void> {
-    console.log("Creating client with mnemonic: ", mnemonic, " and identity: ", identityString);
+  private async init(userData: WhatsDappUserData): Promise<void> {
+    const mnemonic: string = userData.mnemonic;
+    let identityString: string | null = userData.identityString;
+    const dpnsName: string | null = userData.identityString;
+    let profile: WhatsDappProfile | null = userData.profile;
+
+
+    console.log("-setup client with mnemonic: ", mnemonic, " and identity: ", identityString);
     this.client = getWhatsDappDashClient(mnemonic);
     if (!this.client) throw new Error("Client undefined");
     const platform: Platform | undefined = this.client.platform;
     if (!platform) throw new Error("Platform undefined");
 
 
+    //TODO: DPNS
+    if(dpnsName){
+      console.log("-resolve dpns name");
+      //TODO: https://dashplatform.readme.io/docs/tutorial-retrieve-a-name
+      //TODO
+      const retrievedIdentityString:string|null=identityString;
+      if(retrievedIdentityString!==identityString){
+        //TODO
+        //choose identity string and delete dpns for now
+      }
+    }
+
+    //IDENTITY
     //if no identity was given, register a new one
     if (!identityString) {
-      console.log("No idetity string was given. Creating new identity...");
+      console.log("-no idetity string was given. Creating new identity...");
+      //TODO try catch?
       identityString = await this.createNewIdentity(); //throws Error
       console.log("-created identity:", identityString);
       console.log("-tops up identity");
       await this.topUpIdentity(identityString, 1000); //throws Error
     }
-    console.log("Retrieving identity (", identityString, ")");
+    console.log("-retrieving identity (", identityString, ")");
+    //TODO: retries?
     const retrievedIdentity = await platform.identities.get(identityString); //throws Error
     const identity: DashIdentity | undefined = retrievedIdentity;
-    //this.identity = await this.client.platform!.identities.get(identityString);
+
     if (!identity) throw new Error("Identity undefined. Cannot retrieve or create one.");
     this.identityString = identity.getId().toJSON();
 
+    console.log("-save identity");
+    userData.identityString = identityString;
+    await this.storage.setUserData(userData);
+
+    if (identity.getBalance() === 0) {
+
+      //TODO: get balance. If low inform
+      //if 0 throw error
+      //WE cannot even perform profile update
+      //check at the end, if profile update is nessecary
+    }
+
     this.dAPICommunicator = new DAPICommunicator(platform, identity);
 
-    console.log("Retrieving profile");
-    let profile: WhatsDappProfile | null = await this.dAPICommunicator.getProfile(this.identityString); //throws error
-    if (profile == null) {
-      //other error should be thrown, so at this point a profile==null means "no profile on drive"
-      console.log("-no profile for identity was found.");
-      //TODO: be sure, that it's not an error of DAPI! If there are connection errors our (old) profile will be overwritten by createKeys ;)
-      profile = await this.createAndUploadNewProfile(); //throws error
+    //PROFILE
+    if (!profile){
+      console.log("-retrieving profile");
+      profile = await this.dAPICommunicator.getProfile(this.identityString); //throws error
+      if (profile == null) {
+        //other error should be thrown, so at this point a profile==null means "no profile on drive"
+        console.log("-no profile for identity was found.");
+        //TODO: be sure, that it's not an error of DAPI! If there are connection errors our (old) profile will be overwritten by createKeys ;)
+        profile = await this.createAndUploadNewProfile(); //throws error
+      }
+      if (!profile) throw new Error("Profile undefined. Cannot retrieve or create one.");
     }
-    if (!profile) throw new Error("Profile undefined. Cannot retrieve or create one.");
     this.profile = profile;
+    console.log("-save profile");
+    userData.profile=profile;
+    await this.storage.setUserData(userData);
 
 
     //save data
     const userdata: WhatsDappUserData = {
       mnemonic: mnemonic,
       identityString: identityString,
-      dpnsName: '',
+      dpnsName: '',//TODO
       profile: profile
     };
     await this.storage.setUserData(userdata);
@@ -268,7 +324,7 @@ export class WhatsDapp extends EventEmitter {
     }
 
     //start polling immediately
-    this.pollTimeout = setTimeout(() => this._poll(), 0);
+    this.pollTimeout = setTimeout(() => this.pollForNewMessages(), 0);
 
     return true;
   }
@@ -285,9 +341,10 @@ export class WhatsDapp extends EventEmitter {
     if (this.pollTimeout) {
       //if poll is not currently running, reset timeout, otherwise it will take pollInterval from above
       clearTimeout(this.pollTimeout);
-      this.pollTimeout = setTimeout(() => this._poll(), this.pollInterval);
+      this.pollTimeout = setTimeout(() => this.pollForNewMessages(), this.pollInterval);
     }
   }
+  private setNewestRemoteTimestamp(latestUpdatedAt: number): void { this.newestRemoteTimestamp = Math.max(this.newestRemoteTimestamp, latestUpdatedAt + this.POLLTIME_OFFSET_DUE_TO_MONGODB_INPRECISION); }
 
 
   //**********************
@@ -298,66 +355,101 @@ export class WhatsDapp extends EventEmitter {
    * the last one was done. that's why _poll sets up the next poll after it's done.
    */
   //TODO
-  async _poll(): Promise<void> {
-    console.log("poll new messages since", this.lastPollTime);
+  private async pollForNewMessages(): Promise<void> {
+    console.log("Poll new messages since", this.newestRemoteTimestamp);
     this.pollTimeout = null;
-    const pollTime = this.lastPollTime;
+    const pollTime = this.newestRemoteTimestamp;
 
     let messages: Array<DriveMessage>;
     try {
       messages = await this.dAPICommunicator.getMessagesByTime(pollTime);
     } catch (e) {
-      console.error('Error retrieving message documents:', e);
-      //console.dir(e, {depth:15});
+      console.error('Error retrieving message documents from drive:', e);
+      //setup next poll
+      this.pollTimeout = setTimeout(() => this.pollForNewMessages(), this.pollInterval);
       return;
     }
 
-    const messagePromises = messages.map((m: DriveMessage) => {
-      this._incomingNewMessage(m)
-        //TODO catch
-        .catch(e => console.log('retrieving message failed!', e));
-    });
-    console.log('got', messagePromises.length, 'new messages.');
+    try {
+      const messagePromises = messages.map((m: DriveMessage) => {
+        this.handleIncomingMessage(m)
+          //TODO catch
+          //TODO idea: chache ids of files throwing errors to do further handling? But keep polltime?
+          .catch(e => console.log('retrieving message failed!', e));
+      });
+      console.log('-got', messagePromises.length, 'new messages');
 
-    // if (messages.length > 0) {
-    //   const polledMessage = messages[messages.length - 1];
-    //   if (polledMessage !== undefined)
-    //     this.lastPollTime = polledMessage.createdAt + 10;//.getTime();
-    //   console.error("TIEM POLL", this.lastPollTime);
-    // }
+      await Promise.all(messagePromises);
+    } catch (e) {
+      console.error('Error decrypting messages:', e);
+      //setup next poll
+      this.pollTimeout = setTimeout(() => this.pollForNewMessages(), this.pollInterval);
+      return;
+    }
 
-    await Promise.all(messagePromises);
-
-    this.pollTimeout = setTimeout(() => this._poll(), this.pollInterval);
+    //if everything went well ;)
+    this.pollTimeout = setTimeout(() => this.pollForNewMessages(), this.pollInterval);
   }
 
   //TODO
-  async _incomingNewMessage(driveMessage: DriveMessage): Promise<void> {
-    console.log("lastPollTime:",this.lastPollTime,"driveMessage.updatedAt:",driveMessage.updatedAt);
+  private async handleIncomingMessage(driveMessage: DriveMessage): Promise<void> {
+    const interlocutorId: string = driveMessage.ownerId;
 
-    let interlocutor: string = driveMessage.ownerId;
-    //interlocutor=interlocutor.substr(3)+"KD";
-    interlocutor = await this._getOrCreateSession(interlocutor);//driveMessage.ownerId;//
-    await new Promise(r => setTimeout(r, 2000)); // TODO: Solve race condition
+    if (interlocutorId == this.identityString) {
+      //TODO: You cannot write to yourself
+      //Error("Tried to lookup a session using our basekey"); session_record.js l.242
+      console.log("You cannot write yourself. Will ignore message and step further.");
+      this.setNewestRemoteTimestamp(driveMessage.updatedAt);
+      throw new Error("Message from yourself, you cannot write yourself.");
+      //TODO: use an array, that contains messageIds, that pretends to have them sent via drive :/
+    }
+
+    //TODO?
+    //await new Promise(r => setTimeout(r, 2000)); // TODO: Solve race condition
 
     console.log("-decrypt message");
-    // console.log("driveMsg: ", driveMessage);
-
     //TODO: catch MessageCounterError('Key used already or never filled'); //session_cipher.js l.234
     let plainInternalMessage: WhatsDappInternalMessage;
     try {
-      const plainJson: string = await this.signal.decryptMessage(this.storage, interlocutor, driveMessage.payload);
-      console.log("decrypted: ", plainJson);
+      const plainJson: string = await this.signal.decryptMessage(this.storage, interlocutorId, driveMessage.payload);
       plainInternalMessage = JSON.parse(plainJson);
       console.log("-done decrypt message");
-    } catch (e) {
+    } catch (e:any) {
+      if(e.name=="SessionError"){
+        //TODO: Try to reinit session
+        // console.log("Error while decrypting. Try to reinit session.");
+        // this.sessions.delete(driveMessage.ownerId);
+        // await this.getOrCreateOutgoingSession(driveMessage.ownerId);
+        //commented out: this leads to MAC-errors in decrypting if first message (of a bunch of messages) from the same interlocutor throws an error but follwoing won't.
+        //Better: answer with an internal message. New handshake will be perfomred automatically and read messages can be removed by sender.
+      }
       //TODO
-      console.log(e);
+      //case 1: first msg comtaining prekey => signal makes it
+      //case 2: n-th msg => signal makes it
+      //case x: if you cleared your storage and a (not PreKey) message arrives, you'll need to establish a new session wirh interlocutor with his prekey from drive...
+      console.error("Error while decrypting");
       throw e;
     }
 
+    //If it's a NEW incoming msg (first of this chat) do nothing, since signal will do this for us ;)
+    //Just put interlocutor in sessions as "known"
+    //Now outgoing messages won't retrieve prekey from profile anymore
+    if (await this.isNewSession(interlocutorId)) {
+      await this.addToSessions(interlocutorId);
+    }
 
-    //TODO: react on listOfReadMessages, internal, etc.
+    if (plainInternalMessage.internal) {
+      //TODO: DO ANYTHING INTERNALLY ;)
+      //Ideas: Resend aked messages, or exchange keys, or something...
+    }
+    if (plainInternalMessage.listOfReadMessageIds) {
+      //TODO: DO ANYTHING INTERNALLY ;)
+      //this list contains two infos:
+      // 1) which messages, we can delete on drive (explicitly by its id). Can be done anyways
+      // 2) which (old) messages sent before this answer were possibly not delivered
+      //const listOfMessageIdsToDelete=plainInternalMessage.listOfReadMessageIds;
+      //await deleteMessagesByIdArray(listOfMessageIdsToDelete);
+    }
 
     const plainMessage: WhatsDappMessage = {
       content: plainInternalMessage.content,
@@ -370,17 +462,11 @@ export class WhatsDapp extends EventEmitter {
     };
     if (plainInternalMessage.referenceToMessageId) plainMessage.referenceToMessageId = plainInternalMessage.referenceToMessageId;
 
+    await this.storage.addMessageToSession(interlocutorId, plainMessage);
 
-    console.log("recipientId");
-    console.log(plainMessage.recipientId);
-    console.log("MSG");
-    console.log(plainMessage.content);
-    this.emit(WhatsDappEvent.NewMessage, plainMessage, interlocutor);
-    await this.storage.addMessageToSession(interlocutor, plainMessage);
-
-    this.lastPollTime = Math.max(this.lastPollTime, plainMessage.updatedAt + this.pollTimeOffsetDueToMongoDbInprecision);
-    console.error("TIEM INCOMING", this.lastPollTime);
-
+    //at least, when everything went well, update pollTime
+    this.setNewestRemoteTimestamp(plainMessage.updatedAt);
+    this.emit(WhatsDappEvent.NewIncomingMessage, plainMessage, interlocutorId);
   }
 
   /**
@@ -398,46 +484,49 @@ export class WhatsDapp extends EventEmitter {
     if (recipientId == this.identityString) {
       //TODO: You cannot write to yourself
       //Error("Tried to lookup a session using our basekey"); session_record.js l.242
-      console.log("You cannot write yourself");
+      console.error("You cannot write yourself");
       return false;
     }
-
     if (!this.initialized) {
-      console.log("WhatsDapp is not initialized yet");
+      console.error("WhatsDapp is not initialized yet");
       return false;
     }
-
     console.log("Send message...");
-    console.log("-lookup session");
-    //TODO: if you can't find anything build new session
-    /*const session:Interlocutor=*/
-    await this._getOrCreateSession(recipientId);
+
+    //build up session if it's first message
+    await this.getOrCreateOutgoingSession(recipientId);
 
     const whatsDappInternalMessage: WhatsDappInternalMessage = {
       content: plaintext,
       listOfReadMessageIds: [],
     };
     if (referenceToMessageId) whatsDappInternalMessage.referenceToMessageId = referenceToMessageId;
+    //TODO: Fill listOfReadMessageIds
 
-    //TODO: done: return type is not really an ArrayBuffer. It is a JSON containing ArrayBuffer in property body
-    const ciphertext: ArrayBuffer = await this.signal.encryptMessage(this.storage, recipientId, JSON.stringify(whatsDappInternalMessage));
 
-    // let ciphertext: ArrayBuffer;
-    // if (encryptedMsg.body) ciphertext = Buffer.from(encryptedMsg.body);
-    // else if (encryptedMsg instanceof ArrayBuffer) ciphertext = encryptedMsg;
-    // else {
-    //   console.error("Could not handle type of ciphertext given by signal");
-    //   return false;
-    // }
+    let ciphertext: ArrayBuffer;
+    try {
+      console.log("-encrypt message");
+      ciphertext = await this.signal.encryptMessage(this.storage, recipientId, JSON.stringify(whatsDappInternalMessage));
+      console.log("-done encrypt message");
+    } catch (e) {
+      //TODO
+      //case 1: first msg comtaining prekey => signal makes it
+      //case 2: n-th msg => signal makes it
+      //case x: if you cleared your storage and a (not PreKey) message arrives, you'll need to establish a new session wirh interlocutor with his prekey from drive...
+      console.error("Error while decrypting:", e);
+      return false;
+    }
 
     let sentMessage: DriveMessage | null;
     try {
+      console.log("-upload message");
       sentMessage = await this.dAPICommunicator.createAndBroadcastMessage(recipientId, ciphertext);
       if (!sentMessage) {
         throw new Error("Message is null");
       }
     } catch (e) {
-      console.log("Sending failed: ", e);
+      console.log("Error while uploading encrypted message:", e);
       return false;
     }
 
@@ -454,7 +543,7 @@ export class WhatsDapp extends EventEmitter {
     };
     if (referenceToMessageId) msg.referenceToMessageId = referenceToMessageId;
 
-    this.emit(WhatsDappEvent.NewMessageSent, msg, recipientId);
+    this.emit(WhatsDappEvent.MessageSent, msg, recipientId);
 
     await this.storage.addMessageToSession(recipientId, msg);
 
@@ -472,6 +561,7 @@ export class WhatsDapp extends EventEmitter {
   //case of "burned identites"
   async deleteAllSentMessages(): Promise<void> {
     console.log("Delete all messages on drive of identity:", this.identityString);
+    //TODO: max is 10 per transaction
     try {
       const deleted: boolean = await this.dAPICommunicator.deleteAllSentMessages();
       if (!deleted) {
@@ -501,7 +591,7 @@ export class WhatsDapp extends EventEmitter {
       const platform = this.client!.platform;
       const fn = async function (): Promise<DashIdentity | null> {
         //retry 3 times
-        return retryFunctionXTimes(() => {
+        return await retryFunctionXTimes(() => {
           return platform.identities.register();
         }, 3)();
       };
@@ -538,7 +628,8 @@ export class WhatsDapp extends EventEmitter {
       return toppedUp;
     } catch (e) {
       console.error("Error topping up identity");
-      throw e;
+      //throw e;
+      return false;
     }
   }
 
@@ -562,7 +653,7 @@ export class WhatsDapp extends EventEmitter {
     const identityString: string = identity.getId().toJSON();
     //TODO: Es sollte nicht bei jedem suchen eine Session erzeugt werden
     //const interlocutor = 
-    await this._getOrCreateSession(identityString);
+    //await this._getOrCreateSession(identityString);
     return identityString;
   }
 
@@ -584,6 +675,14 @@ export class WhatsDapp extends EventEmitter {
   async updateProfile(updatedProfile: WhatsDappProfile): Promise<void> {
     //TODO: Not sure if this should be done this way
     //Maybe update keys always?
+
+    //TODO: keep signals identity-key the same
+
+    const nickname:string|undefined=updatedProfile.nickname;
+    if(nickname){
+      if(nickname.length>100)throw new Error("Nickname too long. Max. number of char is 100.");
+    }
+
     await this.dAPICommunicator.updateProfile(updatedProfile);
     const profile: WhatsDappProfile | null = await this.getProfileFromDrive();
     if (!profile) throw new Error("Error retrieving new profile.");
@@ -603,12 +702,24 @@ export class WhatsDapp extends EventEmitter {
       }
     } catch (e) {
       console.error("Error deleting profile:", e);
+      //TODO make boolean?
+      throw e;
     }
     //TODO: delete profile locally, too
 
   }
+  /**
+   * e.g. in case of storage loss
+   * @throws {Error}
+   */
+  async discardOldProfileAndCreateNew(): Promise<void> {
+    //TODO: Keep signals idenintity key the same
+    await this.deleteProfileFromDrive();
+    await this.createAndUploadNewProfile();
+  }
 
-  async createAndUploadNewProfile(): Promise<WhatsDappProfile> {
+  private async createAndUploadNewProfile(): Promise<WhatsDappProfile> {
+    //TODO: check if a profile exists abort if yes (first run deleteProfileFromDrive)
     console.log("Create new profile (will take a while)");
 
     console.log("-creating keybundle");
@@ -622,6 +733,7 @@ export class WhatsDapp extends EventEmitter {
     console.log("-create profile");
     try {
       await this.dAPICommunicator.createProfile(profileDoc);
+      //TODO: retriueve updatedAt from this transition and set it to pollTime (in case you updated your profile and dont want to die under a huge amount of decryption errors ;))
     } catch (e) {
       console.error("Uploading profile failed");
       throw e;
@@ -640,52 +752,57 @@ export class WhatsDapp extends EventEmitter {
   // SIGNAL
   //**********************
 
-  async addToSessions(interlocutor: string): Promise<void> {
+  private async addToSessions(interlocutor: string): Promise<void> {
     //this.sessions.push(interlocutor);
     this.sessions.add(interlocutor);
     //TODO:
     //this.storage.addSession();
   }
-  async isNewSession(interlocutor: string): Promise<boolean>{
+  private async isNewSession(interlocutor: string): Promise<boolean> {
     // return this.sessions.includes(interlocutor);
     return !this.sessions.has(interlocutor);
-  } 
+  }
 
-  async _getOrCreateSession(interlocutor: string/*, senderHandle: string*/): Promise<string> {
-    //let session: Interlocutor = this.sessions[interlocutor] as Interlocutor;
-    //if (session == null || session == undefined) {
-    if (await this.isNewSession(interlocutor)) {
-      console.log("create session");
-      // session = { identityString: interlocutor };
+  /**
+   * 
+   * @param interlocutorId 
+   * @returns 
+   * @throws {Error}
+   */
+  private async getOrCreateOutgoingSession(interlocutorId: string): Promise<string> {
+    //only if this is the first outgoing message to interlocutor
+    if (await this.isNewSession(interlocutorId)) {
+      console.log("-unknown whatsDapp user");
+      console.log("-create session with new chatpartner", interlocutorId);
 
       //TODO: undefined signalKeyBundle?
-
-      const profile = await this.dAPICommunicator.getProfile(interlocutor);
-      //TODO !
+      console.log("-retrieve interlocutors profile");
+      const profile = await this.dAPICommunicator.getProfile(interlocutorId);//throws error
       if (!profile) {
-        //TODO
+        throw new Error("Error retrieving interlocutors profile");
       }
-      const preKeyBundle: WhatsDappSignalPrekeyBundle = profile!.signalKeyBundle;
-      //this.sessions[interlocutor] = session;
-
-
-      console.log("sessions: ", this.sessions);
+      const preKeyBundle: WhatsDappSignalPrekeyBundle = profile.signalKeyBundle;
 
       /* TODO: This is only necessary when a new session is established by searching a contact.
       If a session is established by a new incoming message, this is a waste of time, since the
       signal lib will tear it down and rebuild it, because buildAndPersistSession establishes an
       outgoing session. Incoming sessions are created by the signal lib and don't require explicit
       session establishment by us. */
-      //await this.signal.buildAndPersistSession(this.storage, session.identityString, preKeyBundle);
-      await this.signal.buildAndPersistSession(this.storage, interlocutor, preKeyBundle);
-      await this.addToSessions(interlocutor);
-      this.emit(WhatsDappEvent.NewSession, interlocutor, preKeyBundle);
+      //LONG STORY SHORT: IMPLEMENT PROFILE SEARCH FOR INCOMING MESSAGES ;)
+
+      await this.signal.buildAndPersistOutgoingSession(this.storage, interlocutorId, preKeyBundle);
+      await this.addToSessions(interlocutorId);
+      //this.emit(WhatsDappEvent.NewSession, interlocutorId, preKeyBundle);
     }
-    return interlocutor;
+    return interlocutorId;
   }
 
   private async createKeys(): Promise<WhatsDappSignalKeyBundle> {
-    const keys = await this.signal.generateSignalKeys();
+    const preKeyId = 42; // TODO: replace
+    const preKeyCount=10;
+    const signedPreKeyId = 1337; // TODO: replace
+  
+    const keys = await this.signal.generateSignalKeys(preKeyId, preKeyCount, signedPreKeyId);
 
     //TODO: sideeffects? We cannto use this currently to update profile, since it will reset existing private data...
     await this.storage.setPrivateData(keys.private);
@@ -709,32 +826,32 @@ export class WhatsDapp extends EventEmitter {
   // EVENTS
   //**********************
 
-  emit(ev: WhatsDappEvent.NewMessage, message: WhatsDappMessage, interlocutor: string): boolean;
-  emit(ev: WhatsDappEvent.NewSession, interlocutor: string, bundle: WhatsDappSignalPrekeyBundle): boolean;
-  emit(ev: WhatsDappEvent.NewMessageSent, wMessage: WhatsDappMessage, interlocutor: string): boolean;
-  emit(ev: WhatsDappEvent.StorageRead, storageKey: string, ret: (val: Uint8Array | null) => void): boolean;
-  emit(ev: WhatsDappEvent.StorageWrite, storageKey: string, storageValue: Uint8Array): boolean;
-  emit(ev: WhatsDappEvent.StorageDelete, storageKey: string): boolean;
+  emit(ev: WhatsDappEvent.NewIncomingMessage, message: WhatsDappMessage, interlocutor: string): boolean;
+  // emit(ev: WhatsDappEvent.NewSession, interlocutor: string, bundle: WhatsDappSignalPrekeyBundle): boolean;
+  emit(ev: WhatsDappEvent.MessageSent, wMessage: WhatsDappMessage, interlocutor: string): boolean;
+  // emit(ev: WhatsDappEvent.StorageRead, storageKey: string, ret: (val: Uint8Array | null) => void): boolean;
+  // emit(ev: WhatsDappEvent.StorageWrite, storageKey: string, storageValue: Uint8Array): boolean;
+  // emit(ev: WhatsDappEvent.StorageDelete, storageKey: string): boolean;
   emit(ev: string, ...args: unknown[]): boolean {
     return super.emit(ev, ...Array.from(args));
   }
 
-  on(ev: WhatsDappEvent.NewMessage, listener: (msg: WhatsDappMessage, interlocutor: string) => void): this;
-  on(ev: WhatsDappEvent.NewSession, listener: (interlocutor: string, bundle: WhatsDappSignalPrekeyBundle) => void): this;
-  on(ev: WhatsDappEvent.NewMessageSent, listener: (wMessage: WhatsDappMessage, interlocutor: string) => void): this;
-  on(ev: WhatsDappEvent.StorageRead, listener: (storageKey: string, ret: (val: Uint8Array | null) => void) => void): this;
-  on(ev: WhatsDappEvent.StorageWrite, listener: (storageKey: string, storageValue: Uint8Array) => void): this;
-  on(ev: WhatsDappEvent.StorageDelete, listener: (storageKey: string, storageValue: Uint8Array) => void): this;
+  on(ev: WhatsDappEvent.NewIncomingMessage, listener: (msg: WhatsDappMessage, interlocutor: string) => void): this;
+  // on(ev: WhatsDappEvent.NewSession, listener: (interlocutor: string, bundle: WhatsDappSignalPrekeyBundle) => void): this;
+  on(ev: WhatsDappEvent.MessageSent, listener: (wMessage: WhatsDappMessage, interlocutor: string) => void): this;
+  // on(ev: WhatsDappEvent.StorageRead, listener: (storageKey: string, ret: (val: Uint8Array | null) => void) => void): this;
+  // on(ev: WhatsDappEvent.StorageWrite, listener: (storageKey: string, storageValue: Uint8Array) => void): this;
+  // on(ev: WhatsDappEvent.StorageDelete, listener: (storageKey: string, storageValue: Uint8Array) => void): this;
   on(ev: string, listener: (...args: any[]) => void): this {
     return super.on(ev, listener);
   }
 
-  removeListener(ev: WhatsDappEvent.NewMessage, listener: (msg: WhatsDappMessage, interlocutor: string) => void): this;
-  removeListener(ev: WhatsDappEvent.NewSession, listener: (interlocutor: string, bundle: WhatsDappSignalPrekeyBundle) => void): this;
-  removeListener(ev: WhatsDappEvent.NewMessageSent, listener: (wMessage: WhatsDappMessage, interlocutor: string) => void): this;
-  removeListener(ev: WhatsDappEvent.StorageRead, listener: (storageKey: string, ret: (val: Uint8Array | null) => void) => void): this;
-  removeListener(ev: WhatsDappEvent.StorageWrite, listener: (storageKey: string, storageValue: Uint8Array) => void): this;
-  removeListener(ev: WhatsDappEvent.StorageDelete, listener: (storageKey: string) => void): this;
+  removeListener(ev: WhatsDappEvent.NewIncomingMessage, listener: (msg: WhatsDappMessage, interlocutor: string) => void): this;
+  // removeListener(ev: WhatsDappEvent.NewSession, listener: (interlocutor: string, bundle: WhatsDappSignalPrekeyBundle) => void): this;
+  removeListener(ev: WhatsDappEvent.MessageSent, listener: (wMessage: WhatsDappMessage, interlocutor: string) => void): this;
+  // removeListener(ev: WhatsDappEvent.StorageRead, listener: (storageKey: string, ret: (val: Uint8Array | null) => void) => void): this;
+  // removeListener(ev: WhatsDappEvent.StorageWrite, listener: (storageKey: string, storageValue: Uint8Array) => void): this;
+  // removeListener(ev: WhatsDappEvent.StorageDelete, listener: (storageKey: string) => void): this;
   removeListener(ev: string, listener: (...args: any[]) => void): this {
     return super.removeListener(ev, listener);
   }

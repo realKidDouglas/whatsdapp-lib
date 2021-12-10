@@ -31,7 +31,8 @@ export function makeChunkKey(id: string, num: number): string {
  * @param obj {any} that can contain buffers
  */
 export function restoreBuffers(obj: any): any {
-  if (typeof obj !== 'object' || Array.isArray(obj)) return obj;
+  //TODO: do we need this? if (typeof obj !== 'object' || Array.isArray(obj)) return obj;
+  //commented out to have Buffers in preKey restored
   if (isSerializedBuffer(obj)) {
     return Buffer.from(obj.data);
   } else {

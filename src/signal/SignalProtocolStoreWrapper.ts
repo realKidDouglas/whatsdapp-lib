@@ -1,6 +1,7 @@
-import {arrayBufferToString} from "./utils";
-import libsignal, {ProtocolStore, SignalKeyPair, SessionRecord, SignalSignedPreKey} from 'libsignal';
+import { arrayBufferToString } from "./utils";
+import libsignal, { ProtocolStore, SignalKeyPair, SessionRecord, SignalSignedPreKey, SignalPreKey } from 'libsignal';
 import { StructuredStorage } from "../storage/StructuredStorage";
+import { WhatsDappSignalPrivateKeys } from "./SignalWrapper";
 
 export class SignalProtocolStore implements ProtocolStore {
 
@@ -25,6 +26,7 @@ export class SignalProtocolStore implements ProtocolStore {
    */
   async getOurIdentity(): Promise<SignalKeyPair> {
     const privateData = await this.store.getPrivateData();
+    //TODO: If loclastorage was cleared -->find out and generate and upload new profile
     return privateData!['identityKeyPair'];
   }
 
@@ -38,7 +40,7 @@ export class SignalProtocolStore implements ProtocolStore {
   }
 
   /**
-   * checks whether a given IdentityKey matches the one that is already stored.
+   * TODO checks whether a given IdentityKey matches the one that is already stored.
    * If no key is stored, the identityKey is trusted.
    * @param identifier: Identifier of the session that should be checked
    * @param identityKey: Key that should be checked
@@ -70,7 +72,7 @@ export class SignalProtocolStore implements ProtocolStore {
   }
 
   /**
-   * this function is part of the signal storage API but is currently not used
+   * TODO this function is part of the signal storage API but is currently not used
    * @param _identifier: unused
    * @returns {Promise<void>}
    */
@@ -103,19 +105,30 @@ export class SignalProtocolStore implements ProtocolStore {
   }
 
   /**
-   * loads the static PreKeyPair from the storage. This will be changed in
+   * TODO: loads the static PreKeyPair from the storage. This will be changed in
    * the future to support multiple PreKeyPairs.
-   * @param _keyId: unused
+   * @param keyId: unused
    * @returns {Promise<SignalKeyPair>}
+   * @throws {Error}
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async loadPreKey(_keyId: number): Promise<SignalKeyPair> {
-    const res = (await this.store.getPrivateData())!.preKey.keyPair;
-    return Promise.resolve(res);
+  async loadPreKey(keyId: number): Promise<SignalKeyPair> {
+    //const res = (await this.store.getPrivateData())!.preKey.keyPair;
+    //return Promise.resolve(res);
+
+    const privData:WhatsDappSignalPrivateKeys|null = await this.store.getPrivateData();
+    if (!privData) throw new Error("No private data found");
+    console.dir(privData, {depth:15});
+    const preKeys: Array<SignalPreKey>=privData.preKeys;
+    const desiredKey:SignalPreKey|undefined=preKeys.find(key => key.keyId === keyId);
+    if(!desiredKey)throw new Error("Could not find key for keyId: " + keyId);
+    const desiredKeyPair: SignalKeyPair=desiredKey.keyPair;
+    if (!desiredKeyPair) throw new Error("Could not find keyPair for keyId: " + keyId);
+    console.dir(desiredKeyPair, {depth:15});
+    return desiredKeyPair;
   }
 
   /**
-   * this function is part of the signal storage API but is currently not used
+   * TODO this function is part of the signal storage API but is currently not used
    * @param _keyId: unused
    * @param _keyPair: unused
    * @returns {Promise<void>}
@@ -126,7 +139,7 @@ export class SignalProtocolStore implements ProtocolStore {
   }
 
   /**
-   * this function is part of the signal storage API but is currently not used
+   * TODO this function is part of the signal storage API but is currently not used
    * @param _keyId: unused
    * @returns {Promise<void>}
    */
@@ -138,7 +151,7 @@ export class SignalProtocolStore implements ProtocolStore {
   }
 
   /**
-   * loads the static SignedPreKey from the storage. This will be changed in
+   * TODO loads the static SignedPreKey from the storage. This will be changed in
    * the future to support SignedPreKey changes.
    * @param _keyId: unused
    * @returns {Promise<SignalKeyPair>}
@@ -150,7 +163,7 @@ export class SignalProtocolStore implements ProtocolStore {
   }
 
   /**
-   * this function is part of the signal storage API but is currently not used
+   * TODO this function is part of the signal storage API but is currently not used
    * @param _keyId: unused
    * @param _keyPair: unused
    * @returns {Promise<void>}
@@ -163,7 +176,7 @@ export class SignalProtocolStore implements ProtocolStore {
   }
 
   /**
-   * this function is part of the signal storage API but is currently not used
+   * TODO this function is part of the signal storage API but is currently not used
    * @param _keyId: unused
    * @returns {Promise<void>}
    */
