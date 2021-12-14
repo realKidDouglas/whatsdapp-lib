@@ -90,10 +90,11 @@ getCurrentProfile(): WhatsDappProfile | null
 
 ## Connecting Events
 
-There are currently two events emitted by WhatsDapp:
+There are currently three events emitted by WhatsDapp:
 ```
 emit(ev: WhatsDappEvent.NewIncomingMessage, msg: WhatsDappMessage, interlocutor: string): boolean;
 emit(ev: WhatsDappEvent.MessageSent, msg: WhatsDappMessage, interlocutor: string): boolean;
+emit(ev: WhatsDappEvent.LowFunds, remainingDuffs: number): boolean;
 ```
 
 The type `WhatsDappMessage` contains also drive info as `$id`, `$createdAt` and `$updatedAt`. 
@@ -115,6 +116,7 @@ export type WhatsDappMessage = {
   read?: boolean,
 }
 ```
+While the `LowFunds`-event is fired if `identity.getBalance()` returns a value lower than `MINIMUM_DUFFS_TO_SEND_MESSAGE= 100`.
 
 ## Polling
 
