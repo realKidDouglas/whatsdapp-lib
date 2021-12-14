@@ -873,6 +873,7 @@ export class WhatsDapp extends EventEmitter {
   removeListener(ev: WhatsDappEvent.NewIncomingMessage, listener: (msg: WhatsDappMessage, interlocutor: string) => void): this;
   // removeListener(ev: WhatsDappEvent.NewSession, listener: (interlocutor: string, bundle: WhatsDappSignalPrekeyBundle) => void): this;
   removeListener(ev: WhatsDappEvent.MessageSent, listener: (msg: WhatsDappMessage, interlocutor: string) => void): this;
+  removeListener(ev: WhatsDappEvent.LowFunds, listener: (remainingDuffs: number) => void): this;
   // removeListener(ev: WhatsDappEvent.StorageRead, listener: (storageKey: string, ret: (val: Uint8Array | null) => void) => void): this;
   // removeListener(ev: WhatsDappEvent.StorageWrite, listener: (storageKey: string, storageValue: Uint8Array) => void): this;
   // removeListener(ev: WhatsDappEvent.StorageDelete, listener: (storageKey: string) => void): this;
