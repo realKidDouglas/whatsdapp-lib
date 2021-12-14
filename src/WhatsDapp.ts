@@ -71,6 +71,7 @@ export enum WhatsDappEvent {
   NewIncomingMessage = 'new-incoming-message',
   // NewSession = 'new-session',
   MessageSent = 'message-sent',
+  LowFunds = 'low-funds',
   // StorageRead = 'storage-read',
   // StorageWrite = 'storage-write',
   // StorageDelete = 'storage-delete'
@@ -102,6 +103,7 @@ type TimerHandle = ReturnType<typeof setTimeout>;
 export class WhatsDapp extends EventEmitter {
 
   private identityString!: string;
+  private MINIMUM_DUFFS_TO_SEND_MESSAGE: number = 100;
   private profile: WhatsDappProfile | null = null;
 
   private client: DashClient | undefined;
@@ -124,9 +126,9 @@ export class WhatsDapp extends EventEmitter {
   static async prepareEmptyStorage(mnemonic: string, identityString: string | null, storageObj: KVStore, storagePassword?: string): Promise<void> {
     //TODO DPNS _OR_ IDENTITY
     console.log("Prepare storage for first use with mnemonic.");
-    const whatsDapp: WhatsDapp=new this();
-    await whatsDapp.initStorage(storageObj,storagePassword);
-    const storage:StructuredStorage = whatsDapp.storage;
+    const whatsDapp: WhatsDapp = new this();
+    await whatsDapp.initStorage(storageObj, storagePassword);
+    const storage: StructuredStorage = whatsDapp.storage;
 
     if (await storage.hasUserData()) throw new Error(`Userdata already available in this store. Use it by calling ${this.createWhatsDapp.name}(), delete it or give another store.`);
 
@@ -141,7 +143,7 @@ export class WhatsDapp extends EventEmitter {
 
     console.log("-done");
   }
-  private async initStorage(storageObj: KVStore, storagePassword?: string):Promise<void>{
+  private async initStorage(storageObj: KVStore, storagePassword?: string): Promise<void> {
     if (!storageObj) throw new Error("No storage was given");
 
     if (storagePassword) {
@@ -159,11 +161,11 @@ export class WhatsDapp extends EventEmitter {
     console.log("Create WhatsDapp client");
     //synchronous stuff here
     const whatsDapp = new this();
-    
-    await whatsDapp.initStorage(storageObj,storagePassword);
+
+    await whatsDapp.initStorage(storageObj, storagePassword);
 
     //asnychronous stuff here
-    const storage:StructuredStorage = whatsDapp.storage;
+    const storage: StructuredStorage = whatsDapp.storage;
     console.log("-retrieving storage data");
     if (!await storage.hasUserData()) throw new Error("No userdata available in this store or wrong password. Prepare store first.");
     const userData: WhatsDappUserData | null = await storage.getUserData();
@@ -228,12 +230,12 @@ export class WhatsDapp extends EventEmitter {
 
 
     //TODO: DPNS
-    if(dpnsName){
+    if (dpnsName) {
       console.log("-resolve dpns name");
       //TODO: https://dashplatform.readme.io/docs/tutorial-retrieve-a-name
       //TODO
-      const retrievedIdentityString:string|null=identityString;
-      if(retrievedIdentityString!==identityString){
+      const retrievedIdentityString: string | null = identityString;
+      if (retrievedIdentityString !== identityString) {
         //TODO
         //choose identity string and delete dpns for now
       }
@@ -261,18 +263,17 @@ export class WhatsDapp extends EventEmitter {
     userData.identityString = identityString;
     await this.storage.setUserData(userData);
 
-    if (identity.getBalance() === 0) {
-
-      //TODO: get balance. If low inform
-      //if 0 throw error
-      //WE cannot even perform profile update
-      //check at the end, if profile update is nessecary
+    //emits event if nessecary
+    const enoughFunds: boolean = await this.checkIdentitiesBalanceForMinimumAndEmitEvent();
+    if (!enoughFunds) {
+      throw new Error("Identities balance too low. We cannot even upload a new profile.");
+      //TODO: check at the end, if profile update is nessecary
     }
 
     this.dAPICommunicator = new DAPICommunicator(platform, identity);
 
     //PROFILE
-    if (!profile){
+    if (!profile) {
       console.log("-retrieving profile");
       profile = await this.dAPICommunicator.getProfile(this.identityString); //throws error
       if (profile == null) {
@@ -285,7 +286,7 @@ export class WhatsDapp extends EventEmitter {
     }
     this.profile = profile;
     console.log("-save profile");
-    userData.profile=profile;
+    userData.profile = profile;
     await this.storage.setUserData(userData);
 
 
@@ -414,8 +415,8 @@ export class WhatsDapp extends EventEmitter {
       const plainJson: string = await this.signal.decryptMessage(this.storage, interlocutorId, driveMessage.payload);
       plainInternalMessage = JSON.parse(plainJson);
       console.log("-done decrypt message");
-    } catch (e:any) {
-      if(e.name=="SessionError"){
+    } catch (e: any) {
+      if (e.name == "SessionError") {
         //TODO: Try to reinit session
         // console.log("Error while decrypting. Try to reinit session.");
         // this.sessions.delete(driveMessage.ownerId);
@@ -547,6 +548,9 @@ export class WhatsDapp extends EventEmitter {
 
     await this.storage.addMessageToSession(recipientId, msg);
 
+    //emits LowFunds-event if nessecary
+    await this.checkIdentitiesBalanceForMinimumAndEmitEvent();
+
     //if eveything went well
     return true;
   }
@@ -657,7 +661,22 @@ export class WhatsDapp extends EventEmitter {
     return identityString;
   }
 
-
+  async checkIdentitiesBalanceForMinimumAndEmitEvent(): Promise<boolean> {
+    //TODO: retries?
+    //TODO: Put this into DAPICommunictator...
+    const identity: DashIdentity | undefined = await this.client!.platform.identities.get(this.identityString); //throws Error
+    if (!identity) {
+      console.log("Identity undefined. Cannot retrieve balance.");
+      return false;
+    }
+    const curBalance=identity.getBalance();
+    if (curBalance < this.MINIMUM_DUFFS_TO_SEND_MESSAGE) {
+      this.emit(WhatsDappEvent.LowFunds, curBalance);
+      console.log("Identities balance is less than", this.MINIMUM_DUFFS_TO_SEND_MESSAGE, "duffs!")
+      return false;
+    }
+    return true;
+  }
   //**********************
   // PROFILE
   //**********************
@@ -678,9 +697,9 @@ export class WhatsDapp extends EventEmitter {
 
     //TODO: keep signals identity-key the same
 
-    const nickname:string|undefined=updatedProfile.nickname;
-    if(nickname){
-      if(nickname.length>100)throw new Error("Nickname too long. Max. number of char is 100.");
+    const nickname: string | undefined = updatedProfile.nickname;
+    if (nickname) {
+      if (nickname.length > 100) throw new Error("Nickname too long. Max. number of char is 100.");
     }
 
     await this.dAPICommunicator.updateProfile(updatedProfile);
@@ -799,9 +818,9 @@ export class WhatsDapp extends EventEmitter {
 
   private async createKeys(): Promise<WhatsDappSignalKeyBundle> {
     const preKeyId = 42; // TODO: replace
-    const preKeyCount=10;
+    const preKeyCount = 10;
     const signedPreKeyId = 1337; // TODO: replace
-  
+
     const keys = await this.signal.generateSignalKeys(preKeyId, preKeyCount, signedPreKeyId);
 
     //TODO: sideeffects? We cannto use this currently to update profile, since it will reset existing private data...
@@ -829,6 +848,7 @@ export class WhatsDapp extends EventEmitter {
   emit(ev: WhatsDappEvent.NewIncomingMessage, msg: WhatsDappMessage, interlocutor: string): boolean;
   // emit(ev: WhatsDappEvent.NewSession, interlocutor: string, bundle: WhatsDappSignalPrekeyBundle): boolean;
   emit(ev: WhatsDappEvent.MessageSent, msg: WhatsDappMessage, interlocutor: string): boolean;
+  emit(ev: WhatsDappEvent.LowFunds, remainingDuffs: number): boolean;
   // emit(ev: WhatsDappEvent.StorageRead, storageKey: string, ret: (val: Uint8Array | null) => void): boolean;
   // emit(ev: WhatsDappEvent.StorageWrite, storageKey: string, storageValue: Uint8Array): boolean;
   // emit(ev: WhatsDappEvent.StorageDelete, storageKey: string): boolean;
@@ -839,6 +859,7 @@ export class WhatsDapp extends EventEmitter {
   on(ev: WhatsDappEvent.NewIncomingMessage, listener: (msg: WhatsDappMessage, interlocutor: string) => void): this;
   // on(ev: WhatsDappEvent.NewSession, listener: (interlocutor: string, bundle: WhatsDappSignalPrekeyBundle) => void): this;
   on(ev: WhatsDappEvent.MessageSent, listener: (msg: WhatsDappMessage, interlocutor: string) => void): this;
+  on(ev: WhatsDappEvent.LowFunds, listener: (remainingDuffs: number) => void): this;
   // on(ev: WhatsDappEvent.StorageRead, listener: (storageKey: string, ret: (val: Uint8Array | null) => void) => void): this;
   // on(ev: WhatsDappEvent.StorageWrite, listener: (storageKey: string, storageValue: Uint8Array) => void): this;
   // on(ev: WhatsDappEvent.StorageDelete, listener: (storageKey: string, storageValue: Uint8Array) => void): this;
