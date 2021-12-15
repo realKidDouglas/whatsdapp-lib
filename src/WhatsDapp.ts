@@ -8,6 +8,7 @@ import { DAPICommunicator } from './dapi/DAPICommunicator';
 import { Platform } from 'dash/dist/src/SDK/Client/Platform';
 import { retryFunctionXTimes } from './dapi/utils';
 import { EncryptedStorageWrapper } from './storage/EncryptedStorageWrapper';
+import { KeyManager } from './KeyManager';
 
 
 /**
@@ -83,7 +84,7 @@ export enum WhatsDappEvent {
  */
 export type WhatsDappProfile = {
   signalKeyBundle: WhatsDappSignalPrekeyBundle,
-  //TODO: max 50 chars! (contract)
+  //max 100 chars (by contract)
   nickname?: string,
 }
 
@@ -103,7 +104,8 @@ type TimerHandle = ReturnType<typeof setTimeout>;
 export class WhatsDapp extends EventEmitter {
 
   private identityString!: string;
-  private MINIMUM_DUFFS_TO_SEND_MESSAGE: number = 100;
+  private MINIMUM_DUFFS_TO_SEND_MESSAGE = 100;
+  private identitiesBalance = 0;
   private profile: WhatsDappProfile | null = null;
 
   private client: DashClient | undefined;
@@ -111,6 +113,7 @@ export class WhatsDapp extends EventEmitter {
 
   private storage!: StructuredStorage;
   private signal: ISignalLib;
+  private keyManager!: KeyManager;
 
   private pollTimeout: TimerHandle | null = null;
   private pollInterval = 5000;
@@ -162,10 +165,12 @@ export class WhatsDapp extends EventEmitter {
     //synchronous stuff here
     const whatsDapp = new this();
 
+    //asnychronous stuff here
     await whatsDapp.initStorage(storageObj, storagePassword);
 
-    //asnychronous stuff here
     const storage: StructuredStorage = whatsDapp.storage;
+    whatsDapp.keyManager = new KeyManager(whatsDapp.signal, whatsDapp.storage);
+
     console.log("-retrieving storage data");
     if (!await storage.hasUserData()) throw new Error("No userdata available in this store or wrong password. Prepare store first.");
     const userData: WhatsDappUserData | null = await storage.getUserData();
@@ -276,10 +281,11 @@ export class WhatsDapp extends EventEmitter {
     if (!profile) {
       console.log("-retrieving profile");
       profile = await this.dAPICommunicator.getProfile(this.identityString); //throws error
+      //TODO: Check we have privateKeys for received profile. If not update profile
       if (profile == null) {
         //other error should be thrown, so at this point a profile==null means "no profile on drive"
         console.log("-no profile for identity was found.");
-        //TODO: be sure, that it's not an error of DAPI! If there are connection errors our (old) profile will be overwritten by createKeys ;)
+        //TODO: make, that it's not an error of DAPI! If there are connection errors our (old) profile will be overwritten by createKeys ;)
         profile = await this.createAndUploadNewProfile(); //throws error
       }
       if (!profile) throw new Error("Profile undefined. Cannot retrieve or create one.");
@@ -330,6 +336,7 @@ export class WhatsDapp extends EventEmitter {
     return true;
   }
   stopPolling(): void {
+    //TODO: Does this work if it's currently within pollForNewMessages()?
     if (this.pollTimeout) {
       clearTimeout(this.pollTimeout);
     }
@@ -387,6 +394,9 @@ export class WhatsDapp extends EventEmitter {
       this.pollTimeout = setTimeout(() => this.pollForNewMessages(), this.pollInterval);
       return;
     }
+
+    //check AFTER poll
+    await this.doKeyUpdateIfNecessary();
 
     //if everything went well ;)
     this.pollTimeout = setTimeout(() => this.pollForNewMessages(), this.pollInterval);
@@ -493,6 +503,9 @@ export class WhatsDapp extends EventEmitter {
       return false;
     }
     console.log("Send message...");
+
+    //check BEFORE sending
+    await this.doKeyUpdateIfNecessary();
 
     //build up session if it's first message
     await this.getOrCreateOutgoingSession(recipientId);
@@ -669,10 +682,11 @@ export class WhatsDapp extends EventEmitter {
       console.log("Identity undefined. Cannot retrieve balance.");
       return false;
     }
-    const curBalance=identity.getBalance();
+    const curBalance = identity.getBalance();
+    this.identitiesBalance = curBalance;
     if (curBalance < this.MINIMUM_DUFFS_TO_SEND_MESSAGE) {
       this.emit(WhatsDappEvent.LowFunds, curBalance);
-      console.log("Identities balance is less than", this.MINIMUM_DUFFS_TO_SEND_MESSAGE, "duffs!")
+      console.log("Identities balance is less than", this.MINIMUM_DUFFS_TO_SEND_MESSAGE, "duffs!");
       return false;
     }
     return true;
@@ -692,10 +706,6 @@ export class WhatsDapp extends EventEmitter {
    * @throws {Error}
    */
   async updateProfile(updatedProfile: WhatsDappProfile): Promise<void> {
-    //TODO: Not sure if this should be done this way
-    //Maybe update keys always?
-
-    //TODO: keep signals identity-key the same
 
     const nickname: string | undefined = updatedProfile.nickname;
     if (nickname) {
@@ -710,6 +720,35 @@ export class WhatsDapp extends EventEmitter {
 
     //fires lowFunds event
     await this.checkIdentitiesBalanceForMinimumAndEmitEvent();
+  }
+
+  //Keyupdates mid and short
+  private async doKeyUpdateIfNecessary(): Promise<void> {
+    if (this.keyManager.isTimeForSignedKeyUpdate()) {
+      console.log("Signed PreKey Update is necessary. Will create new key and update profile.");
+      await this.updateProfilesSignedPreKey();
+    }
+    if (this.keyManager.isTimeForPreKeyUpdate()) {
+      console.log("PreKeys Update is necessary. Will create new keys and update profile.");
+      await this.updateProfilesPreKeys();
+    }
+    //TODO: case if both needs to be updated
+  }
+  private async updateProfilesPreKeys(): Promise<void> {
+    if (!this.profile) return;
+    const updatedProfile = this.profile;
+    //Update PreKeys 
+    const updatedPreKeys = (await this.keyManager.updatePreKeys(updatedProfile.signalKeyBundle)).preKeyBundle;
+    updatedProfile.signalKeyBundle = updatedPreKeys;
+    await this.updateProfile(updatedProfile);
+  }
+  private async updateProfilesSignedPreKey(): Promise<void> {
+    if (!this.profile) return;
+    const updatedProfile = this.profile;
+    //Update PreKeys 
+    const updatedPreKeys = (await this.keyManager.updateSignedPreKey(updatedProfile.signalKeyBundle)).preKeyBundle;
+    updatedProfile.signalKeyBundle = updatedPreKeys;
+    await this.updateProfile(updatedProfile);
   }
 
   /**
@@ -735,7 +774,7 @@ export class WhatsDapp extends EventEmitter {
    * @throws {Error}
    */
   async discardOldProfileAndCreateNew(): Promise<void> {
-    //TODO: Keep signals idenintity key the same
+    //TODO: Keep signals idenintity key the same if it is still there
     await this.deleteProfileFromDrive();
     await this.createAndUploadNewProfile();
   }
@@ -745,7 +784,7 @@ export class WhatsDapp extends EventEmitter {
     console.log("Create new profile (will take a while)");
 
     console.log("-creating keybundle");
-    const keysBundle: WhatsDappSignalKeyBundle = await this.createKeys();
+    const keysBundle: WhatsDappSignalKeyBundle = await this.createNewKeys();
     const preKeyBundle: WhatsDappSignalPrekeyBundle = keysBundle.preKeyBundle;
 
     const profileDoc: WhatsDappProfile = {
@@ -775,13 +814,10 @@ export class WhatsDapp extends EventEmitter {
   //**********************
 
   private async addToSessions(interlocutor: string): Promise<void> {
-    //this.sessions.push(interlocutor);
     this.sessions.add(interlocutor);
-    //TODO:
-    //this.storage.addSession();
+    //sessions are persisted in storage by SignalProtocolStore
   }
   private async isNewSession(interlocutor: string): Promise<boolean> {
-    // return this.sessions.includes(interlocutor);
     return !this.sessions.has(interlocutor);
   }
 
@@ -794,6 +830,8 @@ export class WhatsDapp extends EventEmitter {
   private async getOrCreateOutgoingSession(interlocutorId: string): Promise<string> {
     //only if this is the first outgoing message to interlocutor
     if (await this.isNewSession(interlocutorId)) {
+      this.keyManager.addNewSessionsSinceLastKeyUpdate();
+
       console.log("-unknown whatsDapp user");
       console.log("-create session with new chatpartner", interlocutorId);
 
@@ -819,15 +857,8 @@ export class WhatsDapp extends EventEmitter {
     return interlocutorId;
   }
 
-  private async createKeys(): Promise<WhatsDappSignalKeyBundle> {
-    const preKeyId = 42; // TODO: replace
-    const preKeyCount = 10;
-    const signedPreKeyId = 1337; // TODO: replace
-
-    const keys = await this.signal.generateSignalKeys(preKeyId, preKeyCount, signedPreKeyId);
-
-    //TODO: sideeffects? We cannto use this currently to update profile, since it will reset existing private data...
-    await this.storage.setPrivateData(keys.private);
+  private async createNewKeys(): Promise<WhatsDappSignalKeyBundle> {
+    const keys = await this.keyManager.createNewKeys();
     return keys;
   }
 
@@ -841,6 +872,9 @@ export class WhatsDapp extends EventEmitter {
   }
   getCurrentIdentityString(): string {
     return this.identityString;
+  }
+  getCurrentIdentitiesBalance(): number {
+    return this.identitiesBalance;
   }
 
 

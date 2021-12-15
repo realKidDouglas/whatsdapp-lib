@@ -312,10 +312,10 @@ export class StructuredStorage {
   }
 
   private async _loadUserData(): Promise<WhatsDappUserData | null> {
-    const arr = await this._store.get(USER_FILE_NAME);
-    return arr == null
-      ? null
-      : uint8ArrayToObject(arr) as WhatsDappUserData;
+    const loadedUserData = await this._store.get(USER_FILE_NAME);
+    if(!loadedUserData)return null;
+    const udObj=uint8ArrayToObject(loadedUserData);
+    return restoreBuffers(udObj) as WhatsDappUserData;
   }
 
 

@@ -33,6 +33,8 @@ export function makeChunkKey(id: string, num: number): string {
 export function restoreBuffers(obj: any): any {
   //TODO: do we need this? if (typeof obj !== 'object' || Array.isArray(obj)) return obj;
   //commented out to have Buffers in preKey restored
+  if (typeof obj !== 'object')return obj;
+  if(!obj)return obj;
   if (isSerializedBuffer(obj)) {
     return Buffer.from(obj.data);
   } else {
@@ -53,8 +55,8 @@ export function isWhatsDappPrivateData(obj: Record<string, unknown> | null): obj
   return obj != null && [
     typeof obj.identityKeyPair !== 'undefined',
     typeof obj.registrationId !== 'undefined',
-    typeof obj.preKey !== 'undefined',
-    typeof obj.signedPreKey !== 'undefined',
+    typeof obj.preKeys !== 'undefined',
+    typeof obj.signedPreKeys !== 'undefined',
   ].every(Boolean);
 }
 

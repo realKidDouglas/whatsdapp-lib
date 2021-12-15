@@ -20,7 +20,7 @@ export type WhatsDappSignalPrivateKeys = {
   identityKeyPair: SignalKeyPair,
   registrationId: number,
   preKeys: Array<SignalPreKey>,
-  signedPreKey: SignalSignedPreKey,
+  signedPreKeys: Array<SignalSignedPreKey>,
 }
 
 export type WhatsDappSignalSignedPreKey = WhatsDappSignalPreKey & {
@@ -84,7 +84,7 @@ export class SignalWrapper implements ISignalLib {
 
     const signedPreKey:SignalSignedPreKey = await libsignal.keyhelper.generateSignedPreKey(identityKeyPair, signedPreKeyId);
     const privKeyBundle:WhatsDappSignalKeyBundle={
-      private: { identityKeyPair, registrationId, preKeys, signedPreKey },
+      private: { identityKeyPair, registrationId, preKeys, signedPreKeys:[signedPreKey] },
       preKeyBundle: {
         identityKey: identityKeyPair.pubKey,
         registrationId: registrationId,

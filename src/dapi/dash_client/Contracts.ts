@@ -12,13 +12,10 @@ export type PlatformContract = {
 
 //Dash Index Constraints: https://dashplatform.readme.io/docs/platform-protocol-reference-data-contract#index-constraints
 
-/*
-* Attributes:
-* TODO: docs
-*/
-
+/**
+ * Contract corresponds to the type WhatsDappProfile in WhatsDapp.ts
+ */
 const profileContractFormat = {
-  //TODO: update prekeys
   profile: {
     type: "object",
     indices: [
@@ -101,7 +98,7 @@ const profileContractFormat = {
         ],
         additionalProperties: false
       },
-      //optional
+      //optional (not in required)
       nickname: {
         type: "string",
         maxLength: 100
@@ -117,11 +114,11 @@ const profileContractFormat = {
   }
 };
 
-/*
-* Attributes:
-* TODO: docs
-*/
-
+/**
+ * Contract corresponds to the type DriveMessage in WhatsDapp.ts
+ * recipientId: Dash-Identity-String of recipient
+ * payload: Encrypted WhatsDappInternalMessage
+ */
 const messageContractFormat = {
   message: {
     type: "object",

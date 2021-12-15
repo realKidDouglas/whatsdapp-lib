@@ -117,13 +117,13 @@ export class SignalProtocolStore implements ProtocolStore {
 
     const privData:WhatsDappSignalPrivateKeys|null = await this.store.getPrivateData();
     if (!privData) throw new Error("No private data found");
-    console.dir(privData, {depth:15});
+    // console.dir(privData, {depth:15});
     const preKeys: Array<SignalPreKey>=privData.preKeys;
     const desiredKey:SignalPreKey|undefined=preKeys.find(key => key.keyId === keyId);
     if(!desiredKey)throw new Error("Could not find key for keyId: " + keyId);
     const desiredKeyPair: SignalKeyPair=desiredKey.keyPair;
     if (!desiredKeyPair) throw new Error("Could not find keyPair for keyId: " + keyId);
-    console.dir(desiredKeyPair, {depth:15});
+    // console.dir(desiredKeyPair, {depth:15});
     return desiredKeyPair;
   }
 
@@ -153,13 +153,24 @@ export class SignalProtocolStore implements ProtocolStore {
   /**
    * TODO loads the static SignedPreKey from the storage. This will be changed in
    * the future to support SignedPreKey changes.
-   * @param _keyId: unused
+   * @param keyId: unused
    * @returns {Promise<SignalKeyPair>}
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async loadSignedPreKey(_keyId: number): Promise<SignalKeyPair> {
-    const res = (await this.store.getPrivateData())!.signedPreKey.keyPair;
-    return Promise.resolve(res);
+  async loadSignedPreKey(keyId: number): Promise<SignalKeyPair> {
+    // const res = (await this.store.getPrivateData())!.signedPreKey.keyPair;
+    // return Promise.resolve(res);
+
+    const privData:WhatsDappSignalPrivateKeys|null = await this.store.getPrivateData();
+    if (!privData) throw new Error("No private data found");
+    // console.dir(privData, {depth:15});
+    const signedPreKeys: Array<SignalSignedPreKey>=privData.signedPreKeys;
+    const desiredKey:SignalSignedPreKey|undefined=signedPreKeys.find(key => key.keyId === keyId);
+    if(!desiredKey)throw new Error("Could not find key for keyId: " + keyId);
+    const desiredKeyPair: SignalKeyPair=desiredKey.keyPair;
+    if (!desiredKeyPair) throw new Error("Could not find keyPair for keyId: " + keyId);
+    // console.dir(desiredKeyPair, {depth:15});
+    return desiredKeyPair;
   }
 
   /**

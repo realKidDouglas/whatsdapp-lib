@@ -21,7 +21,12 @@ Just install via `npm`
 ```
 npm i whatsdapp
 ```
-or clone and add to your `package.json`-dependencies:
+
+or clone, compile via: 
+```
+npm run dist
+```
+and add to your `package.json`-dependencies:
 ```
 "whatsdapp": "<path-to>/whatsdapp-lib"
 ```
@@ -131,6 +136,14 @@ setPollIntervall(pollIntervalMilliseconds: number): void;
 stopPolling(): void;
 ```
 
+## Send Message
+
+To send a message there is the following function.
+```
+sendMessage(recipientId: string, plaintext: string, referenceToMessageId?: string): Promise<boolean> {
+```
+The `recipientId` is a Dash-Identity string.
+
 ## Minimal working Example
 Bring above info together in one code snippet you can reuse.
 
@@ -142,7 +155,7 @@ const IDENTITY='<identity id goes here>'
 const path = require('path');
 const appDataPath = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Preferences' : process.env.HOME + "/.local/share")
 //set storage path for dev purpose in a directory depending on identity
-const storagePath = path.join(appDataPath, /*app.getPath('userData'),*/ 'whatsDappSessions/'+IDENTITY)
+const storagePath = path.join(appDataPath, 'whatsDappSessions/'+IDENTITY)
 
 //use one arbitraty KVStore (copy js from little_helper/)
 const LocalStorageClearDevPurposeOnly = require('./local_storage_clear_dev');
@@ -151,13 +164,13 @@ const storage = new LocalStorageClearDevPurposeOnly(storagePath)
 const demoRun = async () => {
   //prepare first time. If userdata exist, this will throw an error and move on
   try {
-    await WhatsDapp.prepareEmptyStorage(MNEMONIC, IDENTITY, storage, "lol");
+    await WhatsDapp.prepareEmptyStorage(MNEMONIC, IDENTITY, storage, "53cur3p455w0rd");
   } catch (e) {
     console.log("Storage seems to be initiated already. Try to move on...")
   }
 
   //optionally an new identity and a generic profile will be created
-  const messenger = await WhatsDapp.createWhatsDapp(storage, "lol");
+  const messenger = await WhatsDapp.createWhatsDapp(storage, "53cur3p455w0rd");
 
   //define listener function
   const newMsgArrived=async (msg, interlocutor)=>{
@@ -174,7 +187,15 @@ const demoRun = async () => {
 demoRun();
 ```
 
+## Loss of private Keys
 
+If you loose your storage, remote profile is useless since we don't have the private keys to do anything. 
+In this case run:
+```
+await messenger.discardOldProfileAndCreateNew()
+```
+This will remove the old profile from Drive, so nobody can retrieve invalid keys.
+After that a new keybundle will be created and a new profile uploaded, so you can start over again.
 
 ## Net Prefs
 WhatsDapp currently running on `testnet` synchronizing from mid 2021 as stated in `src/dapi/dash_client/WhatsDappDashClient.ts`:
@@ -203,11 +224,7 @@ You can find them in `src/dapi/dash_client/Contracts.ts`
 
 - You cannot write yourself ;)  
   That's not provided by `libsignal`
-- Currently our implementation does not support refreshing signals prekey bundle. 
-  Changing these keys periodically ensures the forward secrecy.
-  Not changing it and keeping private prekey hides the risk of leaking it and the possibility of reconstructing session-keys.
-  - We will go this on soon ;)
-
+  
 - Messages you receive are not validated yet, just decrypted and displayed. We need to think about XSS protection.
 
 # Used packages
