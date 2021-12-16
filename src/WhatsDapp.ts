@@ -160,7 +160,7 @@ export class WhatsDapp extends EventEmitter {
     }
   }
   //factory function
-  static async createWhatsDapp(storageObj: KVStore, storagePassword?: string): Promise<WhatsDapp> {
+  static async createWhatsDapp(storageObj: KVStore, storagePassword?: string, doNotUpdateKeys:boolean=false): Promise<WhatsDapp> {
     console.log("Create WhatsDapp client");
     //synchronous stuff here
     const whatsDapp = new this();
@@ -169,7 +169,7 @@ export class WhatsDapp extends EventEmitter {
     await whatsDapp.initStorage(storageObj, storagePassword);
 
     const storage: StructuredStorage = whatsDapp.storage;
-    whatsDapp.keyManager = new KeyManager(whatsDapp.signal, whatsDapp.storage);
+    whatsDapp.keyManager = new KeyManager(whatsDapp.signal, whatsDapp.storage, doNotUpdateKeys);
 
     console.log("-retrieving storage data");
     if (!await storage.hasUserData()) throw new Error("No userdata available in this store or wrong password. Prepare store first.");

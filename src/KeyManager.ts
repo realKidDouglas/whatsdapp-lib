@@ -16,12 +16,16 @@ export class KeyManager {
     private lastPreKeysUpdate=0;
     private newSessionsSinceLastKeyUpdate=0;
 
-    constructor(signal: ISignalLib, storage: StructuredStorage) {
+    private doNotUpdateKeys:boolean;
+
+    constructor(signal: ISignalLib, storage: StructuredStorage, doNotUpdateKeys:boolean) {
         this.signal = signal;
         this.storage = storage;
+        this.doNotUpdateKeys=doNotUpdateKeys;
     }
 
     isTimeForSignedKeyUpdate():boolean{
+        if(this.doNotUpdateKeys)return false;
         //renew signedprekey if it's one week since last update
         return (Date.now()-this.lastSignedPreKeyUpdate)>this.SIGNED_PREKEYS_TIME_OFFSET_IN_MILLIS;
     }
@@ -29,6 +33,7 @@ export class KeyManager {
         this.newSessionsSinceLastKeyUpdate++;
     }
     isTimeForPreKeyUpdate():boolean{
+        if(this.doNotUpdateKeys)return false;
         //renew prekeys if there were 10 new sessions made (prekeys most likely used)
         //or after one week
         const keysUsed= this.newSessionsSinceLastKeyUpdate>=this.DEFAULT_PREKEYS_COUNT;
