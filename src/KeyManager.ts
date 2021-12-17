@@ -1,3 +1,4 @@
+import { SignalKeyPair } from "libsignal";
 import { ISignalLib, WhatsDappSignalKeyBundle, WhatsDappSignalPrekeyBundle, WhatsDappSignalPrivateKeys } from "./signal/SignalWrapper";
 import { StructuredStorage } from "./storage/StructuredStorage";
 
@@ -24,7 +25,35 @@ export class KeyManager {
         this.doNotUpdateKeys=doNotUpdateKeys;
     }
 
-    isTimeForSignedKeyUpdate():boolean{
+    //TODO: only one test function for whatsdapp
+    
+    //TODO: persistance of update times
+
+    isTimeForKeyUpdate():boolean{
+        return this.isTimeForPreKeyUpdate() || this.isTimeForSignedKeyUpdate();
+    }
+
+    /**
+     * 
+     * @param oldPreKeyBundle 
+     * @returns updated prekeys, signedprekeys, or given keybundle if no need ti update
+     */
+    async updateKeys(oldPreKeyBundle: WhatsDappSignalPrekeyBundle):Promise<WhatsDappSignalKeyBundle> {
+        const oldKeyBundle: WhatsDappSignalKeyBundle = await this.getCorrespondingKeyBundleFromStorage(oldPreKeyBundle);
+
+        let newKeyBundle:WhatsDappSignalKeyBundle=oldKeyBundle;
+
+        if(this.isTimeForPreKeyUpdate()){
+            newKeyBundle=await this.updatePreKeys(newKeyBundle);
+        }
+        if(this.isTimeForSignedKeyUpdate()){
+            newKeyBundle=await this.updateSignedPreKey(newKeyBundle);
+        }
+        return newKeyBundle;
+    }
+
+
+    private isTimeForSignedKeyUpdate():boolean{
         if(this.doNotUpdateKeys)return false;
         //renew signedprekey if it's one week since last update
         return (Date.now()-this.lastSignedPreKeyUpdate)>this.SIGNED_PREKEYS_TIME_OFFSET_IN_MILLIS;
@@ -32,7 +61,7 @@ export class KeyManager {
     addNewSessionsSinceLastKeyUpdate():void{
         this.newSessionsSinceLastKeyUpdate++;
     }
-    isTimeForPreKeyUpdate():boolean{
+    private isTimeForPreKeyUpdate():boolean{
         if(this.doNotUpdateKeys)return false;
         //renew prekeys if there were 10 new sessions made (prekeys most likely used)
         //or after one week
@@ -40,6 +69,7 @@ export class KeyManager {
         const oneWeekAgo=(Date.now()-this.lastPreKeysUpdate)>this.SIGNED_PREKEYS_TIME_OFFSET_IN_MILLIS;
         return keysUsed || oneWeekAgo;
     }
+
 
     /**
      * Initial key generation (first use ever).
@@ -52,7 +82,7 @@ export class KeyManager {
         const preKeyId = 0;
         const signedPreKeyId = 0;
 
-        const keys = await this.signal.generateSignalKeys(preKeyId, preKeyCount, signedPreKeyId);
+        const keys = await this.signal.generateSignalKeys(preKeyId, preKeyCount, null, signedPreKeyId);
 
         this.lastPreKeysUpdate=Date.now();
         this.lastSignedPreKeyUpdate=Date.now();
@@ -65,9 +95,8 @@ export class KeyManager {
      * Generates new prekeys for given preKeyBundle
      * @returns 
      */
-    async updatePreKeys(oldPreKeyBundle: WhatsDappSignalPrekeyBundle, preKeyCount: number = this.DEFAULT_PREKEYS_COUNT): Promise<WhatsDappSignalKeyBundle> {
-
-        const oldKeyBundle: WhatsDappSignalKeyBundle = await this.getCorrespondingKeyBundleFromStorage(oldPreKeyBundle);
+    private async updatePreKeys(oldKeyBundle: WhatsDappSignalKeyBundle, preKeyCount: number = this.DEFAULT_PREKEYS_COUNT): Promise<WhatsDappSignalKeyBundle> {
+        const identityKeyPair: SignalKeyPair=oldKeyBundle.private.identityKeyPair;
 
         //find max preKeyId
         const lastPreKeyId: number = Math.max(...oldKeyBundle.preKeyBundle.preKeys.map(preKey => preKey.keyId), 0);
@@ -76,7 +105,7 @@ export class KeyManager {
         //does not matter here
         const signedPreKeyId = 0;
 
-        const newKeyBundle = await this.signal.generateSignalKeys(preKeyId, preKeyCount, signedPreKeyId);
+        const newKeyBundle = await this.signal.generateSignalKeys(preKeyId, preKeyCount, identityKeyPair, signedPreKeyId);
 
         //only updates preKeys
         const newKeys: WhatsDappSignalKeyBundle = {
@@ -108,8 +137,8 @@ export class KeyManager {
      * @param oldPreKeyBundle 
      * @returns 
      */
-    async updateSignedPreKey(oldPreKeyBundle: WhatsDappSignalPrekeyBundle): Promise<WhatsDappSignalKeyBundle> {
-        const oldKeyBundle: WhatsDappSignalKeyBundle = await this.getCorrespondingKeyBundleFromStorage(oldPreKeyBundle);
+    private async updateSignedPreKey(oldKeyBundle: WhatsDappSignalKeyBundle): Promise<WhatsDappSignalKeyBundle> {
+        const identityKeyPair: SignalKeyPair=oldKeyBundle.private.identityKeyPair;
 
         //find last signedPreKeyId
         const lastsignedPreKeyId: number = oldKeyBundle.preKeyBundle.signedPreKey.keyId;
@@ -119,7 +148,7 @@ export class KeyManager {
         const preKeyId = 0;
         const preKeyCount = 1;
 
-        const newKeyBundle = await this.signal.generateSignalKeys(preKeyId, preKeyCount, signedPreKeyId);
+        const newKeyBundle = await this.signal.generateSignalKeys(preKeyId, preKeyCount, identityKeyPair, signedPreKeyId);
 
         const newKeys: WhatsDappSignalKeyBundle = {
             private: {

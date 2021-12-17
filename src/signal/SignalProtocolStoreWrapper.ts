@@ -26,7 +26,6 @@ export class SignalProtocolStore implements ProtocolStore {
    */
   async getOurIdentity(): Promise<SignalKeyPair> {
     const privateData = await this.store.getPrivateData();
-    //TODO: If loclastorage was cleared -->find out and generate and upload new profile
     return privateData!['identityKeyPair'];
   }
 

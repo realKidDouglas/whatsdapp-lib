@@ -724,32 +724,19 @@ export class WhatsDapp extends EventEmitter {
 
   //Keyupdates mid and short
   private async doKeyUpdateIfNecessary(): Promise<void> {
-    if (this.keyManager.isTimeForSignedKeyUpdate()) {
-      console.log("Signed PreKey Update is necessary. Will create new key and update profile.");
-      await this.updateProfilesSignedPreKey();
+    if(this.keyManager.isTimeForKeyUpdate()){
+      if (!this.profile) return;
+      const profile = this.profile;
+      //Update Keys 
+      const updatedKeys = (await this.keyManager.updateKeys(profile.signalKeyBundle)).preKeyBundle;
+      const updatedProfile=profile;
+      //set new keys
+      updatedProfile.signalKeyBundle = updatedKeys;
+      //upload
+      await this.updateProfile(updatedProfile);
     }
-    if (this.keyManager.isTimeForPreKeyUpdate()) {
-      console.log("PreKeys Update is necessary. Will create new keys and update profile.");
-      await this.updateProfilesPreKeys();
-    }
-    //TODO: case if both needs to be updated
   }
-  private async updateProfilesPreKeys(): Promise<void> {
-    if (!this.profile) return;
-    const updatedProfile = this.profile;
-    //Update PreKeys 
-    const updatedPreKeys = (await this.keyManager.updatePreKeys(updatedProfile.signalKeyBundle)).preKeyBundle;
-    updatedProfile.signalKeyBundle = updatedPreKeys;
-    await this.updateProfile(updatedProfile);
-  }
-  private async updateProfilesSignedPreKey(): Promise<void> {
-    if (!this.profile) return;
-    const updatedProfile = this.profile;
-    //Update PreKeys 
-    const updatedPreKeys = (await this.keyManager.updateSignedPreKey(updatedProfile.signalKeyBundle)).preKeyBundle;
-    updatedProfile.signalKeyBundle = updatedPreKeys;
-    await this.updateProfile(updatedProfile);
-  }
+
 
   /**
    * @throws {Error}
