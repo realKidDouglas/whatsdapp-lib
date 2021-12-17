@@ -160,7 +160,7 @@ export class WhatsDapp extends EventEmitter {
     }
   }
   //factory function
-  static async createWhatsDapp(storageObj: KVStore, storagePassword?: string, doNotUpdateKeys:boolean=false): Promise<WhatsDapp> {
+  static async createWhatsDapp(storageObj: KVStore, storagePassword?: string, doNotUpdateKeys=false): Promise<WhatsDapp> {
     console.log("Create WhatsDapp client");
     //synchronous stuff here
     const whatsDapp = new this();
@@ -725,6 +725,7 @@ export class WhatsDapp extends EventEmitter {
   //Keyupdates mid and short
   private async doKeyUpdateIfNecessary(): Promise<void> {
     if(this.keyManager.isTimeForKeyUpdate()){
+      console.log("Keyupdate necessary.")
       if (!this.profile) return;
       const profile = this.profile;
       //Update Keys 

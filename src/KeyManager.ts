@@ -44,9 +44,11 @@ export class KeyManager {
         let newKeyBundle:WhatsDappSignalKeyBundle=oldKeyBundle;
 
         if(this.isTimeForPreKeyUpdate()){
+            console.log("PreKeys Update is necessary. Update keys.");
             newKeyBundle=await this.updatePreKeys(newKeyBundle);
         }
         if(this.isTimeForSignedKeyUpdate()){
+            console.log("Signed PreKey Update is necessary. Update keys.");
             newKeyBundle=await this.updateSignedPreKey(newKeyBundle);
         }
         return newKeyBundle;
