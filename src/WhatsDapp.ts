@@ -736,7 +736,7 @@ export class WhatsDapp extends EventEmitter {
   //Keyupdates mid and short
   private async doKeyUpdateIfNecessary(): Promise<void> {
     try {
-      if (this.keyManager.isTimeForKeyUpdate()) {
+      if (await this.keyManager.isTimeForKeyUpdate()) {
         console.log("Keyupdate necessary.");
         if (!this.profile) return;
         const profile = this.profile;

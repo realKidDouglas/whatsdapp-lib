@@ -6,6 +6,8 @@ export const PRIVATE_FILE_NAME = 'priv';
 export const USER_FILE_NAME = 'usr';
 // contains all the active sessions
 export const SESSIONS_FILE_NAME = 'sessions';
+//
+export const KEY_DUE_TIMES_FILE_NAME = 'keyduetimes';
 // default number of messages returned by query
 export const DEFAULT_MSG_COUNT = 20;
 // how many bytes will be stored in a chunk before the next one will be started

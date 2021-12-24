@@ -2,6 +2,13 @@ import { SignalKeyPair } from "libsignal";
 import { ISignalLib, WhatsDappSignalKeyBundle, WhatsDappSignalPrekeyBundle, WhatsDappSignalPrivateKeys } from "./signal/SignalWrapper";
 import { StructuredStorage } from "./storage/StructuredStorage";
 
+
+export type KeyDueTimes={
+    lastPreKeysUpdate:number,
+    newSessionsSinceLastKeyUpdate:number,
+    lastSignedPreKeyUpdate:number
+}
+
 /**
  * Helper class to create and update keys in profile and keep overview
  */
@@ -27,7 +34,8 @@ export class KeyManager {
 
     //TODO: persistance of update times
 
-    isTimeForKeyUpdate(): boolean {
+    async isTimeForKeyUpdate(): Promise<boolean> {
+        await this.getDueTimesFromStorage();
         return this.isTimeForPreKeyUpdate() || this.isTimeForSignedKeyUpdate();
     }
 
@@ -92,6 +100,7 @@ export class KeyManager {
 
         this.lastPreKeysUpdate = Date.now();
         this.lastSignedPreKeyUpdate = Date.now();
+        await this.setDueTimesToStorage();
 
         await this.storage.setPrivateData(keys.private);
         return keys;
@@ -132,6 +141,7 @@ export class KeyManager {
         };
 
         this.lastPreKeysUpdate = Date.now();
+        await this.setDueTimesToStorage();
 
         //since we only added some private keys to this object, we can overwrite existing
         await this.storage.setPrivateData(newKeys.private);
@@ -174,6 +184,7 @@ export class KeyManager {
         };
 
         this.lastSignedPreKeyUpdate = Date.now();
+        await this.setDueTimesToStorage();
 
         //since we only added some private keys to this object, we can overwrite existing
         await this.storage.setPrivateData(newKeys.private);
@@ -209,6 +220,25 @@ export class KeyManager {
             preKeyBundle: pubs
         };
         return keyBundle;
+    }
+
+
+    //Persitence 
+    private async getDueTimesFromStorage():Promise<void>{
+        const storageKeyDueData:KeyDueTimes|null=await this.storage.getKeyDueData();
+        if(storageKeyDueData){
+            this.lastPreKeysUpdate=storageKeyDueData.lastPreKeysUpdate;
+            this.newSessionsSinceLastKeyUpdate=storageKeyDueData.newSessionsSinceLastKeyUpdate;
+            this.lastSignedPreKeyUpdate=storageKeyDueData.lastSignedPreKeyUpdate;
+        }
+    }
+    private async setDueTimesToStorage():Promise<void>{
+        const currentKeyDueData:KeyDueTimes={
+            lastPreKeysUpdate: this.lastPreKeysUpdate,
+            newSessionsSinceLastKeyUpdate: this.newSessionsSinceLastKeyUpdate,
+            lastSignedPreKeyUpdate: this.lastSignedPreKeyUpdate
+        };
+        await this.storage.setKeyDueData(currentKeyDueData);
     }
 
 }

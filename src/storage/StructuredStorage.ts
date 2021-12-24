@@ -1,11 +1,12 @@
+import { KeyDueTimes } from "../KeyManager";
 import { WhatsDappSignalPrivateKeys } from "../signal/SignalWrapper";
-import type { WhatsDappUserData, WhatsDappMessage} from "../WhatsDapp";
+import type { WhatsDappUserData, WhatsDappMessage } from "../WhatsDapp";
 
 import {
   USER_FILE_NAME,
   PRIVATE_FILE_NAME,
   SESSIONS_FILE_NAME,
-  DEFAULT_MSG_COUNT, CHUNK_SIZE_BUF, CHUNK_SIZE_SOFT_MAX,
+  DEFAULT_MSG_COUNT, CHUNK_SIZE_BUF, CHUNK_SIZE_SOFT_MAX, KEY_DUE_TIMES_FILE_NAME,
   //CHUNK_SIZE_MAX
 } from "./StructuredStorageConstants";
 import {
@@ -48,6 +49,7 @@ export class StructuredStorage {
   _metadata: { [key: string]: SessionMetaData } | null;
   _userData: WhatsDappUserData | null;
   _privateData: WhatsDappSignalPrivateKeys | null;
+  _keyDueData: KeyDueTimes | null;
   _store: KVStore;
 
   /**
@@ -60,6 +62,7 @@ export class StructuredStorage {
     this._metadata = null;
     this._userData = null;
     this._privateData = null;
+    this._keyDueData = null;
     this._store = store;
   }
 
@@ -313,11 +316,44 @@ export class StructuredStorage {
 
   private async _loadUserData(): Promise<WhatsDappUserData | null> {
     const loadedUserData = await this._store.get(USER_FILE_NAME);
-    if(!loadedUserData)return null;
-    const udObj=uint8ArrayToObject(loadedUserData);
+    if (!loadedUserData) return null;
+    const udObj = uint8ArrayToObject(loadedUserData);
     return restoreBuffers(udObj) as WhatsDappUserData;
   }
 
+  //
+  // keyDueData persistence
+  //
+
+  async setKeyDueData(data: KeyDueTimes): Promise<void> {
+    this._keyDueData = data;
+    return this._saveKeyDueData();
+  }
+
+  async getKeyDueData(): Promise<KeyDueTimes | null> {
+    if (this._keyDueData == null) {
+      this._keyDueData = await this._loadKeyDueData();
+    }
+    return this._keyDueData;
+  }
+
+  async hasKeyDueData(): Promise<boolean> {
+    const kdd = await this.getKeyDueData();
+    return (kdd != null);
+  }
+
+  private async _saveKeyDueData(): Promise<void> {
+    // console.log("save private data");
+    const pd = await this.getKeyDueData();
+    return this._store.set(KEY_DUE_TIMES_FILE_NAME, objectToUint8Array(pd));
+  }
+
+  private async _loadKeyDueData(): Promise<KeyDueTimes | null> {
+    const loadedKeyDueData = await this._store.get(KEY_DUE_TIMES_FILE_NAME);
+    if (loadedKeyDueData == null) return null;
+    const kddObj = uint8ArrayToObject(loadedKeyDueData);
+    return restoreBuffers(kddObj) as KeyDueTimes;
+  }
 
   //
   // message queries
