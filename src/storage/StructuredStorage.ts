@@ -269,14 +269,14 @@ export class StructuredStorage {
   }
 
   private async _savePrivateData(): Promise<void> {
-    console.log("save private data");
+    // console.log("save private data");
     const pd = await this.getPrivateData();
     //console.log(pd,PRIVATE_FILE_NAME);
     return this._store.set(PRIVATE_FILE_NAME, objectToUint8Array(pd));
   }
 
   private async _loadPrivateData(): Promise<WhatsDappSignalPrivateKeys | null> {
-    console.log("getting private data!");
+    // console.log("getting private data!");
     const loadedPrivateData = await this._store.get(PRIVATE_FILE_NAME);
     if (loadedPrivateData == null) return null;
     const pdObj = uint8ArrayToObject(loadedPrivateData);

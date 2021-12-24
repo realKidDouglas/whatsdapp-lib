@@ -160,7 +160,7 @@ export class WhatsDapp extends EventEmitter {
     }
   }
   //factory function
-  static async createWhatsDapp(storageObj: KVStore, storagePassword?: string, doNotUpdateKeys=false): Promise<WhatsDapp> {
+  static async createWhatsDapp(storageObj: KVStore, storagePassword?: string, doNotUpdateKeys = false): Promise<WhatsDapp> {
     console.log("Create WhatsDapp client");
     //synchronous stuff here
     const whatsDapp = new this();
@@ -295,6 +295,15 @@ export class WhatsDapp extends EventEmitter {
     userData.profile = profile;
     await this.storage.setUserData(userData);
 
+    //Test if local and remote profile match
+    try {
+      await this.keyManager.isProfileKeySameAsStorageKey(this.profile.signalKeyBundle);
+    } catch (e) {
+      console.error("Could not retrieve private keys or they don't match remote ones. \n"
+        + "Try to create and upload new profile data using " + this.discardOldProfileAndCreateNew.name + "() and deleting local storage.\n"
+        + "Error: ", e);
+      //throw e;
+    }
 
     //save data
     const userdata: WhatsDappUserData = {
@@ -364,7 +373,7 @@ export class WhatsDapp extends EventEmitter {
    */
   //TODO
   private async pollForNewMessages(): Promise<void> {
-    console.log("Poll new messages since", this.newestRemoteTimestamp);
+    console.log("Poll new messages since", new Date(this.newestRemoteTimestamp), "(" + this.newestRemoteTimestamp + ")");
     this.pollTimeout = null;
     const pollTime = this.newestRemoteTimestamp;
 
@@ -409,6 +418,7 @@ export class WhatsDapp extends EventEmitter {
     if (interlocutorId == this.identityString) {
       //TODO: You cannot write to yourself
       //Error("Tried to lookup a session using our basekey"); session_record.js l.242
+      //TODO: catch this in storage, when getSession(key) is called
       console.log("You cannot write yourself. Will ignore message and step further.");
       this.setNewestRemoteTimestamp(driveMessage.updatedAt);
       throw new Error("Message from yourself, you cannot write yourself.");
@@ -674,6 +684,7 @@ export class WhatsDapp extends EventEmitter {
     return identityString;
   }
 
+  //TODO: private?
   async checkIdentitiesBalanceForMinimumAndEmitEvent(): Promise<boolean> {
     //TODO: retries?
     //TODO: Put this into DAPICommunictator...
@@ -724,20 +735,23 @@ export class WhatsDapp extends EventEmitter {
 
   //Keyupdates mid and short
   private async doKeyUpdateIfNecessary(): Promise<void> {
-    if(this.keyManager.isTimeForKeyUpdate()){
-      console.log("Keyupdate necessary.")
-      if (!this.profile) return;
-      const profile = this.profile;
-      //Update Keys 
-      const updatedKeys = (await this.keyManager.updateKeys(profile.signalKeyBundle)).preKeyBundle;
-      const updatedProfile=profile;
-      //set new keys
-      updatedProfile.signalKeyBundle = updatedKeys;
-      //upload
-      await this.updateProfile(updatedProfile);
+    try {
+      if (this.keyManager.isTimeForKeyUpdate()) {
+        console.log("Keyupdate necessary.");
+        if (!this.profile) return;
+        const profile = this.profile;
+        //Update Keys 
+        const updatedKeys = (await this.keyManager.updateKeys(profile.signalKeyBundle)).preKeyBundle;
+        const updatedProfile = profile;
+        //set new keys
+        updatedProfile.signalKeyBundle = updatedKeys;
+        //upload
+        await this.updateProfile(updatedProfile);
+      }
+    } catch (e) {
+      console.error("Error performing key update: ", e);
     }
   }
-
 
   /**
    * @throws {Error}
@@ -755,6 +769,7 @@ export class WhatsDapp extends EventEmitter {
       throw e;
     }
     //TODO: delete profile locally, too
+    //rm privateData and set profile=null in usr-data
 
   }
   /**
@@ -763,16 +778,40 @@ export class WhatsDapp extends EventEmitter {
    */
   async discardOldProfileAndCreateNew(): Promise<void> {
     //TODO: Keep signals idenintity key the same if it is still there
-    await this.deleteProfileFromDrive();
-    await this.createAndUploadNewProfile();
+
+    //TODO: if it was dleted already this fails. so put it into try catch and add info, that it should be deleted already and we go on...
+    try {
+      await this.deleteProfileFromDrive();
+    } catch (e) {
+      console.warn("Error deleting profile from drive. Maybe there is no profile anymore. Try to move on:", e);
+    }
+
+    //create new profile
+    //updates private data on-the-fly
+    const profile: WhatsDappProfile = await this.createAndUploadNewProfile(true);
+    this.profile = profile;
+
+    //Since we have a new identity key, our signal-session are invalid :/ remove them.
+    const sessions = Array.from(this.sessions);
+    await Promise.all(sessions.map(async (session) => {
+      await this.storage.deleteSession(session);
+    }));
+    this.sessions = new Set();
+
+    //save new profile
+    const userData: WhatsDappUserData | null = await this.storage.getUserData();
+    if (!userData) throw new Error("No userdata available in this store.");
+    console.log("-save profile");
+    userData.profile = profile;
+    await this.storage.setUserData(userData);
   }
 
-  private async createAndUploadNewProfile(): Promise<WhatsDappProfile> {
+  private async createAndUploadNewProfile(overwriteExistingKeys = false): Promise<WhatsDappProfile> {
     //TODO: check if a profile exists abort if yes (first run deleteProfileFromDrive)
     console.log("Create new profile (will take a while)");
 
     console.log("-creating keybundle");
-    const keysBundle: WhatsDappSignalKeyBundle = await this.createNewKeys();
+    const keysBundle: WhatsDappSignalKeyBundle = await this.createNewKeys(overwriteExistingKeys);
     const preKeyBundle: WhatsDappSignalPrekeyBundle = keysBundle.preKeyBundle;
 
     const profileDoc: WhatsDappProfile = {
@@ -781,12 +820,22 @@ export class WhatsDapp extends EventEmitter {
 
     console.log("-create profile");
     try {
-      await this.dAPICommunicator.createProfile(profileDoc);
-      //TODO: retriueve updatedAt from this transition and set it to pollTime (in case you updated your profile and dont want to die under a huge amount of decryption errors ;))
+      const transition = await this.dAPICommunicator.createProfile(profileDoc);
+      //retriueve updatedAt from this transition and set it to pollTime (in case you updated your profile and dont want to die under a huge amount of decryption errors ;))
+      if (!transition) throw new Error("Statetransition of profile-upload is undefined or null.");
+      const updatedAt: number = transition.updatedAt;
+      if (overwriteExistingKeys) {
+        console.log("-set remote updated at: ", updatedAt);
+        this.setNewestRemoteTimestamp(updatedAt);
+      }
     } catch (e) {
       console.error("Uploading profile failed");
       throw e;
     }
+
+    //wait at least 1 second to retrieve just uploaded profile
+    await new Promise(resolve => setTimeout(resolve, 1001));
+    console.log("-uploaded new profile");
 
     console.log("-retrieve new profile");
     const profile: WhatsDappProfile | null = await this.getProfileFromDrive();
@@ -845,8 +894,8 @@ export class WhatsDapp extends EventEmitter {
     return interlocutorId;
   }
 
-  private async createNewKeys(): Promise<WhatsDappSignalKeyBundle> {
-    const keys = await this.keyManager.createNewKeys();
+  private async createNewKeys(overwriteExistingKeys = false): Promise<WhatsDappSignalKeyBundle> {
+    const keys = await this.keyManager.createNewKeys(undefined, overwriteExistingKeys);
     return keys;
   }
 

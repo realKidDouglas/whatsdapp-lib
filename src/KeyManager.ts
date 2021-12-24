@@ -11,26 +11,29 @@ export class KeyManager {
 
     private DEFAULT_PREKEYS_COUNT = 10;
 
-    private lastSignedPreKeyUpdate=0;
-    private SIGNED_PREKEYS_TIME_OFFSET_IN_MILLIS = 7*24*60*60*1000;//one week
+    private lastSignedPreKeyUpdate = 0;
+    private SIGNED_PREKEYS_TIME_OFFSET_IN_MILLIS = 7 * 24 * 60 * 60 * 1000;//one week
 
-    private lastPreKeysUpdate=0;
-    private newSessionsSinceLastKeyUpdate=0;
+    private lastPreKeysUpdate = 0;
+    private newSessionsSinceLastKeyUpdate = 0;
 
-    private doNotUpdateKeys:boolean;
+    private doNotUpdateKeys: boolean;
 
-    constructor(signal: ISignalLib, storage: StructuredStorage, doNotUpdateKeys:boolean) {
+    constructor(signal: ISignalLib, storage: StructuredStorage, doNotUpdateKeys: boolean) {
         this.signal = signal;
         this.storage = storage;
-        this.doNotUpdateKeys=doNotUpdateKeys;
+        this.doNotUpdateKeys = doNotUpdateKeys;
     }
 
-    //TODO: only one test function for whatsdapp
-    
     //TODO: persistance of update times
 
-    isTimeForKeyUpdate():boolean{
+    isTimeForKeyUpdate(): boolean {
         return this.isTimeForPreKeyUpdate() || this.isTimeForSignedKeyUpdate();
+    }
+
+    async isProfileKeySameAsStorageKey(profilePreKeyBundle: WhatsDappSignalPrekeyBundle): Promise<boolean> {
+        await this.getCorrespondingKeyBundleFromStorage(profilePreKeyBundle);
+        return true;
     }
 
     /**
@@ -38,56 +41,57 @@ export class KeyManager {
      * @param oldPreKeyBundle 
      * @returns updated prekeys, signedprekeys, or given keybundle if no need ti update
      */
-    async updateKeys(oldPreKeyBundle: WhatsDappSignalPrekeyBundle):Promise<WhatsDappSignalKeyBundle> {
+    async updateKeys(oldPreKeyBundle: WhatsDappSignalPrekeyBundle): Promise<WhatsDappSignalKeyBundle> {
         const oldKeyBundle: WhatsDappSignalKeyBundle = await this.getCorrespondingKeyBundleFromStorage(oldPreKeyBundle);
 
-        let newKeyBundle:WhatsDappSignalKeyBundle=oldKeyBundle;
+        let newKeyBundle: WhatsDappSignalKeyBundle = oldKeyBundle;
 
-        if(this.isTimeForPreKeyUpdate()){
+        if (this.isTimeForPreKeyUpdate()) {
             console.log("PreKeys Update is necessary. Update keys.");
-            newKeyBundle=await this.updatePreKeys(newKeyBundle);
+            newKeyBundle = await this.updatePreKeys(newKeyBundle);
         }
-        if(this.isTimeForSignedKeyUpdate()){
+        if (this.isTimeForSignedKeyUpdate()) {
             console.log("Signed PreKey Update is necessary. Update keys.");
-            newKeyBundle=await this.updateSignedPreKey(newKeyBundle);
+            newKeyBundle = await this.updateSignedPreKey(newKeyBundle);
         }
         return newKeyBundle;
     }
 
 
-    private isTimeForSignedKeyUpdate():boolean{
-        if(this.doNotUpdateKeys)return false;
+    private isTimeForSignedKeyUpdate(): boolean {
+        if (this.doNotUpdateKeys) return false;
         //renew signedprekey if it's one week since last update
-        return (Date.now()-this.lastSignedPreKeyUpdate)>this.SIGNED_PREKEYS_TIME_OFFSET_IN_MILLIS;
+        return (Date.now() - this.lastSignedPreKeyUpdate) > this.SIGNED_PREKEYS_TIME_OFFSET_IN_MILLIS;
     }
-    addNewSessionsSinceLastKeyUpdate():void{
+    addNewSessionsSinceLastKeyUpdate(): void {
         this.newSessionsSinceLastKeyUpdate++;
     }
-    private isTimeForPreKeyUpdate():boolean{
-        if(this.doNotUpdateKeys)return false;
+    private isTimeForPreKeyUpdate(): boolean {
+        if (this.doNotUpdateKeys) return false;
         //renew prekeys if there were 10 new sessions made (prekeys most likely used)
         //or after one week
-        const keysUsed= this.newSessionsSinceLastKeyUpdate>=this.DEFAULT_PREKEYS_COUNT;
-        const oneWeekAgo=(Date.now()-this.lastPreKeysUpdate)>this.SIGNED_PREKEYS_TIME_OFFSET_IN_MILLIS;
+        const keysUsed = this.newSessionsSinceLastKeyUpdate >= this.DEFAULT_PREKEYS_COUNT;
+        const oneWeekAgo = (Date.now() - this.lastPreKeysUpdate) > this.SIGNED_PREKEYS_TIME_OFFSET_IN_MILLIS;
         return keysUsed || oneWeekAgo;
     }
-
 
     /**
      * Initial key generation (first use ever).
      * @returns 
      */
-    async createNewKeys(preKeyCount: number = this.DEFAULT_PREKEYS_COUNT): Promise<WhatsDappSignalKeyBundle> {
-        if (await this.storage.hasPrivateData()) {
-            throw new Error("There are keys already stored. Use updateKeys instead to prevent overwriting private keys.");
+    async createNewKeys(preKeyCount: number = this.DEFAULT_PREKEYS_COUNT, overwriteExistingKeys = false): Promise<WhatsDappSignalKeyBundle> {
+        if (!overwriteExistingKeys) {
+            if (await this.storage.hasPrivateData()) {
+                throw new Error("There are keys already stored. Use updateKeys instead to prevent overwriting private keys.");
+            }
         }
         const preKeyId = 0;
         const signedPreKeyId = 0;
 
         const keys = await this.signal.generateSignalKeys(preKeyId, preKeyCount, null, signedPreKeyId);
 
-        this.lastPreKeysUpdate=Date.now();
-        this.lastSignedPreKeyUpdate=Date.now();
+        this.lastPreKeysUpdate = Date.now();
+        this.lastSignedPreKeyUpdate = Date.now();
 
         await this.storage.setPrivateData(keys.private);
         return keys;
@@ -98,7 +102,7 @@ export class KeyManager {
      * @returns 
      */
     private async updatePreKeys(oldKeyBundle: WhatsDappSignalKeyBundle, preKeyCount: number = this.DEFAULT_PREKEYS_COUNT): Promise<WhatsDappSignalKeyBundle> {
-        const identityKeyPair: SignalKeyPair=oldKeyBundle.private.identityKeyPair;
+        const identityKeyPair: SignalKeyPair = oldKeyBundle.private.identityKeyPair;
 
         //find max preKeyId
         const lastPreKeyId: number = Math.max(...oldKeyBundle.preKeyBundle.preKeys.map(preKey => preKey.keyId), 0);
@@ -127,7 +131,7 @@ export class KeyManager {
             }
         };
 
-        this.lastPreKeysUpdate=Date.now();
+        this.lastPreKeysUpdate = Date.now();
 
         //since we only added some private keys to this object, we can overwrite existing
         await this.storage.setPrivateData(newKeys.private);
@@ -140,7 +144,7 @@ export class KeyManager {
      * @returns 
      */
     private async updateSignedPreKey(oldKeyBundle: WhatsDappSignalKeyBundle): Promise<WhatsDappSignalKeyBundle> {
-        const identityKeyPair: SignalKeyPair=oldKeyBundle.private.identityKeyPair;
+        const identityKeyPair: SignalKeyPair = oldKeyBundle.private.identityKeyPair;
 
         //find last signedPreKeyId
         const lastsignedPreKeyId: number = oldKeyBundle.preKeyBundle.signedPreKey.keyId;
@@ -169,14 +173,14 @@ export class KeyManager {
             }
         };
 
-        this.lastSignedPreKeyUpdate=Date.now();
+        this.lastSignedPreKeyUpdate = Date.now();
 
         //since we only added some private keys to this object, we can overwrite existing
         await this.storage.setPrivateData(newKeys.private);
         return newKeys;
     }
 
-    private isEqualArrayBuffer(buf1: ArrayBuffer, buf2: ArrayBuffer): boolean {
+    private static isEqualArrayBuffer(buf1: ArrayBuffer, buf2: ArrayBuffer): boolean {
         //from: https://stackoverflow.com/questions/21553528/how-to-test-for-equality-in-arraybuffer-dataview-and-typedarray
         if (buf1.byteLength != buf2.byteLength) return false;
         const dv1 = new Uint8Array(buf1);
@@ -196,7 +200,7 @@ export class KeyManager {
         //check if these keys correspond
         const identityPubKeyFromStorage = privateKeys.identityKeyPair.pubKey;
         const identityPubKeyFromProfile = pubs.identityKey;
-        if (!this.isEqualArrayBuffer(identityPubKeyFromStorage, identityPubKeyFromProfile)) {
+        if (!KeyManager.isEqualArrayBuffer(identityPubKeyFromStorage, identityPubKeyFromProfile)) {
             throw new Error("Identity Keys not matching. Messed up private data and profile data.");
         }
 

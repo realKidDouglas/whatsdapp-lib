@@ -26,7 +26,8 @@ export class SignalProtocolStore implements ProtocolStore {
    */
   async getOurIdentity(): Promise<SignalKeyPair> {
     const privateData = await this.store.getPrivateData();
-    return privateData!['identityKeyPair'];
+    if (!privateData) throw new Error("No private data found");
+    return privateData['identityKeyPair'];
   }
 
   /**
@@ -35,7 +36,8 @@ export class SignalProtocolStore implements ProtocolStore {
    */
   async getOurRegistrationId(): Promise<number> {
     const privateData = await this.store.getPrivateData();
-    return privateData!['registrationId'];
+    if (!privateData) throw new Error("No private data found");
+    return privateData['registrationId'];
   }
 
   /**

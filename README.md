@@ -140,7 +140,7 @@ stopPolling(): void;
 
 To send a message there is the following function.
 ```
-sendMessage(recipientId: string, plaintext: string, referenceToMessageId?: string): Promise<boolean> {
+sendMessage(recipientId: string, plaintext: string, referenceToMessageId?: string): Promise<boolean> 
 ```
 The `recipientId` is a Dash-Identity string.
 

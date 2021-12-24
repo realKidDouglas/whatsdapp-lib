@@ -38,7 +38,7 @@ export class IdentityManager {
     return await this.platform.identities.get(identityString);
   }
 
-  async updateIdentityFromRemote(): Promise<void> {
+  private async updateIdentityFromRemote(): Promise<void> {
     const identityString: string = this.identity.getId().toJSON();
     this.identity = this.platform.identities.get(identityString);
   }
@@ -75,10 +75,13 @@ export class IdentityManager {
 
       return this.platform.identities.get(dpnsContract.ownerId.toString());
     } catch (e) {
-      console.log('Failed search for identity:', e);
+      console.log('Failed resolve DPNS:', e);
     }
     return null;
   }
+
+  //TODO: return client.platform.names.search('user', 'dash');
+  // https://dashplatform.readme.io/docs/tutorial-retrieve-a-name
 
   /**
    * Return the identity balance
