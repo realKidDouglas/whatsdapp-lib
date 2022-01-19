@@ -728,6 +728,7 @@ export class WhatsDapp extends EventEmitter {
     if (!profile) throw new Error("Error retrieving new profile.");
     //update member
     this.profile = profile;
+    this.saveUpdatedProfile(profile);
 
     //fires lowFunds event
     await this.checkIdentitiesBalanceForMinimumAndEmitEvent();
@@ -799,10 +800,14 @@ export class WhatsDapp extends EventEmitter {
     this.sessions = new Set();
 
     //save new profile
+    await this.saveUpdatedProfile(profile);
+  }
+
+  private async saveUpdatedProfile(updatedProfile: WhatsDappProfile){
     const userData: WhatsDappUserData | null = await this.storage.getUserData();
     if (!userData) throw new Error("No userdata available in this store.");
     console.log("-save profile");
-    userData.profile = profile;
+    userData.profile = updatedProfile;
     await this.storage.setUserData(userData);
   }
 
