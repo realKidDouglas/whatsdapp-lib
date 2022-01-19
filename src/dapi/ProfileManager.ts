@@ -100,7 +100,7 @@ export class ProfileManager {
 
     // Sign and submit the document replace transition
     console.log("-upload profile");
-    const transition = this.platform.documents.broadcast({ replace: [document] }, this.identity);
+    const transition = await this.platform.documents.broadcast({ replace: [document] }, this.identity);
     console.log("-updated profile");
     return transition;
   }
