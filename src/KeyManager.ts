@@ -100,6 +100,7 @@ export class KeyManager {
 
         this.lastPreKeysUpdate = Date.now();
         this.lastSignedPreKeyUpdate = Date.now();
+        this.newSessionsSinceLastKeyUpdate=0;
         await this.setDueTimesToStorage();
 
         await this.storage.setPrivateData(keys.private);
@@ -184,6 +185,7 @@ export class KeyManager {
         };
 
         this.lastSignedPreKeyUpdate = Date.now();
+        this.newSessionsSinceLastKeyUpdate=0;
         await this.setDueTimesToStorage();
 
         //since we only added some private keys to this object, we can overwrite existing

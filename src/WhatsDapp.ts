@@ -823,8 +823,12 @@ export class WhatsDapp extends EventEmitter {
       const transition = await this.dAPICommunicator.createProfile(profileDoc);
       //retriueve updatedAt from this transition and set it to pollTime (in case you updated your profile and dont want to die under a huge amount of decryption errors ;))
       if (!transition) throw new Error("Statetransition of profile-upload is undefined or null.");
-      const updatedAt: number = transition.updatedAt;
+      let updatedAt: number = transition.updatedAt;
       if (overwriteExistingKeys) {
+        if(isNaN(updatedAt)){
+          //just to be sure not to have only errors ;)
+          updatedAt=0;
+        }
         console.log("-set remote updated at: ", updatedAt);
         this.setNewestRemoteTimestamp(updatedAt);
       }
@@ -895,7 +899,17 @@ export class WhatsDapp extends EventEmitter {
   }
 
   private async createNewKeys(overwriteExistingKeys = false): Promise<WhatsDappSignalKeyBundle> {
-    const keys = await this.keyManager.createNewKeys(undefined, overwriteExistingKeys);
+    let keys;
+    try{
+      keys = await this.keyManager.createNewKeys(undefined, overwriteExistingKeys);
+    }catch{
+      //in this case, profile was created locally but not uploaded to drive
+      const profile=this.profile;
+      if(!profile){
+        throw new Error("Messed up storage. Keys are stored but no corresponding profile. Delete storage and optionally run discardOldProfileAndCreateNew() to cleanup.");
+      }
+      keys = await this.keyManager.updateKeys(profile.signalKeyBundle);
+    }
     return keys;
   }
 
