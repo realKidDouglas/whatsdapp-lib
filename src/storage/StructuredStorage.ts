@@ -187,6 +187,7 @@ export class StructuredStorage {
   }
 
   async getLastTimestamp(): Promise<number> {
+    //TODO: only return last timestamp of received messages (not sent ones)
     if (this._metadata == null) {
       this._metadata = await this._loadMetaData();
     }

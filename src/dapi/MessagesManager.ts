@@ -49,8 +49,8 @@ export class MessagesManager {
     const driveMessage: DriveMessage = {
       id: sentmessage.transitions[0].id,
       ownerId: sentmessage.ownerId,
-      createdAt: sentmessage.transitions[0].createdAt,
-      updatedAt: sentmessage.transitions[0].updatedAt,
+      createdAt: Number(sentmessage.transitions[0].createdAt),
+      updatedAt: Number(sentmessage.transitions[0].updatedAt),
 
       recipientId: sentmessage.transitions[0].data.recipientId,
       payload: sentmessage.transitions[0].data.payload
