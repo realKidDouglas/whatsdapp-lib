@@ -187,6 +187,14 @@ const demoRun = async () => {
 demoRun();
 ```
 
+## Test with Echo-Bot
+
+<img alt="WhatsDapp Echo-Bot" src="https://github.com/realKidDouglas/whatsdapp-chatbot/raw/main/images/whatsDapp_EchoBot.png" height="50">
+
+The [WhatsDapp Echo-Bot](https://github.com/realKidDouglas/whatsdapp-chatbot) answering on each of your messages.
+This is quite convenient for tests.
+See how-to and address of a running instance in its repo.
+
 ## Loss of private Keys
 
 If you loose your storage, remote profile is useless since we don't have the private keys to do anything. 
