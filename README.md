@@ -189,7 +189,7 @@ demoRun();
 
 ## Test with Echo-Bot
 
-<img alt="WhatsDapp Echo-Bot" src="https://github.com/realKidDouglas/whatsdapp-chatbot/raw/main/images/whatsDapp_EchoBot.png" height="50">
+<a href="https://github.com/realKidDouglas/whatsdapp-chatbot" rel="WhatsDapp Echo-Bot"><img alt="WhatsDapp Echo-Bot" src="https://github.com/realKidDouglas/whatsdapp-chatbot/raw/main/images/whatsDapp_EchoBot.png" height="100"></a>
 
 The [WhatsDapp Echo-Bot](https://github.com/realKidDouglas/whatsdapp-chatbot) answering on each of your messages.
 This is quite convenient for tests.
